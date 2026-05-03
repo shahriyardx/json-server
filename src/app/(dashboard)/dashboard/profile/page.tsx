@@ -56,11 +56,6 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-xl mx-auto space-y-8 py-8">
-      <div className="flex items-center gap-3">
-        <UserIcon className="size-6" />
-        <h1 className="text-2xl font-bold">Profile</h1>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Account Info</CardTitle>
