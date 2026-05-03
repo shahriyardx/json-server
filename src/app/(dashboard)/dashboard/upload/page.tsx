@@ -37,6 +37,7 @@ export default function UploadPage() {
 
   const router = useRouter()
   const [file, setFile] = useState<File | null>(null)
+  const [typeError, setTypeError] = useState("")
 
   const uploadMutation = trpc.upload.uploadJson.useMutation()
 
@@ -62,8 +63,10 @@ export default function UploadPage() {
       const f = accepted[0]
       if (!f) return
       if (f.type !== "application/json" && !f.name.endsWith(".json")) {
+        setTypeError("Only JSON files allowed")
         return
       }
+      setTypeError("")
       setFile(f)
       const name = f.name.replace(/\.json$/, "")
       form.setValue("filename", name)
@@ -82,6 +85,7 @@ export default function UploadPage() {
 
   const removeFile = () => {
     setFile(null)
+    setTypeError("")
     form.setValue("filename", "")
     form.setValue("jsonContent", "")
     form.clearErrors("jsonContent")
@@ -157,6 +161,9 @@ export default function UploadPage() {
                 </div>
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
+                )}
+                {typeError && (
+                  <p className="text-sm font-normal text-destructive" role="alert">{typeError}</p>
                 )}
               </Field>
             )}

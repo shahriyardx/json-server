@@ -12,7 +12,20 @@ export const uploadRouter = router({
             /^[a-zA-Z0-9_-]+$/,
             "Only letters, numbers, dashes, and underscores allowed",
           ),
-        jsonContent: z.string().min(1, "JSON content is required"),
+        jsonContent: z
+          .string()
+          .min(1, "JSON content is required")
+          .refine(
+            (val) => {
+              try {
+                JSON.parse(val)
+                return true
+              } catch {
+                return false
+              }
+            },
+            { message: "Content must be valid JSON" },
+          ),
       }),
     )
     .mutation(async ({ ctx, input }) => {

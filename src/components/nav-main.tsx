@@ -7,12 +7,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { Home, FileJson, UploadCloud } from "lucide-react"
+import { Home, FileJson, UploadCloud, BookOpen } from "lucide-react"
 
 const items = [
   { title: "Overview", url: "/dashboard", icon: <Home /> },
   { title: "My JSONs", url: "/dashboard/my-jsons", icon: <FileJson /> },
   { title: "Upload", url: "/dashboard/upload", icon: <UploadCloud /> },
+  { title: "Docs", url: "/docs", icon: <BookOpen /> },
 ]
 
 export function NavMain() {

@@ -27,9 +27,20 @@ GET /<username>/<filename>/<key>/<index>/<nested-key>/...
 
 Returns `404 Not Found` if the path doesn't exist.
 
-### Example
+### Full Example
 
 Given this JSON at `/johndoe/store`:
+
+::http{method="GET" path="/johndoe/store"}
+::
+
+Access the full JSON. Then traverse into it:  
+
+::http{method="GET" path="/johndoe/store/inventory/items"}
+::
+
+::http{method="GET" path="/johndoe/store/inventory/items/0/name"}
+::
 
 ```json
 {

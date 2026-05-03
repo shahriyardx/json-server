@@ -18,9 +18,8 @@ Returns the full JSON content with `Content-Type: application/json`.
 
 ### Example
 
-```
-GET /johndoe/products
-```
+::http{method="GET" path="/johndoe/products"}
+::
 
 ```json
 [

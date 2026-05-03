@@ -1,6 +1,4 @@
 import { notFound } from "next/navigation"
-import Markdown from "react-markdown"
-import remarkGfm from "remark-gfm"
 import { getDoc, getAllDocs } from "@/lib/docs"
 import { DocContent } from "./content"
 

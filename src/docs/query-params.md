@@ -18,9 +18,8 @@ Filters array items where any string field contains the term (case-insensitive).
 
 ### Example
 
-```
-GET /johndoe/products?search=gad
-```
+::http{method="GET" path="/johndoe/products?search=gad"}
+::
 
 Returns items whose any string field includes "gad".
 
@@ -34,11 +33,14 @@ Sorts array of objects by a field. Default order is `asc`.
 
 ### Examples
 
-```
-GET /johndoe/products?sort=price
-GET /johndoe/products?sort=price&order=desc
-GET /johndoe/products?sort=name&order=asc
-```
+::http{method="GET" path="/johndoe/products?sort=price"}
+::
+
+::http{method="GET" path="/johndoe/products?sort=price&order=desc"}
+::
+
+::http{method="GET" path="/johndoe/products?sort=name&order=asc"}
+::
 
 ## Filter
 
@@ -50,9 +52,8 @@ Two formats:
 ?filter=<key>:<value>
 ```
 
-```
-GET /johndoe/products?filter=category:electronics
-```
+::http{method="GET" path="/johndoe/products?filter=category:electronics"}
+::
 
 ### Direct param
 
@@ -60,20 +61,17 @@ GET /johndoe/products?filter=category:electronics
 ?<key>=<value>
 ```
 
-```
-GET /johndoe/products?inStock=true
-```
+::http{method="GET" path="/johndoe/products?inStock=true"}
+::
 
 ## Combined Example
 
-```
-GET /johndoe/products?search=pro&sort=price&order=desc
-```
+::http{method="GET" path="/johndoe/products?search=pro&sort=price&order=desc"}
+::
 
 Returns all products matching "pro", sorted by price descending.
 
 Nested paths + query params work together:
 
-```
-GET /johndoe/store/inventory/items?search=widget&sort=price&order=asc
-```
+::http{method="GET" path="/johndoe/store/inventory/items?search=widget&sort=price&order=asc"}
+::
