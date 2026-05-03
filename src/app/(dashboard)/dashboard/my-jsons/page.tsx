@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import {
   Table,
   TableBody,
@@ -9,8 +10,18 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Copy, Check, Trash2 } from "lucide-react"
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from "@/components/ui/dialog"
+import { Copy, Check, Trash2, BookOpen } from "lucide-react"
 import { useState } from "react"
+import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
 import { trpc } from "@/lib/trpc/client"
 
@@ -21,13 +32,16 @@ export default function MyJsonsPage() {
   const utils = trpc.useUtils()
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const deleteMutation = trpc.upload.deleteJson.useMutation({
-    onSuccess: () => utils.upload.getMyJsons.invalidate(),
+    onSuccess: () => {
+      utils.upload.getMyJsons.invalidate()
+    },
   })
 
   const copyUrl = async (filename: string) => {
     const url = `${window.location.origin}/${username}/${filename}`
     await navigator.clipboard.writeText(url)
     setCopiedId(filename)
+    toast.success("URL copied")
     setTimeout(() => setCopiedId(null), 2000)
   }
 
@@ -60,8 +74,7 @@ export default function MyJsonsPage() {
           <TableRow>
             <TableHead>Filename</TableHead>
             <TableHead>Created</TableHead>
-            <TableHead className="w-20">URL</TableHead>
-            <TableHead className="w-14" />
+            <TableHead className="w-28">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -74,31 +87,55 @@ export default function MyJsonsPage() {
                 {new Date(file.createdAt).toLocaleDateString()}
               </TableCell>
               <TableCell>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => copyUrl(file.filename)}
-                >
-                  {copiedId === file.filename ? (
-                    <Check className="size-3" />
-                  ) : (
-                    <Copy className="size-3" />
-                  )}
-                </Button>
-              </TableCell>
-              <TableCell>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => {
-                    if (confirm("Delete this JSON file?")) {
-                      deleteMutation.mutate({ id: file.id })
-                    }
-                  }}
-                  disabled={deleteMutation.isPending}
-                >
-                  <Trash2 className="size-3 text-destructive" />
-                </Button>
+                <div className="flex items-center gap-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => copyUrl(file.filename)}
+                  >
+                    {copiedId === file.filename ? (
+                      <Check className="size-3" />
+                    ) : (
+                      <Copy className="size-3" />
+                    )}
+                  </Button>
+                  <Button variant="ghost" size="icon-xs" asChild>
+                    <Link href={`/dashboard/docs/${username}/${file.filename}`}>
+                      <BookOpen className="size-3" />
+                    </Link>
+                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="icon-xs">
+                        <Trash2 className="size-3 text-destructive" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Delete JSON file</DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to delete{" "}
+                          <span className="font-medium text-foreground">
+                            {file.filename}.json
+                          </span>
+                          ? This action cannot be undone.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex justify-end gap-2">
+                        <DialogClose asChild>
+                          <Button variant="outline">Cancel</Button>
+                        </DialogClose>
+                        <Button
+                          variant="destructive"
+                          onClick={() => deleteMutation.mutate({ id: file.id })}
+                          disabled={deleteMutation.isPending}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </TableCell>
             </TableRow>
           ))}

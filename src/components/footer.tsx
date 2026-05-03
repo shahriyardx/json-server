@@ -15,9 +15,14 @@ export function Footer() {
           >
             Privacy
           </Link>
-          <span className="text-xs text-muted-foreground">
-            Open source &middot; Built with Next.js
-          </span>
+          <a
+            href="https://github.com/shahriyardx"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Built with ❤️ by shahriyardx
+          </a>
         </div>
       </Container>
     </footer>

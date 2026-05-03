@@ -1,0 +1,461 @@
+{
+  "store": {
+    "name": "TechStore",
+    "description": "Your one-stop shop for electronics and gadgets",
+    "currency": "USD",
+    "url": "https://json.shahriyar.dev"
+  },
+  "test": {
+    "idk": {
+      "name": "1",
+      "age": 10
+    }
+  },
+  "categories": [
+    { "id": 1, "name": "Laptops", "slug": "laptops" },
+    { "id": 2, "name": "Smartphones", "slug": "smartphones" },
+    { "id": 3, "name": "Headphones", "slug": "headphones" },
+    { "id": 4, "name": "Accessories", "slug": "accessories" },
+    { "id": 5, "name": "Tablets", "slug": "tablets" }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "UltraBook Pro 16",
+      "slug": "ultrabook-pro-16",
+      "categoryId": 1,
+      "price": 1999.99,
+      "compareAtPrice": 2399.99,
+      "description": "Powerful laptop with M4 chip, 32GB RAM, 1TB SSD, 16-inch Liquid Retina display.",
+      "inStock": true,
+      "stockCount": 25,
+      "rating": 4.8,
+      "reviewCount": 124,
+      "colors": ["Space Gray", "Silver", "Midnight"],
+      "tags": ["premium", "best-seller", "new"],
+      "reviews": [
+        {
+          "id": 1,
+          "userId": 1,
+          "rating": 5,
+          "title": "Best laptop ever",
+          "comment": "Lightning fast, incredible battery life.",
+          "date": "2026-04-15"
+        },
+        {
+          "id": 2,
+          "userId": 2,
+          "rating": 4,
+          "title": "Great but pricey",
+          "comment": "Amazing machine but premium price tag.",
+          "date": "2026-04-10"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "SlimBook Air 13",
+      "slug": "slimbook-air-13",
+      "categoryId": 1,
+      "price": 1299.99,
+      "compareAtPrice": null,
+      "description": "Ultra-thin laptop with 16GB RAM, 512GB SSD, 13-inch Retina display. Weighs just 1.2kg.",
+      "inStock": true,
+      "stockCount": 50,
+      "rating": 4.6,
+      "reviewCount": 89,
+      "colors": ["Gold", "Silver", "Space Gray"],
+      "tags": ["portable", "popular"],
+      "reviews": [
+        {
+          "id": 3,
+          "userId": 3,
+          "rating": 5,
+          "title": "Perfect travel laptop",
+          "comment": "So light and powerful. Lasts all day.",
+          "date": "2026-04-12"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "ProBook 14 Business",
+      "slug": "probook-14-business",
+      "categoryId": 1,
+      "price": 1599.99,
+      "compareAtPrice": 1799.99,
+      "description": "Business laptop with Intel Core Ultra 7, 32GB RAM, 512GB SSD, and TPM 2.0 security.",
+      "inStock": true,
+      "stockCount": 15,
+      "rating": 4.5,
+      "reviewCount": 67,
+      "colors": ["Black"],
+      "tags": ["business", "premium"],
+      "reviews": []
+    },
+    {
+      "id": 4,
+      "name": "Pixel 9 Pro",
+      "slug": "pixel-9-pro",
+      "categoryId": 2,
+      "price": 999.99,
+      "compareAtPrice": null,
+      "description": "Flagship smartphone with 6.7-inch OLED, Tensor G5 chip, 48MP camera system, 7 years of updates.",
+      "inStock": true,
+      "stockCount": 100,
+      "rating": 4.7,
+      "reviewCount": 203,
+      "colors": ["Obsidian", "Porcelain", "Rose", "Hazel"],
+      "tags": ["best-seller", "new"],
+      "reviews": [
+        {
+          "id": 4,
+          "userId": 4,
+          "rating": 5,
+          "title": "Camera is incredible",
+          "comment": "Best camera I've ever used on a phone.",
+          "date": "2026-04-18"
+        },
+        {
+          "id": 5,
+          "userId": 5,
+          "rating": 4,
+          "title": "Great phone",
+          "comment": "Smooth, fast, great battery. A bit heavy.",
+          "date": "2026-04-14"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Galaxy S26 Ultra",
+      "slug": "galaxy-s26-ultra",
+      "categoryId": 2,
+      "price": 1199.99,
+      "compareAtPrice": 1299.99,
+      "description": "Premium Android phone with 200MP camera, S-Pen, 6.9-inch Dynamic AMOLED, 5,500mAh battery.",
+      "inStock": true,
+      "stockCount": 75,
+      "rating": 4.6,
+      "reviewCount": 156,
+      "colors": ["Titanium Gray", "Titanium Black", "Titanium Violet"],
+      "tags": ["premium", "best-seller"],
+      "reviews": [
+        {
+          "id": 6,
+          "userId": 6,
+          "rating": 5,
+          "title": "Zoom is insane",
+          "comment": "100x zoom actually usable. S-Pen is a bonus.",
+          "date": "2026-04-16"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "iPhone 17 Pro Max",
+      "slug": "iphone-17-pro-max",
+      "categoryId": 2,
+      "price": 1299.99,
+      "compareAtPrice": 1499.99,
+      "description": "Apple flagship with A19 chip, 48MP pro camera system, titanium design, USB-C.",
+      "inStock": false,
+      "stockCount": 0,
+      "rating": 4.8,
+      "reviewCount": 312,
+      "colors": [
+        "Natural Titanium",
+        "Blue Titanium",
+        "White Titanium",
+        "Black Titanium"
+      ],
+      "tags": ["premium", "best-seller", "new"],
+      "reviews": [
+        {
+          "id": 7,
+          "userId": 7,
+          "rating": 5,
+          "title": "Peak smartphone",
+          "comment": "Nothing comes close. The chip is a beast.",
+          "date": "2026-04-20"
+        },
+        {
+          "id": 8,
+          "userId": 8,
+          "rating": 4,
+          "title": "Incredible but expensive",
+          "comment": "Best iPhone yet, but the price keeps climbing.",
+          "date": "2026-04-19"
+        },
+        {
+          "id": 9,
+          "userId": 1,
+          "rating": 5,
+          "title": "Worth every penny",
+          "comment": "Battery lasts 2 days for me.",
+          "date": "2026-04-17"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Noise Cancelling Headphones 9000",
+      "slug": "nc-headphones-9000",
+      "categoryId": 3,
+      "price": 349.99,
+      "compareAtPrice": 399.99,
+      "description": "Premium wireless ANC headphones with 60-hour battery, Hi-Res audio, multipoint Bluetooth.",
+      "inStock": true,
+      "stockCount": 200,
+      "rating": 4.7,
+      "reviewCount": 445,
+      "colors": ["Matte Black", "Cream", "Midnight Blue"],
+      "tags": ["best-seller", "award-winning"],
+      "reviews": [
+        {
+          "id": 10,
+          "userId": 9,
+          "rating": 5,
+          "title": "Silence is golden",
+          "comment": "Blocks everything. Sound quality is top tier.",
+          "date": "2026-04-13"
+        },
+        {
+          "id": 11,
+          "userId": 10,
+          "rating": 4,
+          "title": "Very comfortable",
+          "comment": "Can wear for hours. Sound is great.",
+          "date": "2026-04-11"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Wireless Earbuds Pro",
+      "slug": "wireless-earbuds-pro",
+      "categoryId": 3,
+      "price": 249.99,
+      "compareAtPrice": null,
+      "description": "True wireless earbuds with adaptive ANC, spatial audio, IPX5 water resistance, wireless charging case.",
+      "inStock": true,
+      "stockCount": 300,
+      "rating": 4.5,
+      "reviewCount": 678,
+      "colors": ["White", "Black"],
+      "tags": ["popular", "portable"],
+      "reviews": [
+        {
+          "id": 12,
+          "userId": 2,
+          "rating": 5,
+          "title": "Better than expected",
+          "comment": "Battery case lasts a week. Sound is rich and clear.",
+          "date": "2026-04-09"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "USB-C Hub 7-in-1",
+      "slug": "usb-c-hub-7-in-1",
+      "categoryId": 4,
+      "price": 49.99,
+      "compareAtPrice": 69.99,
+      "description": "7-port USB-C hub with HDMI 4K, 100W PD charging, SD card reader, USB 3.0 x3, Ethernet.",
+      "inStock": true,
+      "stockCount": 500,
+      "rating": 4.3,
+      "reviewCount": 234,
+      "colors": ["Space Gray", "Silver"],
+      "tags": ["budget", "essential"],
+      "reviews": []
+    },
+    {
+      "id": 10,
+      "name": "Wireless Charging Pad",
+      "slug": "wireless-charging-pad",
+      "categoryId": 4,
+      "price": 29.99,
+      "compareAtPrice": null,
+      "description": "15W fast wireless charging pad for Qi-compatible devices. Slim design with LED indicator.",
+      "inStock": true,
+      "stockCount": 1000,
+      "rating": 4.1,
+      "reviewCount": 892,
+      "colors": ["Black", "White"],
+      "tags": ["budget", "essential"],
+      "reviews": [
+        {
+          "id": 13,
+          "userId": 3,
+          "rating": 4,
+          "title": "Does the job",
+          "comment": "Works perfectly. Charges fast. Great price.",
+          "date": "2026-04-08"
+        },
+        {
+          "id": 14,
+          "userId": 4,
+          "rating": 3,
+          "title": "OK but slow",
+          "comment": "Works but slower than advertised.",
+          "date": "2026-04-07"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "iPad Air 13",
+      "slug": "ipad-air-13",
+      "categoryId": 5,
+      "price": 799.99,
+      "compareAtPrice": null,
+      "description": "13-inch iPad Air with M3 chip, Liquid Retina display, 256GB storage, supports Apple Pencil Pro.",
+      "inStock": true,
+      "stockCount": 60,
+      "rating": 4.6,
+      "reviewCount": 98,
+      "colors": ["Space Gray", "Starlight", "Purple", "Blue"],
+      "tags": ["popular", "new"],
+      "reviews": [
+        {
+          "id": 15,
+          "userId": 5,
+          "rating": 5,
+          "title": "Perfect tablet",
+          "comment": "M3 chip makes this a laptop replacement.",
+          "date": "2026-04-16"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Galaxy Tab S10 Ultra",
+      "slug": "galaxy-tab-s10-ultra",
+      "categoryId": 5,
+      "price": 999.99,
+      "compareAtPrice": 1199.99,
+      "description": "14.6-inch tablet with Dynamic AMOLED 2X, S-Pen included, 12GB RAM, 512GB storage, DeX mode.",
+      "inStock": true,
+      "stockCount": 40,
+      "rating": 4.5,
+      "reviewCount": 76,
+      "colors": ["Graphite", "Beige"],
+      "tags": ["premium"],
+      "reviews": []
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "Alice Johnson",
+      "email": "alice@example.com",
+      "avatar": "https://api.dicebear.com/9.x/notionists/svg?seed=Alice"
+    },
+    {
+      "id": 2,
+      "name": "Bob Smith",
+      "email": "bob@example.com",
+      "avatar": "https://api.dicebear.com/9.x/notionists/svg?seed=Bob"
+    },
+    {
+      "id": 3,
+      "name": "Charlie Brown",
+      "email": "charlie@example.com",
+      "avatar": "https://api.dicebear.com/9.x/notionists/svg?seed=Charlie"
+    },
+    {
+      "id": 4,
+      "name": "Diana Prince",
+      "email": "diana@example.com",
+      "avatar": "https://api.dicebear.com/9.x/notionists/svg?seed=Diana"
+    },
+    {
+      "id": 5,
+      "name": "Eve Wilson",
+      "email": "eve@example.com",
+      "avatar": "https://api.dicebear.com/9.x/notionists/svg?seed=Eve"
+    },
+    {
+      "id": 6,
+      "name": "Frank Castle",
+      "email": "frank@example.com",
+      "avatar": "https://api.dicebear.com/9.x/notionists/svg?seed=Frank"
+    },
+    {
+      "id": 7,
+      "name": "Grace Hopper",
+      "email": "grace@example.com",
+      "avatar": "https://api.dicebear.com/9.x/notionists/svg?seed=Grace"
+    },
+    {
+      "id": 8,
+      "name": "Henry Cavill",
+      "email": "henry@example.com",
+      "avatar": "https://api.dicebear.com/9.x/notionists/svg?seed=Henry"
+    },
+    {
+      "id": 9,
+      "name": "Ivy League",
+      "email": "ivy@example.com",
+      "avatar": "https://api.dicebear.com/9.x/notionists/svg?seed=Ivy"
+    },
+    {
+      "id": 10,
+      "name": "Jack Sparrow",
+      "email": "jack@example.com",
+      "avatar": "https://api.dicebear.com/9.x/notionists/svg?seed=Jack"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ORD-001",
+      "userId": 1,
+      "items": [
+        { "productId": 1, "quantity": 1, "price": 1999.99 },
+        { "productId": 9, "quantity": 2, "price": 49.99 }
+      ],
+      "total": 2099.97,
+      "status": "delivered",
+      "shippingAddress": {
+        "street": "123 Main St",
+        "city": "San Francisco",
+        "state": "CA",
+        "zip": "94105"
+      },
+      "createdAt": "2026-03-20T10:30:00Z"
+    },
+    {
+      "id": "ORD-002",
+      "userId": 2,
+      "items": [{ "productId": 7, "quantity": 1, "price": 349.99 }],
+      "total": 349.99,
+      "status": "shipped",
+      "shippingAddress": {
+        "street": "456 Oak Ave",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10001"
+      },
+      "createdAt": "2026-04-05T14:20:00Z"
+    },
+    {
+      "id": "ORD-003",
+      "userId": 3,
+      "items": [
+        { "productId": 4, "quantity": 1, "price": 999.99 },
+        { "productId": 10, "quantity": 1, "price": 29.99 }
+      ],
+      "total": 1029.98,
+      "status": "pending",
+      "shippingAddress": {
+        "street": "789 Pine Rd",
+        "city": "Austin",
+        "state": "TX",
+        "zip": "73301"
+      },
+      "createdAt": "2026-04-18T09:15:00Z"
+    }
+  ]
+}
