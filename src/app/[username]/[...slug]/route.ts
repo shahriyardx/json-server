@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
+import { rateLimit } from "@/lib/rate-limit"
+
+const MONTHLY_LIMIT = 100_000
+
+const rateLimiter = rateLimit({ interval: 60_000, max: 60 })
 
 const corsHeaders = { "Access-Control-Allow-Origin": "*" }
 
@@ -14,6 +19,20 @@ async function getJsonFile(username: string, filename: string) {
   return prisma.jsonFile.findUnique({
     where: { userId_filename: { userId: user.id, filename } },
   })
+}
+
+async function checkAndIncrementRequest(userId: string): Promise<boolean> {
+  const now = new Date()
+  const month = now.getMonth() + 1
+  const year = now.getFullYear()
+
+  const stats = await prisma.userMonthlyRequest.upsert({
+    where: { userId_month_year: { userId, month, year } },
+    create: { userId, month, year, count: 1 },
+    update: { count: { increment: 1 } },
+  })
+
+  return stats.count <= MONTHLY_LIMIT
 }
 
 function traverse(data: unknown, segments: string[]): unknown {
@@ -102,9 +121,22 @@ export async function GET(
   const { username, slug } = await params
   const [filename, ...segments] = slug
 
+  const { ok } = rateLimiter.check(`${username}/${filename}`)
+  if (!ok) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { ...corsHeaders, "Retry-After": "60" } },
+    )
+  }
+
   const jsonFile = await getJsonFile(username, filename)
   if (!jsonFile) {
     return json({ error: "Not found" }, 404)
+  }
+
+  const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
+  if (!withinLimit) {
+    return json({ error: "Monthly request limit exceeded" }, 429)
   }
 
   let data: unknown

@@ -29,6 +29,13 @@ export const uploadRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const count = await ctx.prisma.jsonFile.count({
+        where: { userId: ctx.user.id },
+      })
+      if (count >= 100) {
+        throw new Error("Limit reached. You can upload up to 100 JSON files.")
+      }
+
       const jsonFile = await ctx.prisma.jsonFile.create({
         data: {
           userId: ctx.user.id,
@@ -46,4 +53,15 @@ export const uploadRouter = router({
     })
     return files
   }),
+  deleteJson: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const file = await ctx.prisma.jsonFile.findFirst({
+        where: { id: input.id, userId: ctx.user.id },
+      })
+      if (!file) throw new Error("File not found")
+
+      await ctx.prisma.jsonFile.delete({ where: { id: input.id } })
+      return { success: true }
+    }),
 })

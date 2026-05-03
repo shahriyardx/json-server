@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Copy, Check } from "lucide-react"
+import { Copy, Check, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { authClient } from "@/lib/auth-client"
 import { trpc } from "@/lib/trpc/client"
@@ -18,7 +18,11 @@ export default function MyJsonsPage() {
   const { data: session } = authClient.useSession()
   const username = session?.user?.username || session?.user?.name
   const { data: files, isPending } = trpc.upload.getMyJsons.useQuery()
+  const utils = trpc.useUtils()
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const deleteMutation = trpc.upload.deleteJson.useMutation({
+    onSuccess: () => utils.upload.getMyJsons.invalidate(),
+  })
 
   const copyUrl = async (filename: string) => {
     const url = `${window.location.origin}/${username}/${filename}`
@@ -57,6 +61,7 @@ export default function MyJsonsPage() {
             <TableHead>Filename</TableHead>
             <TableHead>Created</TableHead>
             <TableHead className="w-20">URL</TableHead>
+            <TableHead className="w-14" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -79,6 +84,20 @@ export default function MyJsonsPage() {
                   ) : (
                     <Copy className="size-3" />
                   )}
+                </Button>
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => {
+                    if (confirm("Delete this JSON file?")) {
+                      deleteMutation.mutate({ id: file.id })
+                    }
+                  }}
+                  disabled={deleteMutation.isPending}
+                >
+                  <Trash2 className="size-3 text-destructive" />
                 </Button>
               </TableCell>
             </TableRow>

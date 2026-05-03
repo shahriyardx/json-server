@@ -24,6 +24,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   jsonFiles     JsonFile[]
+  monthlyRequests UserMonthlyRequest[]
 
   @@unique([email])
   @@map("user")
@@ -89,4 +90,17 @@ model JsonFile {
   @@unique([userId, filename])
   @@index([userId])
   @@map("json_file")
+}
+
+model UserMonthlyRequest {
+  id     String @id @default(cuid())
+  userId String
+  month  Int
+  year   Int
+  count  Int    @default(0)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year])
+  @@index([userId])
+  @@map("user_monthly_request")
 }

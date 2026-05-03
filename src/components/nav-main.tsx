@@ -1,5 +1,6 @@
 "use client"
 
+import { usePathname } from "next/navigation"
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -17,13 +18,15 @@ const items = [
 ]
 
 export function NavMain() {
+  const pathname = usePathname()
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>
-            <SidebarMenuButton asChild tooltip={item.title}>
+            <SidebarMenuButton asChild isActive={pathname === item.url} tooltip={item.title}>
               <a href={item.url}>
                 {item.icon}
                 <span>{item.title}</span>
