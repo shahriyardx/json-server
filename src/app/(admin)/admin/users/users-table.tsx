@@ -1,0 +1,81 @@
+"use client"
+
+import { trpc } from "@/lib/trpc/client"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+
+type User = {
+  id: string
+  name: string
+  email: string
+  username: string | null
+  role: string
+  createdAt: Date
+  _count: { jsonFiles: number }
+}
+
+export function UsersTable({ users }: { users: User[] }) {
+  const router = useRouter()
+  const mutation = trpc.admin.updateUserRole.useMutation({
+    onSuccess: () => {
+      toast.success("Role updated")
+      router.refresh()
+    },
+    onError: (err) => toast.error(err.message),
+  })
+
+  return (
+    <div className="mt-6 border">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b bg-muted text-left">
+            <th className="px-4 py-2 font-medium text-muted-foreground">Name</th>
+            <th className="px-4 py-2 font-medium text-muted-foreground">Username</th>
+            <th className="px-4 py-2 font-medium text-muted-foreground">Email</th>
+            <th className="px-4 py-2 font-medium text-muted-foreground">Role</th>
+            <th className="px-4 py-2 font-medium text-muted-foreground">Files</th>
+            <th className="px-4 py-2 font-medium text-muted-foreground">Joined</th>
+            <th className="w-24 px-4 py-2" />
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((u) => (
+            <tr key={u.id} className="border-b last:border-0">
+              <td className="px-4 py-2">{u.name}</td>
+              <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{u.username ?? "—"}</td>
+              <td className="px-4 py-2 text-muted-foreground">{u.email}</td>
+              <td className="px-4 py-2">
+                <span className={`text-xs font-medium ${u.role === "admin" ? "text-foreground" : "text-muted-foreground"}`}>
+                  {u.role}
+                </span>
+              </td>
+              <td className="px-4 py-2 text-muted-foreground">{u._count.jsonFiles}</td>
+              <td className="px-4 py-2 text-muted-foreground">{new Date(u.createdAt).toLocaleDateString()}</td>
+              <td className="px-4 py-2">
+                {u.role === "admin" ? (
+                  <button
+                    type="button"
+                    onClick={() => mutation.mutate({ userId: u.id, role: "user" })}
+                    disabled={mutation.isPending}
+                    className="text-xs text-muted-foreground underline hover:text-foreground disabled:opacity-50"
+                  >
+                    Remove admin
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => mutation.mutate({ userId: u.id, role: "admin" })}
+                    disabled={mutation.isPending}
+                    className="text-xs text-foreground underline hover:text-foreground disabled:opacity-50"
+                  >
+                    Make admin
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
