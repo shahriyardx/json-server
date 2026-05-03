@@ -14,15 +14,23 @@ export async function Navbar() {
       <Link href="/" className="text-sm font-bold tracking-tight">
         JSON-SERVER
       </Link>
-      {session ? (
-        <Link href="/dashboard">
-          <Button variant="outline" size="sm">
-            Dashboard
-          </Button>
+      <nav className="flex items-center gap-4">
+        <Link
+          href="/docs"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          Docs
         </Link>
-      ) : (
-        <SignInButton />
-      )}
+        {session ? (
+          <Link href="/dashboard">
+            <Button variant="outline" size="sm">
+              Dashboard
+            </Button>
+          </Link>
+        ) : (
+          <SignInButton />
+        )}
+      </nav>
     </header>
   )
 }
