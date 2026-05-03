@@ -6,8 +6,8 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
 COPY prisma ./prisma
-RUN bunx prisma generate
-
+RUN bun prisma generate
+RUN bun prisma migrate deploy
 COPY . .
 RUN bun run build
 
@@ -26,4 +26,4 @@ COPY --from=build /app/.next/static ./.next/static
 
 EXPOSE 3000
 
-CMD bunx prisma migrate deploy && node server.js
+CMD ["node", "server.js"]
