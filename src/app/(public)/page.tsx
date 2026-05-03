@@ -3,6 +3,7 @@ import { headers } from "next/headers"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { SignInButton } from "@/components/sign-in-button"
+import { Container } from "@/components/container"
 import { LogIn, FileJson, Share2 } from "lucide-react"
 
 export default async function Home() {
@@ -13,8 +14,9 @@ export default async function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="flex flex-col items-center justify-center px-6 pt-24 pb-16 sm:pt-32 sm:pb-20">
-        <div className="mx-auto max-w-lg text-center">
+      <section className="flex flex-col items-center justify-center pt-24 pb-16 sm:pt-32 sm:pb-20">
+        <Container>
+          <div className="mx-auto max-w-lg text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
             Your JSON, instantly live.
           </h1>
@@ -41,11 +43,13 @@ export default async function Home() {
             </div>
           )}
         </div>
+      </Container>
       </section>
 
       {/* How it works */}
-      <section className="px-6 pb-24 sm:pb-32">
-        <div className="mx-auto max-w-2xl">
+      <section className="pb-24 sm:pb-32">
+        <Container>
+          <div className="mx-auto max-w-2xl">
           <div className="grid gap-8 sm:grid-cols-3">
             <div className="text-center">
               <LogIn className="mx-auto size-4 text-muted-foreground" />
@@ -70,6 +74,7 @@ export default async function Home() {
             </div>
           </div>
         </div>
+      </Container>
       </section>
     </>
   )

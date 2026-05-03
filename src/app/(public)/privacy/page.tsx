@@ -1,8 +1,10 @@
 import Link from "next/link"
+import { Container } from "@/components/container"
 
 export default async function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-2xl px-6 py-16 sm:py-24">
+    <Container className="py-16 sm:py-24">
+      <div className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
         Privacy Policy
       </h1>
@@ -61,6 +63,7 @@ export default async function PrivacyPage() {
 
         <p className="pt-4 text-xs">Last updated: May 2026</p>
       </div>
-    </div>
+      </div>
+    </Container>
   )
 }

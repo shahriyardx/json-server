@@ -3,6 +3,7 @@ import { headers } from "next/headers"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { SignInButton } from "@/components/sign-in-button"
+import { Container } from "@/components/container"
 
 export async function Navbar() {
   const session = await auth.api.getSession({
@@ -10,7 +11,8 @@ export async function Navbar() {
   })
 
   return (
-    <header className="flex items-center justify-between px-6 py-4 sm:px-10 sm:py-6">
+    <header className="flex items-center justify-between py-4 sm:py-6">
+      <Container className="flex items-center justify-between">
       <Link href="/" className="text-sm font-bold tracking-tight">
         JSON-SERVER
       </Link>
@@ -31,6 +33,7 @@ export async function Navbar() {
           <SignInButton />
         )}
       </nav>
+      </Container>
     </header>
   )
 }

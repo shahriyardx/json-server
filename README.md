@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JSON Server
+
+Hosted at [json-server.shahriyar.dev](https://json-server.shahriyar.dev) — upload JSON files and access them via a public API. Every file becomes a live endpoint with nested path traversal, filtering, sorting, and search.
+
+## How It Works
+
+1. Sign in with GitHub
+2. Upload a `.json` file via the dashboard
+3. Access it at `/<username>/<filename>` — no auth required for reads
+
+## Features
+
+- **Public API** — every uploaded file served as JSON at `GET /<username>/<filename>`
+- **Nested path traversal** — drill into objects and arrays via URL path segments (`/user/file/items/0/name`)
+- **Query parameters** — `?search=term`, `?sort=field&order=asc|desc`, `?filter=key:value`
+- **Dashboard** — manage files, copy URLs, upload via drag-and-drop
+- **Documentation** — markdown docs rendered with Comark custom components
+
+## Built With
+
+- [Next.js](https://nextjs.org) 16.2 (Turbopack)
+- [better-auth](https://better-auth.com) — GitHub OAuth
+- [tRPC](https://trpc.io) — type-safe API routes
+- [Prisma](https://prisma.io) + PostgreSQL — data storage
+- [shadcn/ui](https://ui.shadcn.com) — component library
+- [react-hook-form](https://react-hook-form.com) + [zod](https://zod.dev) — form validation
+- [Comark](https://comark.dev) — markdown rendering with custom components
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+bun install
+bunx prisma generate
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.example` to `.env` and configure:
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+DATABASE_URL=postgresql://...
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
+BETTER_AUTH_SECRET=...
+BETTER_AUTH_URL=http://localhost:3000
+```
