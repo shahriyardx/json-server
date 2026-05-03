@@ -111,18 +111,27 @@ export async function GET(
   try {
     data = JSON.parse(jsonFile.content)
   } catch {
-    return NextResponse.json({ error: "Invalid JSON content" }, { status: 500 })
+    return json({ error: "Invalid JSON content" }, 500)
   }
 
   if (segments.length > 0) {
     data = traverse(data, segments)
     if (data === undefined) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 })
+      return json({ error: "Not found" }, 404)
     }
   }
 
   const { searchParams } = new URL(req.url)
   data = applyQueryParams(data, searchParams)
 
-  return NextResponse.json(data)
+  return json(data)
+}
+
+export async function OPTIONS() {
+  return new Response(null, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+    },
+  })
 }
