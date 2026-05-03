@@ -19,8 +19,37 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "JSON Server — Your JSON, live.",
-  description: "Upload JSON, get a URL. Share anywhere.",
+  title: {
+    default: "JSON Server — Your JSON, live.",
+    template: "%s | JSON Server",
+  },
+  description: "Upload JSON, get a URL. Share anywhere. JSON Server turns your JSON files into RESTful APIs instantly.",
+  metadataBase: new URL("https://json.shahriyar.dev"),
+  openGraph: {
+    title: "JSON Server — Your JSON, live.",
+    description: "Upload JSON, get a URL. Share anywhere. Turn JSON files into RESTful APIs instantly.",
+    url: "https://json.shahriyar.dev",
+    siteName: "JSON Server",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "JSON Server — Your JSON, live.",
+    description: "Upload JSON, get a URL. Share anywhere. Turn JSON files into RESTful APIs instantly.",
+  },
+  keywords: [
+    "JSON", "JSON server", "REST API", "mock API", "mock server",
+    "fake API", "API generator", "RESTful", "JSON storage", "JSON hosting",
+    "prototyping", "backend generator", "serverless API", "API mock",
+    "JSON endpoint", "hosted JSON", "data API", "quick API",
+    "frontend prototyping", "API playground", "JSON database",
+    "static JSON API", "instant API", "JSON as API",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function RootLayout({
