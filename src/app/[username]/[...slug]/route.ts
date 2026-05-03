@@ -1,6 +1,12 @@
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
+const corsHeaders = { "Access-Control-Allow-Origin": "*" }
+
+function json(data: unknown, status = 200) {
+  return NextResponse.json(data, { status, headers: corsHeaders })
+}
+
 async function getJsonFile(username: string, filename: string) {
   const user = await prisma.user.findFirst({ where: { username } })
   if (!user) return null
@@ -98,7 +104,7 @@ export async function GET(
 
   const jsonFile = await getJsonFile(username, filename)
   if (!jsonFile) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
+    return json({ error: "Not found" }, 404)
   }
 
   let data: unknown

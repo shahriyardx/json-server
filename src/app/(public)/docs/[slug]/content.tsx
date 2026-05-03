@@ -1,4 +1,7 @@
+import type { ReactNode } from "react"
 import { Comark } from "@comark/react"
+
+type HtmlProps = { children?: ReactNode; className?: string; [key: string]: unknown }
 
 function HttpExample({ method = "GET", path = "/" }: { method?: string; path?: string }) {
   return (
@@ -15,42 +18,42 @@ function HttpExample({ method = "GET", path = "/" }: { method?: string; path?: s
 
 const components = {
   http: HttpExample,
-  h1: ({ children, ...props }: any) => (
+  h1: ({ children, ...props }: HtmlProps) => (
     <h1 className="mb-4 text-3xl font-bold tracking-tight scroll-mt-24" {...props}>
       {children}
     </h1>
   ),
-  h2: ({ children, ...props }: any) => (
+  h2: ({ children, ...props }: HtmlProps) => (
     <h2 className="mb-3 mt-10 text-xl font-semibold tracking-tight scroll-mt-24" {...props}>
       {children}
     </h2>
   ),
-  h3: ({ children, ...props }: any) => (
+  h3: ({ children, ...props }: HtmlProps) => (
     <h3 className="mb-2 mt-8 text-lg font-medium scroll-mt-24" {...props}>
       {children}
     </h3>
   ),
-  p: ({ children, ...props }: any) => (
+  p: ({ children, ...props }: HtmlProps) => (
     <p className="mb-4 text-sm leading-relaxed text-muted-foreground" {...props}>
       {children}
     </p>
   ),
-  ul: ({ children, ...props }: any) => (
+  ul: ({ children, ...props }: HtmlProps) => (
     <ul className="mb-4 list-inside list-disc space-y-1 text-sm text-muted-foreground" {...props}>
       {children}
     </ul>
   ),
-  ol: ({ children, ...props }: any) => (
+  ol: ({ children, ...props }: HtmlProps) => (
     <ol className="mb-4 list-inside list-decimal space-y-1 text-sm text-muted-foreground" {...props}>
       {children}
     </ol>
   ),
-  li: ({ children, ...props }: any) => (
+  li: ({ children, ...props }: HtmlProps) => (
     <li className="text-sm text-muted-foreground" {...props}>
       {children}
     </li>
   ),
-  a: ({ href, children, ...props }: any) => (
+  a: ({ href, children, ...props }: HtmlProps & { href?: string }) => (
     <a
       className="text-primary underline underline-offset-2 hover:text-primary/80"
       href={href}
@@ -61,7 +64,7 @@ const components = {
       {children}
     </a>
   ),
-  code: ({ children, className, ...props }: any) => {
+  code: ({ children, className, ...props }: HtmlProps) => {
     if (!className) {
       return (
         <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs" {...props}>
@@ -77,35 +80,35 @@ const components = {
       </pre>
     )
   },
-  table: ({ children, ...props }: any) => (
+  table: ({ children, ...props }: HtmlProps) => (
     <div className="mb-4 overflow-x-auto">
       <table className="w-full text-sm" {...props}>
         {children}
       </table>
     </div>
   ),
-  thead: ({ children, ...props }: any) => (
+  thead: ({ children, ...props }: HtmlProps) => (
     <thead className="border-b text-left" {...props}>
       {children}
     </thead>
   ),
-  th: ({ children, ...props }: any) => (
+  th: ({ children, ...props }: HtmlProps) => (
     <th className="pb-2 pr-4 font-medium text-muted-foreground" {...props}>
       {children}
     </th>
   ),
-  td: ({ children, ...props }: any) => (
+  td: ({ children, ...props }: HtmlProps) => (
     <td className="pb-2 pr-4 text-muted-foreground" {...props}>
       {children}
     </td>
   ),
-  tr: ({ children, ...props }: any) => (
+  tr: ({ children, ...props }: HtmlProps) => (
     <tr className="border-b last:border-0" {...props}>
       {children}
     </tr>
   ),
-  hr: (props: any) => <hr className="my-8 border-muted" {...props} />,
-  blockquote: ({ children, ...props }: any) => (
+  hr: (props: HtmlProps) => <hr className="my-8 border-muted" {...props} />,
+  blockquote: ({ children, ...props }: HtmlProps) => (
     <blockquote className="mb-4 border-l-2 border-muted-foreground/30 pl-4 text-sm italic text-muted-foreground" {...props}>
       {children}
     </blockquote>
