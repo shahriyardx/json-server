@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { prisma } from "@/lib/prisma"
-import { notFound, redirect } from "next/navigation"
+import { redirect } from "next/navigation"
 import { AdminSidebar } from "@/components/admin-sidebar"
 import {
   SidebarInset,
@@ -26,7 +26,7 @@ async function getAdmin(session: Awaited<ReturnType<typeof auth.api.getSession>>
     return
   }
 
-  if (user?.role !== "admin" && user?.role !== "superadmin") notFound()
+  if (user?.role !== "admin" && user?.role !== "superadmin") redirect("/dashboard")
 }
 
 export default async function AdminLayout({
