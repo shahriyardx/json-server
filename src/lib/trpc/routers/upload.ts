@@ -53,6 +53,57 @@ export const uploadRouter = router({
     })
     return files
   }),
+  getJson: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const file = await ctx.prisma.jsonFile.findFirst({
+        where: { id: input.id, userId: ctx.user.id },
+      })
+      if (!file) throw new Error("File not found")
+      return file
+    }),
+  updateJson: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        filename: z
+          .string()
+          .min(1, "Filename is required")
+          .regex(
+            /^[a-zA-Z0-9_-]+$/,
+            "Only letters, numbers, dashes, and underscores allowed",
+          ),
+        jsonContent: z
+          .string()
+          .min(1, "JSON content is required")
+          .refine(
+            (val) => {
+              try {
+                JSON.parse(val)
+                return true
+              } catch {
+                return false
+              }
+            },
+            { message: "Content must be valid JSON" },
+          ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.prisma.jsonFile.findFirst({
+        where: { id: input.id, userId: ctx.user.id },
+      })
+      if (!existing) throw new Error("File not found")
+
+      const jsonFile = await ctx.prisma.jsonFile.update({
+        where: { id: input.id },
+        data: {
+          filename: input.filename,
+          content: input.jsonContent,
+        },
+      })
+      return { id: jsonFile.id, filename: jsonFile.filename }
+    }),
   deleteJson: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {

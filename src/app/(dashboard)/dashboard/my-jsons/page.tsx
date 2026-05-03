@@ -19,7 +19,7 @@ import {
   DialogDescription,
   DialogClose,
 } from "@/components/ui/dialog"
-import { Copy, Check, Trash2, BookOpen } from "lucide-react"
+import { Copy, Check, Trash2, BookOpen, Pencil } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
@@ -102,6 +102,11 @@ export default function MyJsonsPage() {
                   <Button variant="ghost" size="icon-xs" asChild>
                     <Link href={`/dashboard/docs/${username}/${file.filename}`}>
                       <BookOpen className="size-3" />
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="icon-xs" asChild>
+                    <Link href={`/dashboard/edit/${file.id}`}>
+                      <Pencil className="size-3" />
                     </Link>
                   </Button>
                   <Dialog>
