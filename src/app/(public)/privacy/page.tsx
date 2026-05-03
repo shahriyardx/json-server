@@ -1,5 +1,10 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { Container } from "@/components/container"
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+}
 
 export default async function PrivacyPage() {
   return (

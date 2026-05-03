@@ -1,5 +1,10 @@
+import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getAllDocs } from "@/lib/docs"
+
+export const metadata: Metadata = {
+  title: "Documentation",
+}
 
 export default function DocsIndex() {
   const docs = getAllDocs()

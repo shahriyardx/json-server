@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
@@ -8,6 +9,10 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+}
 
 export default async function DashboardLayout({
   children,

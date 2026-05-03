@@ -1,5 +1,10 @@
+import type { Metadata } from "next"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+
+export const metadata: Metadata = {
+  title: "Admin JSON Files",
+}
 
 export default async function AdminJsonsPage() {
   const files = await prisma.jsonFile.findMany({

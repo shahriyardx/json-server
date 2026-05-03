@@ -1,7 +1,12 @@
+import type { Metadata } from "next"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { UsersTable } from "./users-table"
+
+export const metadata: Metadata = {
+  title: "Admin Users",
+}
 
 export default async function AdminUsersPage() {
   const session = await auth.api.getSession({ headers: await headers() })

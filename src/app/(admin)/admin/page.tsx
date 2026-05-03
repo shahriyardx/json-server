@@ -1,4 +1,9 @@
+import type { Metadata } from "next"
 import { prisma } from "@/lib/prisma"
+
+export const metadata: Metadata = {
+  title: "Admin Panel",
+}
 
 export default async function AdminPage() {
   const [userCount, jsonCount, monthStats, allFiles] = await Promise.all([

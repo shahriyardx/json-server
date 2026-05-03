@@ -1,6 +1,11 @@
+import type { Metadata } from "next"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import Link from "next/link"
+
+export const metadata: Metadata = {
+  title: "JSON Server — Your JSON, live.",
+}
 import { Button } from "@/components/ui/button"
 import { SignInButton } from "@/components/sign-in-button"
 import { Container } from "@/components/container"

@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { DocClient } from "./doc-client"
@@ -54,6 +55,13 @@ function countArrays(data: unknown): number {
     return (Object.values(data as Record<string, unknown>) as unknown[]).reduce<number>((sum, v) => sum + countArrays(v), 0)
   }
   return 0
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ username: string; filename: string }> }): Promise<Metadata> {
+  const { username, filename } = await params
+  return {
+    title: `${filename}.json — ${username}`,
+  }
 }
 
 export default async function JsonDocPage({
