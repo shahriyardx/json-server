@@ -1,3 +1,3 @@
 export const SITE = {
-  url: "https://json-server.shahriyar.dev",
+  url: "https://json.shahriyar.dev",
 } as const

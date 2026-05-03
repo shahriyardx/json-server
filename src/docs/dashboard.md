@@ -19,7 +19,7 @@ Lists all uploaded files with:
 Clicking the copy icon copies the full URL:
 
 ```
-https://json-server.shahriyar.dev/<username>/<filename>
+https://json.shahriyar.dev/<username>/<filename>
 ```
 
 ## Upload

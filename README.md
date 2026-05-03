@@ -1,6 +1,6 @@
 # JSON Server
 
-Hosted at [json-server.shahriyar.dev](https://json-server.shahriyar.dev) — upload JSON files and access them via a public API. Every file becomes a live endpoint with nested path traversal, filtering, sorting, and search.
+Hosted at [json.shahriyar.dev](https://json.shahriyar.dev) — upload JSON files and access them via a public API. Every file becomes a live endpoint with nested path traversal, filtering, sorting, and search.
 
 ## How It Works
 

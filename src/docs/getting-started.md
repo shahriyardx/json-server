@@ -13,7 +13,7 @@ JSON Server lets you upload JSON files and access them via a public API at `/<us
 1. Sign in with GitHub
 2. Go to Dashboard → Upload
 3. Drop a `.json` file, set a filename, click upload
-4. Access your JSON at `https://json-server.shahriyar.dev/<username>/<filename>`
+4. Access your JSON at `https://json.shahriyar.dev/<username>/<filename>`
 5. Share the URL — anyone can fetch it
 
 ## Authentication
