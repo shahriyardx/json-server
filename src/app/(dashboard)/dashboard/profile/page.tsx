@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { UserIcon, Trash2Icon } from "lucide-react"
+import { Trash2Icon } from "lucide-react"
 
 export default function ProfilePage() {
   const router = useRouter()
