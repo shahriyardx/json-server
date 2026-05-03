@@ -38,6 +38,7 @@ export default function UploadPage() {
   const router = useRouter()
   const [file, setFile] = useState<File | null>(null)
   const [typeError, setTypeError] = useState("")
+  const [sizeError, setSizeError] = useState("")
 
   const uploadMutation = trpc.upload.uploadJson.useMutation()
 
@@ -66,7 +67,13 @@ export default function UploadPage() {
         setTypeError("Only JSON files allowed")
         return
       }
+      if (f.size > 1_048_576) {
+        setSizeError("File exceeds 1MB size limit.")
+        setFile(null)
+        return
+      }
       setTypeError("")
+      setSizeError("")
       setFile(f)
       const name = f.name.replace(/\.json$/, "")
       form.setValue("filename", name)
@@ -86,6 +93,7 @@ export default function UploadPage() {
   const removeFile = () => {
     setFile(null)
     setTypeError("")
+    setSizeError("")
     form.setValue("filename", "")
     form.setValue("jsonContent", "")
     form.clearErrors("jsonContent")
@@ -125,7 +133,8 @@ export default function UploadPage() {
                   {...getRootProps()}
                   id="file-dropzone"
                   data-drag-active={isDragActive || undefined}
-                  className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/25 px-6 py-10 text-center transition-colors hover:border-muted-foreground/50 data-drag-active:border-primary data-drag-active:bg-primary/5"
+                  data-error={(typeError || sizeError) || undefined}
+                  className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/25 px-6 py-10 text-center transition-colors hover:border-muted-foreground/50 data-drag-active:border-primary data-drag-active:bg-primary/5 data-error:border-destructive data-error:bg-destructive/5"
                 >
                   <input {...getInputProps()} />
                   {file ? (
@@ -168,6 +177,9 @@ export default function UploadPage() {
                 )}
                 {typeError && (
                   <p className="text-sm font-normal text-destructive" role="alert">{typeError}</p>
+                )}
+                {sizeError && (
+                  <p className="text-sm font-normal text-destructive" role="alert">{sizeError}</p>
                 )}
               </Field>
             )}
