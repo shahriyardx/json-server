@@ -14,7 +14,7 @@ type User = {
   _count: { jsonFiles: number }
 }
 
-export function UsersTable({ users }: { users: User[] }) {
+export function UsersTable({ users, currentUserId, currentUserRole }: { users: User[]; currentUserId?: string; currentUserRole?: string }) {
   const router = useRouter()
   const mutation = trpc.admin.updateUserRole.useMutation({
     onSuccess: () => {
@@ -45,31 +45,37 @@ export function UsersTable({ users }: { users: User[] }) {
               <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{u.username ?? "—"}</td>
               <td className="px-4 py-2 text-muted-foreground">{u.email}</td>
               <td className="px-4 py-2">
-                <span className={`text-xs font-medium ${u.role === "admin" ? "text-foreground" : "text-muted-foreground"}`}>
+                <span className={`text-xs font-medium ${u.role === "admin" || u.role === "superadmin" ? "text-foreground" : "text-muted-foreground"}`}>
                   {u.role}
                 </span>
               </td>
               <td className="px-4 py-2 text-muted-foreground">{u._count.jsonFiles}</td>
               <td className="px-4 py-2 text-muted-foreground">{new Date(u.createdAt).toLocaleDateString()}</td>
               <td className="px-4 py-2">
-                {u.role === "admin" ? (
-                  <button
-                    type="button"
-                    onClick={() => mutation.mutate({ userId: u.id, role: "user" })}
-                    disabled={mutation.isPending}
-                    className="text-xs text-muted-foreground underline hover:text-foreground disabled:opacity-50"
-                  >
-                    Remove admin
-                  </button>
+                {currentUserRole === "superadmin" ? (
+                  u.role === "superadmin" ? (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  ) : u.role === "admin" ? (
+                    <button
+                      type="button"
+                      onClick={() => mutation.mutate({ userId: u.id, role: "user" })}
+                      disabled={mutation.isPending}
+                      className="text-xs text-muted-foreground underline hover:text-foreground disabled:opacity-50"
+                    >
+                      Remove admin
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => mutation.mutate({ userId: u.id, role: "admin" })}
+                      disabled={mutation.isPending}
+                      className="text-xs text-foreground underline hover:text-foreground disabled:opacity-50"
+                    >
+                      Make admin
+                    </button>
+                  )
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => mutation.mutate({ userId: u.id, role: "admin" })}
-                    disabled={mutation.isPending}
-                    className="text-xs text-foreground underline hover:text-foreground disabled:opacity-50"
-                  >
-                    Make admin
-                  </button>
+                  <span className="text-xs text-muted-foreground">—</span>
                 )}
               </td>
             </tr>

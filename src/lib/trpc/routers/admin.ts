@@ -15,8 +15,12 @@ export const adminRouter = router({
         where: { id: ctx.user.id },
         select: { role: true },
       })
-      if (caller?.role !== "admin") {
+      if (caller?.role !== "superadmin") {
         throw new TRPCError({ code: "FORBIDDEN" })
+      }
+
+      if (input.userId === ctx.user.id) {
+        throw new Error("Cannot change your own role.")
       }
 
       await ctx.prisma.user.update({
