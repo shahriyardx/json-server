@@ -22,7 +22,7 @@ import {
   SidebarMenuSkeleton,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { ChevronsUpDownIcon, LogOutIcon } from "lucide-react"
+import { ChevronsUpDownIcon, LogOutIcon, UserIcon } from "lucide-react"
 
 export function NavUser() {
   const router = useRouter()
@@ -91,6 +91,12 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <a href="/dashboard/profile" className="flex items-center gap-2 cursor-pointer">
+                <UserIcon />
+                Profile
+              </a>
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleLogout}>
               <LogOutIcon />
               Log out

@@ -72,8 +72,9 @@ export default function MyJsonsPage() {
           Your uploaded JSON files
         </p>
       </div>
-      <Table className="border-2">
-        <TableHeader>
+      <div className="overflow-x-auto rounded-lg border-2">
+        <Table>
+          <TableHeader>
           <TableRow>
             <TableHead>Filename</TableHead>
             <TableHead>Created</TableHead>
@@ -149,6 +150,7 @@ export default function MyJsonsPage() {
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   )
 }

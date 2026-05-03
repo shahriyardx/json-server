@@ -1,11 +1,12 @@
 "use client"
 
-import * as React from "react"
+import type * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
@@ -13,7 +14,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, Users, FileJson, ArrowLeftFromLine } from "lucide-react"
+import {
+  LayoutDashboard,
+  Users,
+  FileJson,
+  ArrowLeftFromLine,
+} from "lucide-react"
+import { NavUser } from "./nav-user"
 
 const items = [
   { title: "Overview", url: "/admin", icon: <LayoutDashboard /> },
@@ -27,7 +34,7 @@ export function AdminSidebar({
   const pathname = usePathname()
 
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -75,6 +82,9 @@ export function AdminSidebar({
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <NavUser />
+      </SidebarFooter>
     </Sidebar>
   )
 }

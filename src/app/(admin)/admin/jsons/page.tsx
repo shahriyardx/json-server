@@ -14,7 +14,7 @@ export default async function AdminJsonsPage() {
       <h1 className="text-2xl font-bold tracking-tight">JSON Files</h1>
       <p className="mt-1 text-sm text-muted-foreground">{files.length} total files</p>
 
-      <div className="mt-6 border">
+      <div className="mt-6 overflow-x-auto border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted text-left">
