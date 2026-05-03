@@ -92,11 +92,15 @@ export default function UploadPage() {
   }
 
   const handleSubmit = async (data: FormData) => {
-    const result = await uploadMutation.mutateAsync(data)
-    const url = `${window.location.origin}/${username}/${result.filename}`
-    await navigator.clipboard.writeText(url)
-    toast.success("JSON uploaded! URL copied to clipboard.")
-    router.push("/dashboard/my-jsons")
+    try {
+      const result = await uploadMutation.mutateAsync(data)
+      const url = `${window.location.origin}/${username}/${result.filename}`
+      await navigator.clipboard.writeText(url)
+      toast.success("JSON uploaded! URL copied to clipboard.")
+      router.push("/dashboard/my-jsons")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed")
+    }
   }
 
   const watchedFilename = form.watch("filename")

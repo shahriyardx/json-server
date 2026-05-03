@@ -36,6 +36,13 @@ export const uploadRouter = router({
         throw new Error("Limit reached. You can upload up to 100 JSON files.")
       }
 
+      const duplicate = await ctx.prisma.jsonFile.findUnique({
+        where: { userId_filename: { userId: ctx.user.id, filename: input.filename } },
+      })
+      if (duplicate) {
+        throw new Error("A file with this filename already exists.")
+      }
+
       const jsonFile = await ctx.prisma.jsonFile.create({
         data: {
           userId: ctx.user.id,
@@ -94,6 +101,15 @@ export const uploadRouter = router({
         where: { id: input.id, userId: ctx.user.id },
       })
       if (!existing) throw new Error("File not found")
+
+      if (input.filename !== existing.filename) {
+        const duplicate = await ctx.prisma.jsonFile.findUnique({
+          where: { userId_filename: { userId: ctx.user.id, filename: input.filename } },
+        })
+        if (duplicate) {
+          throw new Error("A file with this filename already exists.")
+        }
+      }
 
       const jsonFile = await ctx.prisma.jsonFile.update({
         where: { id: input.id },

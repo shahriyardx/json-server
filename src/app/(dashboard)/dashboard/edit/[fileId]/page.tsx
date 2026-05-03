@@ -22,6 +22,9 @@ export default function EditPage({
       toast.success("File updated")
       router.push("/dashboard/my-jsons")
     },
+    onError: (err) => {
+      toast.error(err.message)
+    },
   })
 
   const [filename, setFilename] = useState("")

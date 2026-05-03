@@ -35,6 +35,9 @@ export default function MyJsonsPage() {
     onSuccess: () => {
       utils.upload.getMyJsons.invalidate()
     },
+    onError: (err) => {
+      toast.error(err.message)
+    },
   })
 
   const copyUrl = async (filename: string) => {
