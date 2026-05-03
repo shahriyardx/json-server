@@ -29,4 +29,19 @@ export const adminRouter = router({
       })
       return { success: true }
     }),
+  resignAdmin: protectedProcedure.mutation(async ({ ctx }) => {
+    const user = await ctx.prisma.user.findUnique({
+      where: { id: ctx.user.id },
+      select: { role: true },
+    })
+    if (user?.role !== "admin" && user?.role !== "superadmin") {
+      throw new TRPCError({ code: "FORBIDDEN" })
+    }
+
+    await ctx.prisma.user.update({
+      where: { id: ctx.user.id },
+      data: { role: "user" },
+    })
+    return { success: true }
+  }),
 })

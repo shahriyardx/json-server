@@ -16,9 +16,16 @@ type User = {
 
 export function UsersTable({ users, currentUserId, currentUserRole }: { users: User[]; currentUserId?: string; currentUserRole?: string }) {
   const router = useRouter()
-  const mutation = trpc.admin.updateUserRole.useMutation({
+  const updateRole = trpc.admin.updateUserRole.useMutation({
     onSuccess: () => {
       toast.success("Role updated")
+      router.refresh()
+    },
+    onError: (err) => toast.error(err.message),
+  })
+  const resign = trpc.admin.resignAdmin.useMutation({
+    onSuccess: () => {
+      toast.success("Resigned as admin")
       router.refresh()
     },
     onError: (err) => toast.error(err.message),
@@ -53,13 +60,20 @@ export function UsersTable({ users, currentUserId, currentUserRole }: { users: U
               <td className="px-4 py-2 text-muted-foreground">{new Date(u.createdAt).toLocaleDateString()}</td>
               <td className="px-4 py-2">
                 {currentUserRole === "superadmin" ? (
-                  u.role === "superadmin" ? (
-                    <span className="text-xs text-muted-foreground">—</span>
+                  u.id === currentUserId ? (
+                    <button
+                      type="button"
+                      onClick={() => resign.mutate()}
+                      disabled={resign.isPending}
+                      className="text-xs text-destructive underline hover:text-destructive/80 disabled:opacity-50"
+                    >
+                      Resign
+                    </button>
                   ) : u.role === "admin" ? (
                     <button
                       type="button"
-                      onClick={() => mutation.mutate({ userId: u.id, role: "user" })}
-                      disabled={mutation.isPending}
+                      onClick={() => updateRole.mutate({ userId: u.id, role: "user" })}
+                      disabled={updateRole.isPending}
                       className="text-xs text-muted-foreground underline hover:text-foreground disabled:opacity-50"
                     >
                       Remove admin
@@ -67,13 +81,22 @@ export function UsersTable({ users, currentUserId, currentUserRole }: { users: U
                   ) : (
                     <button
                       type="button"
-                      onClick={() => mutation.mutate({ userId: u.id, role: "admin" })}
-                      disabled={mutation.isPending}
+                      onClick={() => updateRole.mutate({ userId: u.id, role: "admin" })}
+                      disabled={updateRole.isPending}
                       className="text-xs text-foreground underline hover:text-foreground disabled:opacity-50"
                     >
                       Make admin
                     </button>
                   )
+                ) : currentUserRole === "admin" && u.id === currentUserId ? (
+                  <button
+                    type="button"
+                    onClick={() => resign.mutate()}
+                    disabled={resign.isPending}
+                    className="text-xs text-destructive underline hover:text-destructive/80 disabled:opacity-50"
+                  >
+                    Resign
+                  </button>
                 ) : (
                   <span className="text-xs text-muted-foreground">—</span>
                 )}
