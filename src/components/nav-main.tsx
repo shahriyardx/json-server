@@ -1,0 +1,36 @@
+"use client"
+
+import {
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar"
+import { Home, FileJson, UploadCloud } from "lucide-react"
+
+const items = [
+  { title: "Overview", url: "/dashboard", icon: <Home /> },
+  { title: "My JSONs", url: "/dashboard/my-jsons", icon: <FileJson /> },
+  { title: "Upload", url: "/dashboard/upload", icon: <UploadCloud /> },
+]
+
+export function NavMain() {
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarMenu>
+        {items.map((item) => (
+          <SidebarMenuItem key={item.title}>
+            <SidebarMenuButton asChild tooltip={item.title}>
+              <a href={item.url}>
+                {item.icon}
+                <span>{item.title}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
+    </SidebarGroup>
+  )
+}
