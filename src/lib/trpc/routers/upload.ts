@@ -1,6 +1,13 @@
 import { z } from "zod"
 import { router, protectedProcedure } from "../trpc"
 
+const MAX_FILE_SIZE = 1_048_576 // 1MB
+const MAX_TOTAL_SIZE = 52_428_800 // 50MB
+
+function bytes(str: string) {
+  return new TextEncoder().encode(str).length
+}
+
 export const uploadRouter = router({
   uploadJson: protectedProcedure
     .input(
@@ -41,6 +48,20 @@ export const uploadRouter = router({
       })
       if (duplicate) {
         throw new Error("A file with this filename already exists.")
+      }
+
+      const fileSize = bytes(input.jsonContent)
+      if (fileSize > MAX_FILE_SIZE) {
+        throw new Error("File exceeds 1MB size limit.")
+      }
+
+      const allFiles = await ctx.prisma.jsonFile.findMany({
+        where: { userId: ctx.user.id },
+        select: { content: true },
+      })
+      const totalBytes = allFiles.reduce((sum, f) => sum + bytes(f.content), 0) + fileSize
+      if (totalBytes > MAX_TOTAL_SIZE) {
+        throw new Error("Total storage limit of 50MB exceeded.")
       }
 
       const jsonFile = await ctx.prisma.jsonFile.create({
@@ -108,6 +129,22 @@ export const uploadRouter = router({
         })
         if (duplicate) {
           throw new Error("A file with this filename already exists.")
+        }
+      }
+
+      const newSize = bytes(input.jsonContent)
+      if (newSize > MAX_FILE_SIZE) {
+        throw new Error("File exceeds 1MB size limit.")
+      }
+
+      if (input.jsonContent !== existing.content) {
+        const allOtherFiles = await ctx.prisma.jsonFile.findMany({
+          where: { userId: ctx.user.id, id: { not: input.id } },
+          select: { content: true },
+        })
+        const totalBytes = allOtherFiles.reduce((sum, f) => sum + bytes(f.content), 0) + newSize
+        if (totalBytes > MAX_TOTAL_SIZE) {
+          throw new Error("Total storage limit of 50MB exceeded.")
         }
       }
 
