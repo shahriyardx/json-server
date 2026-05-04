@@ -118,6 +118,7 @@ export const uploadRouter = router({
             },
             { message: "Content must be valid JSON" },
           ),
+        isPublic: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -161,6 +162,7 @@ export const uploadRouter = router({
         data: {
           filename: input.filename,
           content: input.jsonContent,
+          ...(input.isPublic !== undefined ? { isPublic: input.isPublic } : {}),
         },
       })
       return { id: jsonFile.id, filename: jsonFile.filename }
