@@ -106,8 +106,9 @@ export default function MyJsonsPage() {
     onSuccess: () => {
       utils.upload.getMyJsons.invalidate()
       utils.upload.searchJsons.invalidate()
+      utils.upload.trashFiles.invalidate()
       setDeleteTarget(null)
-      toast.success("File deleted")
+      toast.success("Moved to trash")
     },
     onError: (err) => toast.error(err.message),
   })
@@ -683,13 +684,13 @@ export default function MyJsonsPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete JSON file</DialogTitle>
+            <DialogTitle>Move to trash</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete{" "}
+              Move{" "}
               <span className="font-medium text-foreground">
                 {deleteTarget?.filename}.json
               </span>
-              ? This action cannot be undone.
+              {" "}to trash? You can restore it later.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2">

@@ -39,14 +39,14 @@ export const uploadRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const count = await ctx.prisma.jsonFile.count({
-        where: { userId: ctx.user.id },
+        where: { userId: ctx.user.id, deletedAt: null },
       })
       if (count >= 100) {
         throw new Error("Limit reached. You can upload up to 100 JSON files.")
       }
 
-      const duplicate = await ctx.prisma.jsonFile.findUnique({
-        where: { userId_filename: { userId: ctx.user.id, filename: input.filename } },
+      const duplicate = await ctx.prisma.jsonFile.findFirst({
+        where: { userId: ctx.user.id, filename: input.filename, deletedAt: null },
       })
       if (duplicate) {
         throw new Error("A file with this filename already exists.")
@@ -58,7 +58,7 @@ export const uploadRouter = router({
       }
 
       const allFiles = await ctx.prisma.jsonFile.findMany({
-        where: { userId: ctx.user.id },
+        where: { userId: ctx.user.id, deletedAt: null },
         select: { content: true },
       })
       const totalBytes = allFiles.reduce((sum, f) => sum + bytes(f.content), 0) + fileSize
@@ -78,7 +78,7 @@ export const uploadRouter = router({
     }),
   getMyJsons: protectedProcedure.query(async ({ ctx }) => {
     const files = await ctx.prisma.jsonFile.findMany({
-      where: { userId: ctx.user.id },
+      where: { userId: ctx.user.id, deletedAt: null },
       orderBy: { createdAt: "desc" },
       select: { id: true, filename: true, createdAt: true, updatedAt: true, content: true, isPublic: true },
     })
@@ -88,7 +88,7 @@ export const uploadRouter = router({
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const file = await ctx.prisma.jsonFile.findFirst({
-        where: { id: input.id, userId: ctx.user.id },
+        where: { id: input.id, userId: ctx.user.id, deletedAt: null },
       })
       if (!file) throw new Error("File not found")
       return file
@@ -123,13 +123,13 @@ export const uploadRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.prisma.jsonFile.findFirst({
-        where: { id: input.id, userId: ctx.user.id },
+        where: { id: input.id, userId: ctx.user.id, deletedAt: null },
       })
       if (!existing) throw new Error("File not found")
 
       if (input.filename !== existing.filename) {
-        const duplicate = await ctx.prisma.jsonFile.findUnique({
-          where: { userId_filename: { userId: ctx.user.id, filename: input.filename } },
+        const duplicate = await ctx.prisma.jsonFile.findFirst({
+          where: { userId: ctx.user.id, filename: input.filename, deletedAt: null },
         })
         if (duplicate) {
           throw new Error("A file with this filename already exists.")
@@ -143,7 +143,7 @@ export const uploadRouter = router({
 
       if (input.jsonContent !== existing.content) {
         const allOtherFiles = await ctx.prisma.jsonFile.findMany({
-          where: { userId: ctx.user.id, id: { not: input.id } },
+          where: { userId: ctx.user.id, id: { not: input.id }, deletedAt: null },
           select: { content: true },
         })
         const totalBytes = allOtherFiles.reduce((sum, f) => sum + bytes(f.content), 0) + newSize
@@ -171,18 +171,21 @@ export const uploadRouter = router({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const file = await ctx.prisma.jsonFile.findFirst({
-        where: { id: input.id, userId: ctx.user.id },
+        where: { id: input.id, userId: ctx.user.id, deletedAt: null },
       })
       if (!file) throw new Error("File not found")
 
-      await ctx.prisma.jsonFile.delete({ where: { id: input.id } })
+      await ctx.prisma.jsonFile.update({
+        where: { id: input.id },
+        data: { deletedAt: new Date() },
+      })
       return { success: true }
     }),
   toggleFileVisibility: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const file = await ctx.prisma.jsonFile.findFirst({
-        where: { id: input.id, userId: ctx.user.id },
+        where: { id: input.id, userId: ctx.user.id, deletedAt: null },
       })
       if (!file) throw new Error("File not found")
       const updated = await ctx.prisma.jsonFile.update({
@@ -197,6 +200,7 @@ export const uploadRouter = router({
       const files = await ctx.prisma.jsonFile.findMany({
         where: {
           userId: ctx.user.id,
+          deletedAt: null,
           OR: [
             { filename: { contains: input.query, mode: "insensitive" } },
             { content: { contains: input.query, mode: "insensitive" } },
@@ -206,5 +210,45 @@ export const uploadRouter = router({
         select: { id: true, filename: true, createdAt: true, updatedAt: true, isPublic: true, content: true },
       })
       return files
+    }),
+  trashFiles: protectedProcedure.query(async ({ ctx }) => {
+    const files = await ctx.prisma.jsonFile.findMany({
+      where: { userId: ctx.user.id, deletedAt: { not: null } },
+      orderBy: { deletedAt: "desc" },
+      select: { id: true, filename: true, createdAt: true, updatedAt: true, deletedAt: true, content: true, isPublic: true },
+    })
+    return files
+  }),
+  restoreFile: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const file = await ctx.prisma.jsonFile.findFirst({
+        where: { id: input.id, userId: ctx.user.id, deletedAt: { not: null } },
+      })
+      if (!file) throw new Error("File not found in trash")
+
+      const conflict = await ctx.prisma.jsonFile.findFirst({
+        where: { userId: ctx.user.id, filename: file.filename, deletedAt: null },
+      })
+      if (conflict) {
+        throw new Error(`A file named "${file.filename}" already exists. Rename or delete it first.`)
+      }
+
+      await ctx.prisma.jsonFile.update({
+        where: { id: input.id },
+        data: { deletedAt: null },
+      })
+      return { success: true }
+    }),
+  permanentDeleteFile: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const file = await ctx.prisma.jsonFile.findFirst({
+        where: { id: input.id, userId: ctx.user.id, deletedAt: { not: null } },
+      })
+      if (!file) throw new Error("File not found in trash")
+
+      await ctx.prisma.jsonFile.delete({ where: { id: input.id } })
+      return { success: true }
     }),
 })

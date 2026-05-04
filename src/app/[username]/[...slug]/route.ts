@@ -17,8 +17,8 @@ async function getJsonFile(username: string, filename: string) {
   const user = await prisma.user.findFirst({ where: { username } })
   if (!user) return null
 
-  return prisma.jsonFile.findUnique({
-    where: { userId_filename: { userId: user.id, filename } },
+  return prisma.jsonFile.findFirst({
+    where: { userId: user.id, filename, deletedAt: null },
   })
 }
 

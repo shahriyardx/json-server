@@ -74,8 +74,8 @@ export default async function JsonDocPage({
   const user = await prisma.user.findFirst({ where: { username } })
   if (!user) notFound()
 
-  const jsonFile = await prisma.jsonFile.findUnique({
-    where: { userId_filename: { userId: user.id, filename } },
+  const jsonFile = await prisma.jsonFile.findFirst({
+    where: { userId: user.id, filename, deletedAt: null },
   })
   if (!jsonFile) notFound()
 
