@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { router, protectedProcedure } from "../trpc"
+import { enforceVersionLimit } from "./versions"
 
 const MAX_FILE_SIZE = 1_048_576 // 1MB
 const MAX_TOTAL_SIZE = 52_428_800 // 50MB
@@ -77,7 +78,7 @@ export const uploadRouter = router({
     const files = await ctx.prisma.jsonFile.findMany({
       where: { userId: ctx.user.id },
       orderBy: { createdAt: "desc" },
-      select: { id: true, filename: true, createdAt: true, content: true },
+      select: { id: true, filename: true, createdAt: true, content: true, isPublic: true },
     })
     return files
   }),
@@ -146,6 +147,11 @@ export const uploadRouter = router({
         if (totalBytes > MAX_TOTAL_SIZE) {
           throw new Error("Total storage limit of 50MB exceeded.")
         }
+        // Save previous content as version
+        await ctx.prisma.jsonFileVersion.create({
+          data: { jsonFileId: input.id, content: existing.content },
+        })
+        await enforceVersionLimit(ctx.prisma, input.id)
       }
 
       const jsonFile = await ctx.prisma.jsonFile.update({
@@ -167,5 +173,34 @@ export const uploadRouter = router({
 
       await ctx.prisma.jsonFile.delete({ where: { id: input.id } })
       return { success: true }
+    }),
+  toggleFileVisibility: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const file = await ctx.prisma.jsonFile.findFirst({
+        where: { id: input.id, userId: ctx.user.id },
+      })
+      if (!file) throw new Error("File not found")
+      const updated = await ctx.prisma.jsonFile.update({
+        where: { id: input.id },
+        data: { isPublic: !file.isPublic },
+      })
+      return { isPublic: updated.isPublic }
+    }),
+  searchJsons: protectedProcedure
+    .input(z.object({ query: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      const files = await ctx.prisma.jsonFile.findMany({
+        where: {
+          userId: ctx.user.id,
+          OR: [
+            { filename: { contains: input.query, mode: "insensitive" } },
+            { content: { contains: input.query, mode: "insensitive" } },
+          ],
+        },
+        orderBy: { updatedAt: "desc" },
+        select: { id: true, filename: true, createdAt: true, isPublic: true, content: true },
+      })
+      return files
     }),
 })

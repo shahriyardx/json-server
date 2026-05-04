@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { rateLimit } from "@/lib/rate-limit"
+import { hashApiKey } from "@/lib/api-key"
 
 const MONTHLY_LIMIT = 100_000
 
@@ -19,6 +20,39 @@ async function getJsonFile(username: string, filename: string) {
   return prisma.jsonFile.findUnique({
     where: { userId_filename: { userId: user.id, filename } },
   })
+}
+
+async function authenticateRequest(
+  req: Request,
+  ownerUserId: string,
+): Promise<boolean> {
+  const authHeader = req.headers.get("authorization")
+  let apiKey: string | null = null
+
+  if (authHeader?.startsWith("Bearer ")) {
+    apiKey = authHeader.slice(7)
+  } else {
+    const url = new URL(req.url)
+    apiKey = url.searchParams.get("api_key")
+  }
+
+  if (!apiKey) return false
+
+  const keyHash = hashApiKey(apiKey)
+  const found = await prisma.apiKey.findUnique({
+    where: { keyHash },
+    select: { userId: true },
+  })
+  if (!found || found.userId !== ownerUserId) return false
+
+  prisma.apiKey
+    .update({
+      where: { keyHash },
+      data: { lastUsedAt: new Date() },
+    })
+    .catch(() => {})
+
+  return true
 }
 
 async function checkAndIncrementRequest(userId: string): Promise<boolean> {
@@ -134,9 +168,19 @@ export async function GET(
     return json({ error: "Not found" }, 404)
   }
 
-  const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
-  if (!withinLimit) {
-    return json({ error: "Monthly request limit exceeded" }, 429)
+  const isAuthed = await authenticateRequest(req, jsonFile.userId)
+
+  if (!jsonFile.isPublic) {
+    if (!isAuthed) {
+      return json({ error: "Forbidden. This file is private." }, 403)
+    }
+  }
+
+  if (!isAuthed) {
+    const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
+    if (!withinLimit) {
+      return json({ error: "Monthly request limit exceeded" }, 429)
+    }
   }
 
   let data: unknown

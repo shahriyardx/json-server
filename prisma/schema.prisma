@@ -25,6 +25,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   jsonFiles     JsonFile[]
+  apiKeys       ApiKey[]
   monthlyRequests UserMonthlyRequest[]
 
   @@unique([email])
@@ -84,13 +85,41 @@ model JsonFile {
   userId    String
   filename  String
   content   String
+  isPublic  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions  JsonFileVersion[]
 
   @@unique([userId, filename])
   @@index([userId])
   @@map("json_file")
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String
+  keyHash    String
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([keyHash])
+  @@index([userId])
+  @@map("api_key")
+}
+
+model JsonFileVersion {
+  id         String   @id @default(cuid())
+  jsonFileId String
+  content    String
+  createdAt  DateTime @default(now())
+  jsonFile   JsonFile @relation(fields: [jsonFileId], references: [id], onDelete: Cascade)
+
+  @@index([jsonFileId])
+  @@index([jsonFileId, createdAt])
+  @@map("json_file_version")
 }
 
 model UserMonthlyRequest {
