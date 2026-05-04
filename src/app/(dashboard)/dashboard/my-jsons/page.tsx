@@ -26,7 +26,7 @@ import {
   Search,
   Loader2,
 } from "lucide-react"
-import { useState, useCallback, useDeferredValue, useEffect } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
 import { trpc } from "@/lib/trpc/client"
@@ -36,11 +36,17 @@ export default function MyJsonsPage() {
   const { data: session } = authClient.useSession()
   const username = session?.user?.username || session?.user?.name
   const [searchQuery, setSearchQuery] = useState("")
-  const deferredQuery = useDeferredValue(searchQuery)
+  const [debouncedQuery, setDebouncedQuery] = useState("")
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
   const { data: allFiles, isPending } = trpc.upload.getMyJsons.useQuery()
   const searchQuery_ = trpc.upload.searchJsons.useQuery(
-    { query: deferredQuery },
-    { enabled: deferredQuery.length > 0 },
+    { query: debouncedQuery },
+    { enabled: debouncedQuery.length > 0 },
   )
   const utils = trpc.useUtils()
   const [copiedId, setCopiedId] = useState<string | null>(null)
@@ -61,10 +67,10 @@ export default function MyJsonsPage() {
     onError: (err) => toast.error(err.message),
   })
 
-  const files = deferredQuery
+  const files = debouncedQuery
     ? (searchQuery_.data ?? [])
     : (allFiles ?? [])
-  const isSearching = deferredQuery.length > 0 && searchQuery_.isFetching
+  const isSearching = debouncedQuery.length > 0 && searchQuery_.isFetching
 
   const copyUrl = async (filename: string) => {
     const url = `${window.location.origin}/${username}/${filename}`

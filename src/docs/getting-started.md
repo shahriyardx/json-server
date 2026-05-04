@@ -12,13 +12,25 @@ JSON Server lets you upload JSON files and access them via a public API at `/<us
 
 1. Sign in with GitHub
 2. Go to Dashboard → Upload
-3. Drop a `.json` file, set a filename, click upload
+3. Drop a `.json` file (or paste JSON content), set a filename, click upload
 4. Access your JSON at `https://json.shahriyar.dev/<username>/<filename>`
 5. Share the URL — anyone can fetch it
 
 ## Authentication
 
-GitHub OAuth is the only sign-in method. Uploading and managing files requires authentication. The public API does **not** require authentication — anyone with the URL can fetch your JSON.
+GitHub OAuth is the only sign-in method. Uploading and managing files requires authentication.
+
+By default the public API does **not** require authentication — anyone with the URL can fetch your JSON. You can make files **private** so the API returns `403` unless the request includes a valid **API key**.
+
+API keys are managed from the Dashboard → API Keys page. Use them via `Authorization: Bearer <key>` header or `?api_key=<key>` query parameter.
+
+## Features
+
+- **Data Browser** — explore JSON in the browser with sortable tables for arrays of objects or expandable tree views for nested structures
+- **Version History** — every edit saves a snapshot. Browse old versions, view diffs, and revert to any point
+- **Search** — filter your files by name or content from the dashboard
+- **Size Chart** — track file size changes over time on the edit page
+- **Export** — download individual files or all files as a ZIP archive
 
 ## Example
 
