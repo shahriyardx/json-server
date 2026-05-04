@@ -345,15 +345,9 @@ export default function MyJsonsPage() {
                     isExpanded && "bg-muted/30",
                   )}
                 >
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-indigo-500/10 text-indigo-500">
-                    <FileJson className="size-4" />
-                  </div>
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span className="truncate font-mono text-sm font-medium text-white">
                       {file.filename}.json
-                    </span>
-                    <span className="hidden sm:inline shrink-0 rounded bg-indigo-500/10 px-1.5 py-0.5 text-[10px] font-medium text-indigo-500">
-                      JSON
                     </span>
                     <span className="hidden sm:inline text-xs text-muted-foreground ml-auto">
                       {size.label}
@@ -571,13 +565,13 @@ export default function MyJsonsPage() {
             const size = computeSize(file.content)
             return (
               <div key={file.id} className="rounded-lg border-2 p-4">
-                <div className="mb-3 flex items-start justify-between">
-                  <div className="flex size-10 items-center justify-center rounded-md border bg-indigo-500/10 text-indigo-500">
-                    <FileJson className="size-5" />
-                  </div>
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  <p className="truncate font-mono text-sm font-medium text-white min-w-0">
+                    {file.filename}.json
+                  </p>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon-xs">
+                      <Button variant="ghost" size="icon-xs" className="shrink-0">
                         <MoreHorizontal className="size-3.5" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -607,17 +601,8 @@ export default function MyJsonsPage() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                <p className="mb-1 font-mono text-sm font-medium text-white truncate">
-                  {file.filename}.json
-                </p>
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="rounded bg-indigo-500/10 px-1.5 py-0.5 text-[10px] font-medium text-indigo-500">
-                    JSON
-                  </span>
-                  <span className="text-xs text-muted-foreground">{size.label}</span>
-                </div>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(file.createdAt).toLocaleDateString()}
+                  {size.label} · {new Date(file.createdAt).toLocaleDateString()}
                 </p>
                 <div className="mt-2">
                   <button
