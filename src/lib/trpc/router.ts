@@ -4,6 +4,7 @@ import { adminRouter } from "./routers/admin"
 import { profileRouter } from "./routers/profile"
 import { apiKeysRouter } from "./routers/api-keys"
 import { versionsRouter } from "./routers/versions"
+import { webhookRouter } from "./routers/webhooks"
 
 export const appRouter = router({
   upload: uploadRouter,
@@ -11,6 +12,7 @@ export const appRouter = router({
   profile: profileRouter,
   apiKeys: apiKeysRouter,
   versions: versionsRouter,
+  webhooks: webhookRouter,
 })
 
 export type AppRouter = typeof appRouter

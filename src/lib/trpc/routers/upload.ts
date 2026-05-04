@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { router, protectedProcedure } from "../trpc"
 import { enforceVersionLimit } from "./versions"
+import { deliverWebhook } from "@/lib/webhook"
 
 const MAX_FILE_SIZE = 1_048_576 // 1MB
 const MAX_TOTAL_SIZE = 52_428_800 // 50MB
@@ -165,6 +166,12 @@ export const uploadRouter = router({
           ...(input.isPublic !== undefined ? { isPublic: input.isPublic } : {}),
         },
       })
+
+      // Fire webhook asynchronously if configured and content changed
+      if (input.jsonContent !== existing.content) {
+        fireWebhook(ctx.prisma, jsonFile.id, jsonFile.filename, jsonFile.content, jsonFile.isPublic)
+      }
+
       return { id: jsonFile.id, filename: jsonFile.filename }
     }),
   deleteJson: protectedProcedure
@@ -252,3 +259,41 @@ export const uploadRouter = router({
       return { success: true }
     }),
 })
+
+async function fireWebhook(
+  prisma: Parameters<typeof enforceVersionLimit>[0],
+  fileId: string,
+  filename: string,
+  content: string,
+  isPublic: boolean,
+) {
+  try {
+    const webhook = await prisma.webhook.findUnique({
+      where: { jsonFileId: fileId },
+    })
+    if (!webhook || !webhook.enabled) return
+
+    const result = await deliverWebhook(webhook.url, webhook.secret, {
+      event: "file.updated",
+      file: {
+        id: fileId,
+        filename,
+        content,
+        isPublic,
+        updatedAt: new Date().toISOString(),
+      },
+      timestamp: new Date().toISOString(),
+    })
+
+    await prisma.webhook.update({
+      where: { id: webhook.id },
+      data: {
+        lastDeliveryAt: new Date(),
+        lastDeliveryStatus: result.status,
+        lastDeliveryResponseCode: result.responseCode,
+      },
+    })
+  } catch {
+    // Silently fail — webhook delivery errors must not break the update
+  }
+}

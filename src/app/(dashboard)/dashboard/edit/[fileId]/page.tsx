@@ -7,12 +7,11 @@ import { Input } from "@/components/ui/input"
 import {
   Field,
   FieldDescription,
-  FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
 import { trpc } from "@/lib/trpc/client"
-import { ArrowLeft, Sparkles, Minimize2, Eye, EyeOff, Check } from "lucide-react"
+import { ArrowLeft, Sparkles, Minimize2, Eye, EyeOff, Check, Webhook, Copy, RefreshCcw, Trash2, X } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
@@ -81,6 +80,49 @@ export default function EditPage({
   const [isPublic, setIsPublic] = useState(true)
   const [isMac, setIsMac] = useState(false)
   const [urlCopied, setUrlCopied] = useState(false)
+  const [webhookUrl, setWebhookUrl] = useState("")
+  const [plaintextSecret, setPlaintextSecret] = useState<string | null>(null)
+  const [showNewSecret, setShowNewSecret] = useState(false)
+
+  const utils = trpc.useUtils()
+
+  const { data: webhook } = trpc.webhooks.getWebhook.useQuery(
+    { fileId },
+    { enabled: !!file },
+  )
+  const upsertWebhook = trpc.webhooks.upsertWebhook.useMutation({
+    onSuccess: (data) => {
+      setPlaintextSecret(data.secret)
+      setShowNewSecret(true)
+      utils.webhooks.getWebhook.invalidate({ fileId })
+      toast.success("Webhook configured")
+    },
+    onError: (err) => toast.error(err.message),
+  })
+  const toggleWebhook = trpc.webhooks.toggleWebhook.useMutation({
+    onSuccess: () => {
+      utils.webhooks.getWebhook.invalidate({ fileId })
+    },
+    onError: (err) => toast.error(err.message),
+  })
+  const regenerateSecret = trpc.webhooks.regenerateSecret.useMutation({
+    onSuccess: (data) => {
+      setPlaintextSecret(data.secret)
+      setShowNewSecret(true)
+      toast.success("New secret generated")
+    },
+    onError: (err) => toast.error(err.message),
+  })
+  const deleteWebhook = trpc.webhooks.deleteWebhook.useMutation({
+    onSuccess: () => {
+      utils.webhooks.getWebhook.invalidate({ fileId })
+      setWebhookUrl("")
+      setPlaintextSecret(null)
+      setShowNewSecret(false)
+      toast.success("Webhook removed")
+    },
+    onError: (err) => toast.error(err.message),
+  })
 
   useEffect(() => {
     setIsMac(navigator.platform.includes("Mac"))
@@ -93,6 +135,12 @@ export default function EditPage({
       setIsPublic(file.isPublic)
     }
   }, [file])
+
+  useEffect(() => {
+    if (webhook) {
+      setWebhookUrl(webhook.url)
+    }
+  }, [webhook])
 
   const contentBytes = useMemo(() => bytes(content), [content])
   const sizePercent = Math.min((contentBytes / MAX_FILE_SIZE) * 100, 100)
@@ -288,7 +336,146 @@ export default function EditPage({
           </Field>
         </FieldGroup>
 
-        {/* URL Preview */}
+        {/* Webhook */}
+        <FieldGroup>
+          <Field>
+            <FieldLabel className="flex items-center gap-2">
+              <Webhook className="size-4" />
+              Webhook
+            </FieldLabel>
+            {!webhook ? (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Send a POST request to a URL when this file is updated
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://example.com/webhook"
+                    value={webhookUrl}
+                    onChange={(e) => setWebhookUrl(e.target.value)}
+                    autoComplete="off"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (!webhookUrl) return
+                      upsertWebhook.mutate({ fileId, url: webhookUrl })
+                    }}
+                    disabled={!webhookUrl || upsertWebhook.isPending}
+                    className="shrink-0"
+                  >
+                    Setup
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 rounded-lg border px-4 py-3">
+                {/* New secret banner */}
+                {showNewSecret && plaintextSecret && (
+                  <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
+                    <div className="mb-1 flex items-center justify-between">
+                      <p className="text-xs font-medium text-primary">
+                        Webhook Secret — copy it now, it won't be shown again
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewSecret(false)}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                    <div className="flex gap-2">
+                      <code className="flex-1 truncate rounded bg-background px-2 py-1 font-mono text-xs">
+                        {plaintextSecret}
+                      </code>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(plaintextSecret)
+                          toast.success("Secret copied")
+                        }}
+                        className="shrink-0 gap-1 text-xs"
+                      >
+                        <Copy className="size-3" />
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* URL + status row */}
+                <div className="flex items-center gap-2">
+                  <span className="min-w-0 flex-1 truncate font-mono text-sm">
+                    {webhook.url}
+                  </span>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    {webhook.lastDeliveryAt && (
+                      <span
+                        className={`inline-flex items-center gap-1 text-xs ${
+                          webhook.lastDeliveryStatus === "success"
+                            ? "text-primary"
+                            : "text-destructive"
+                        }`}
+                      >
+                        {webhook.lastDeliveryStatus === "success" ? (
+                          <Check className="size-3" />
+                        ) : (
+                          <X className="size-3" />
+                        )}
+                        {webhook.lastDeliveryResponseCode ?? "ERR"}
+                      </span>
+                    )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      data-enabled={webhook.enabled || undefined}
+                      onClick={() => toggleWebhook.mutate({ fileId })}
+                      disabled={toggleWebhook.isPending}
+                      className="gap-1.5 text-xs data-enabled:text-primary"
+                    >
+                      {webhook.enabled ? "Enabled" : "Disabled"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => regenerateSecret.mutate({ fileId })}
+                    disabled={regenerateSecret.isPending}
+                    className="gap-1.5"
+                  >
+                    <RefreshCcw className="size-3.5" />
+                    Regenerate Secret
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => deleteWebhook.mutate({ fileId })}
+                    disabled={deleteWebhook.isPending}
+                    className="gap-1.5 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="size-3.5" />
+                    Remove
+                  </Button>
+                </div>
+
+                {/* Masked secret */}
+                <p className="text-xs text-muted-foreground">
+                  Secret: {webhook.secretMasked}
+                </p>
+              </div>
+            )}
+          </Field>
+        </FieldGroup>
         {username && filename && (
           <div className="rounded-lg border bg-muted/20 px-4 py-3">
             <div className="flex items-center justify-between gap-2">

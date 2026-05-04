@@ -91,6 +91,7 @@ model JsonFile {
   deletedAt DateTime?
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   versions  JsonFileVersion[]
+  webhook   Webhook?
 
   @@index([userId])
   @@map("json_file")
@@ -133,4 +134,21 @@ model UserMonthlyRequest {
   @@unique([userId, month, year])
   @@index([userId])
   @@map("user_monthly_request")
+}
+
+model Webhook {
+  id                     String    @id @default(cuid())
+  jsonFileId             String    @unique
+  url                    String
+  secret                 String
+  enabled                Boolean   @default(true)
+  lastDeliveryAt         DateTime?
+  lastDeliveryStatus     String?
+  lastDeliveryResponseCode Int?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  jsonFile               JsonFile  @relation(fields: [jsonFileId], references: [id], onDelete: Cascade)
+
+  @@index([jsonFileId])
+  @@map("webhook")
 }
