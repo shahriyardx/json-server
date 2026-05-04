@@ -359,17 +359,20 @@ export default function MyJsonsPage() {
                       {size.label}
                     </span>
                     <span className="hidden sm:inline">
-                      <span
+                      <button
+                        type="button"
+                        onClick={() => toggleVisibility.mutate({ id: file.id })}
+                        disabled={toggleVisibility.isPending}
                         className={cn(
-                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+                          "inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors",
                           file.isPublic
-                            ? "bg-emerald-500/10 text-emerald-500"
-                            : "bg-amber-500/10 text-amber-500",
+                            ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                            : "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20",
                         )}
                       >
                         {file.isPublic ? <Unlock className="size-3" /> : <Lock className="size-3" />}
                         {file.isPublic ? "Public" : "Private"}
-                      </span>
+                      </button>
                     </span>
                   </div>
                   {/* Actions: mobile = 3-dot, desktop = copy + 3-dot + expand */}
@@ -453,6 +456,23 @@ export default function MyJsonsPage() {
                             <FileJson className="size-4 shrink-0 text-muted-foreground" />
                             <span className="w-16 text-muted-foreground">Type:</span>
                             <span className="text-white capitalize">{contentType(file.content)}</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm">
+                            {file.isPublic ? <Unlock className="size-4 shrink-0 text-muted-foreground" /> : <Lock className="size-4 shrink-0 text-muted-foreground" />}
+                            <span className="w-16 text-muted-foreground">Status:</span>
+                            <button
+                              type="button"
+                              onClick={() => toggleVisibility.mutate({ id: file.id })}
+                              disabled={toggleVisibility.isPending}
+                              className={cn(
+                                "inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors",
+                                file.isPublic
+                                  ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                                  : "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20",
+                              )}
+                            >
+                              {file.isPublic ? "Public" : "Private"}
+                            </button>
                           </div>
                           <div className="flex items-center gap-3 text-sm">
                             <Calendar className="size-4 shrink-0 text-muted-foreground" />
@@ -600,17 +620,20 @@ export default function MyJsonsPage() {
                   {new Date(file.createdAt).toLocaleDateString()}
                 </p>
                 <div className="mt-2">
-                  <span
+                  <button
+                    type="button"
+                    onClick={() => toggleVisibility.mutate({ id: file.id })}
+                    disabled={toggleVisibility.isPending}
                     className={cn(
-                      "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+                      "inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors",
                       file.isPublic
-                        ? "bg-emerald-500/10 text-emerald-500"
-                        : "bg-amber-500/10 text-amber-500",
+                        ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                        : "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20",
                     )}
                   >
                     {file.isPublic ? <Unlock className="size-3" /> : <Lock className="size-3" />}
                     {file.isPublic ? "Public" : "Private"}
-                  </span>
+                  </button>
                 </div>
               </div>
             )

@@ -1,19 +1,13 @@
 "use client"
 
-import { use, useState, useEffect, useMemo } from "react"
+import { use, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { trpc } from "@/lib/trpc/client"
-import { ArrowLeft, BarChart3 } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
-import dynamic from "next/dynamic"
-
-const SizeChart = dynamic(
-  () => import("@/components/size-chart"),
-  { ssr: false, loading: () => <div className="h-48 animate-pulse rounded-lg bg-muted" /> },
-)
 
 function bytes(str: string) {
   return new TextEncoder().encode(str).length
@@ -56,25 +50,6 @@ export default function EditPage({
       return false
     }
   }
-
-  const chartData = useMemo(() => {
-    const points: { date: string; size: number }[] = []
-    if (versions) {
-      for (const v of versions) {
-        points.push({
-          date: new Date(v.createdAt).toLocaleDateString(),
-          size: bytes(v.content),
-        })
-      }
-    }
-    if (file) {
-      points.push({
-        date: "current",
-        size: bytes(file.content),
-      })
-    }
-    return points.reverse()
-  }, [versions, file])
 
   if (isPending) {
     return (
@@ -144,15 +119,6 @@ export default function EditPage({
         </Button>
       </div>
 
-      {chartData.length > 1 && (
-        <div className="mt-10">
-          <div className="mb-3 flex items-center gap-2">
-            <BarChart3 className="size-4 text-muted-foreground" />
-            <h2 className="text-sm font-medium">Size History</h2>
-          </div>
-          <SizeChart data={chartData} />
-        </div>
-      )}
     </div>
   )
 }
