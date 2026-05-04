@@ -21,15 +21,11 @@ async function processCodeBlocks(content: string): Promise<Segment[]> {
     const lang = match[1]
     const code = match[2].replace(/\n$/, "")
 
-    if (lang in bundledLanguages) {
-      const html = await codeToHtml(code, {
-        lang,
-        themes: { light: "github-light", dark: "github-dark-dimmed" },
-      })
-      segments.push({ type: "html", html })
-    } else {
-      segments.push({ type: "markdown", content: match[0] })
-    }
+    const html = await codeToHtml(code, {
+      lang: lang in bundledLanguages ? lang : "bash",
+      themes: { light: "github-light", dark: "github-dark-dimmed" },
+    })
+    segments.push({ type: "html", html })
 
     lastIndex = match.index + match[0].length
   }
