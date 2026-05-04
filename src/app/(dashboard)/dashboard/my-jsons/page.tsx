@@ -327,9 +327,9 @@ export default function MyJsonsPage() {
         </div>
       ) : viewMode === "list" ? (
         // ─── List view ───
-        <div className="rounded-lg border-2">
+        <div className="space-y-2">
           {isSearching && (
-            <p className="px-4 pt-3 pb-1 text-xs text-muted-foreground">Searching...</p>
+            <p className="text-xs text-muted-foreground">Searching...</p>
           )}
 
           {/* Rows */}
@@ -341,8 +341,8 @@ export default function MyJsonsPage() {
                 {/* Main row — flex layout */}
                 <div
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 border-b last:border-b-0 transition-colors",
-                    isExpanded && "bg-muted/30",
+                    "flex items-center gap-3 px-4 py-3 border-2 transition-colors",
+                    isExpanded ? "bg-muted/30" : "bg-card",
                   )}
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -438,7 +438,7 @@ export default function MyJsonsPage() {
 
                 {/* Expanded panel */}
                 {isExpanded && (
-                  <div className="border-t border-b bg-muted/20 px-8 py-5">
+                  <div className="border-t-2 bg-muted/20 px-8 py-5">
                     <div className="grid grid-cols-2 gap-10">
                       {/* Details */}
                       <div>
