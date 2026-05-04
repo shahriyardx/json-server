@@ -25,7 +25,7 @@ import {
 import { Trash2Icon } from "lucide-react"
 
 export default function ProfilePage() {
-  const router = useRouter()
+  const { push } = useRouter()
   const { data: session, isPending } = authClient.useSession()
   const [deleting, setDeleting] = useState(false)
 
@@ -48,7 +48,7 @@ export default function ProfilePage() {
     try {
       await deleteMutation.mutateAsync()
       await authClient.signOut()
-      router.push("/")
+      push("/")
     } catch {
       setDeleting(false)
     }

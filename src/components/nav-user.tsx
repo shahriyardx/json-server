@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { authClient } from "@/lib/auth-client"
 import {
   Avatar,
@@ -25,7 +26,7 @@ import {
 import { ChevronsUpDownIcon, LogOutIcon, UserIcon } from "lucide-react"
 
 export function NavUser() {
-  const router = useRouter()
+  const { push } = useRouter()
   const { isMobile } = useSidebar()
   const { data: session, isPending } = authClient.useSession()
 
@@ -49,7 +50,7 @@ export function NavUser() {
 
   const handleLogout = async () => {
     await authClient.signOut()
-    router.push("/")
+    push("/")
   }
 
   return (
@@ -92,10 +93,10 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <a href="/dashboard/profile" className="flex items-center gap-2 cursor-pointer">
+              <Link href="/dashboard/profile" className="flex items-center gap-2 cursor-pointer">
                 <UserIcon />
                 Profile
-              </a>
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleLogout}>
               <LogOutIcon />

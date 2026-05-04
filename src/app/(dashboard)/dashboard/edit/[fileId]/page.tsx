@@ -103,7 +103,7 @@ export default function EditPage({
   params: Promise<{ fileId: string }>
 }) {
   const { fileId } = use(params)
-  const router = useRouter()
+  const { push } = useRouter()
   const { data: session } = authClient.useSession()
   const username = session?.user?.username || session?.user?.name
   const { data: file, isPending } = trpc.upload.getJson.useQuery({ id: fileId })
@@ -116,9 +116,9 @@ export default function EditPage({
   const watchedContent = form.watch("jsonContent")
 
   const [isPublic, setIsPublic] = useState(true)
-  const [isMac, setIsMac] = useState(false)
+  const isMac = typeof navigator !== "undefined" && navigator.platform.includes("Mac")
   const [urlCopied, setUrlCopied] = useState(false)
-  const [webhookUrl, setWebhookUrl] = useState("")
+  const [draftUrl, setDraftUrl] = useState("")
   const [plaintextSecret, setPlaintextSecret] = useState<string | null>(null)
   const [showNewSecret, setShowNewSecret] = useState(false)
 
@@ -152,7 +152,7 @@ export default function EditPage({
   const deleteWebhook = trpc.webhooks.deleteWebhook.useMutation({
     onSuccess: () => {
       utils.webhooks.getWebhook.invalidate({ fileId })
-      setWebhookUrl("")
+      setDraftUrl("")
       setPlaintextSecret(null)
       setShowNewSecret(false)
       toast.success("Webhook removed")
@@ -163,14 +163,10 @@ export default function EditPage({
   const updateMutation = trpc.upload.updateJson.useMutation({
     onSuccess: () => {
       toast.success("File updated")
-      router.push("/dashboard/my-jsons")
+      push("/dashboard/my-jsons")
     },
     onError: (err) => toast.error(err.message),
   })
-
-  useEffect(() => {
-    setIsMac(navigator.platform.includes("Mac"))
-  }, [])
 
   useEffect(() => {
     if (file) {
@@ -179,10 +175,6 @@ export default function EditPage({
       setIsPublic(file.isPublic)
     }
   }, [file, form])
-
-  useEffect(() => {
-    if (webhook) setWebhookUrl(webhook.url)
-  }, [webhook])
 
   const contentBytes = useMemo(() => bytes(watchedContent || ""), [watchedContent])
   const sizePercent = Math.min((contentBytes / MAX_FILE_SIZE) * 100, 100)
@@ -404,18 +396,18 @@ export default function EditPage({
                 <div className="flex gap-2">
                   <Input
                     placeholder="https://example.com/webhook"
-                    value={webhookUrl}
-                    onChange={(e) => setWebhookUrl(e.target.value)}
+                    value={draftUrl}
+                    onChange={(e) => setDraftUrl(e.target.value)}
                     autoComplete="off"
                   />
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      if (!webhookUrl) return
-                      upsertWebhook.mutate({ fileId, url: webhookUrl })
+                      if (!draftUrl) return
+                      upsertWebhook.mutate({ fileId, url: draftUrl })
                     }}
-                    disabled={!webhookUrl || upsertWebhook.isPending}
+                    disabled={!draftUrl || upsertWebhook.isPending}
                     className="shrink-0"
                   >
                     Setup

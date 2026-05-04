@@ -45,7 +45,7 @@ export function JsonDiffViewer({ oldContent, newContent }: JsonDiffViewerProps) 
         <div className="w-1/2 px-3 py-1.5 font-medium">New</div>
       </div>
       {diff.map((line, i) => (
-        <div key={i} className="flex">
+        <div key={`${line.type}-${line.oldNum ?? ""}-${line.newNum ?? ""}`} className="flex">
           <div
             className={`flex w-1/2 border-r ${
               line.type === "removed"

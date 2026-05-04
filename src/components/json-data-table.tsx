@@ -38,7 +38,7 @@ export function JsonDataTable({ data }: JsonDataTableProps) {
 
   const sorted = useMemo(() => {
     if (!sortKey) return filtered
-    return [...filtered].sort((a, b) => {
+    return filtered.toSorted((a, b) => {
       const aVal = a[sortKey]
       const bVal = b[sortKey]
       if (aVal == null) return 1
@@ -118,7 +118,7 @@ export function JsonDataTable({ data }: JsonDataTableProps) {
           <tbody>
             {paged.map((row, i) => (
               <tr
-                key={i}
+                key={page * perPage + i}
                 className="border-b last:border-0 hover:bg-muted/50"
               >
                 <td className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground">

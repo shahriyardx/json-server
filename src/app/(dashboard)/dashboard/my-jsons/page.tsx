@@ -153,8 +153,7 @@ export default function MyJsonsPage() {
   const totalPages = Math.max(1, Math.ceil(totalFiles / pageSize))
   const paginatedFiles = filteredFiles.slice((page - 1) * pageSize, page * pageSize)
 
-  // Reset page on filter change
-  useEffect(() => { setPage(1) }, [searchQuery, sortBy, sizeFilter, typeFilter])
+  // Reset page on filter change — handled inline in onChange
 
   // Actions
   const copyUrl = async (filename: string) => {
@@ -252,7 +251,7 @@ export default function MyJsonsPage() {
             data-search-input
             placeholder="Search files by name or content..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => { setSearchQuery(e.target.value); setPage(1) }}
             className="pl-9 pr-16"
           />
           <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground">
@@ -261,7 +260,7 @@ export default function MyJsonsPage() {
         </div>
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortField)}
+          onChange={(e) => { setSortBy(e.target.value as SortField); setPage(1) }}
           className="h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
         >
           <option value="newest">Sort by: Newest</option>
@@ -273,7 +272,7 @@ export default function MyJsonsPage() {
         </select>
         <select
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
+          onChange={(e) => { setTypeFilter(e.target.value as TypeFilter); setPage(1) }}
           className="h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
         >
           <option value="all">All types</option>
@@ -282,7 +281,7 @@ export default function MyJsonsPage() {
         </select>
         <select
           value={sizeFilter}
-          onChange={(e) => setSizeFilter(e.target.value as SizeFilter)}
+          onChange={(e) => { setSizeFilter(e.target.value as SizeFilter); setPage(1) }}
           className="h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
         >
           <option value="all">All sizes</option>
@@ -640,7 +639,7 @@ export default function MyJsonsPage() {
               variant="ghost"
               size="icon-xs"
               disabled={page <= 1}
-              onClick={() => setPage(page - 1)}
+              onClick={() => setPage((p) => p - 1)}
             >
               <ChevronLeft className="size-3.5" />
             </Button>
@@ -659,7 +658,7 @@ export default function MyJsonsPage() {
               variant="ghost"
               size="icon-xs"
               disabled={page >= totalPages}
-              onClick={() => setPage(page + 1)}
+              onClick={() => setPage((p) => p + 1)}
             >
               <ChevronRight className="size-3.5" />
             </Button>

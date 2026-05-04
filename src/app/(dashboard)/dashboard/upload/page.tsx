@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useMemo, useEffect } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { useDropzone } from "react-dropzone"
@@ -91,19 +91,15 @@ export default function UploadPage() {
   const { data: session } = authClient.useSession()
   const username = session?.user?.username || session?.user?.name
 
-  const router = useRouter()
+  const { push } = useRouter()
   const [mode, setMode] = useState<UploadMode>("file")
   const [file, setFile] = useState<File | null>(null)
   const [typeError, setTypeError] = useState("")
   const [sizeError, setSizeError] = useState("")
   const [isPublic, setIsPublic] = useState(true)
   const [urlCopied, setUrlCopied] = useState(false)
-  const [isMac, setIsMac] = useState(false)
+  const isMac = typeof navigator !== "undefined" && navigator.platform.includes("Mac")
   const [rawContent, setRawContent] = useState("")
-
-  useEffect(() => {
-    setIsMac(navigator.platform.includes("Mac"))
-  }, [])
 
   const uploadMutation = trpc.upload.uploadJson.useMutation()
 
@@ -237,7 +233,7 @@ export default function UploadPage() {
       const url = `${window.location.origin}/${username}/${result.filename}`
       await navigator.clipboard.writeText(url)
       toast.success("JSON uploaded! URL copied to clipboard.")
-      router.push("/dashboard/my-jsons")
+      push("/dashboard/my-jsons")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Upload failed")
     }

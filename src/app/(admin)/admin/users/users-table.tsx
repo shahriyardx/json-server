@@ -23,18 +23,18 @@ export function UsersTable({
   currentUserId?: string
   currentUserRole?: string
 }) {
-  const router = useRouter()
+  const { refresh } = useRouter()
   const updateRole = trpc.admin.updateUserRole.useMutation({
     onSuccess: () => {
       toast.success("Role updated")
-      router.refresh()
+      refresh()
     },
     onError: (err) => toast.error(err.message),
   })
   const resign = trpc.admin.resignAdmin.useMutation({
     onSuccess: () => {
       toast.success("Resigned as admin")
-      router.refresh()
+      refresh()
     },
     onError: (err) => toast.error(err.message),
   })

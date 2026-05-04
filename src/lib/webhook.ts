@@ -8,7 +8,7 @@ export function signPayload(payload: string, secret: string): string {
   return crypto.createHmac("sha256", secret).update(payload).digest("hex")
 }
 
-export interface DeliveryResult {
+interface DeliveryResult {
   status: "success" | "failure"
   responseCode: number | null
   error?: string

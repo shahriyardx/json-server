@@ -134,7 +134,7 @@ function applyQueryParams(data: unknown, params: URLSearchParams): unknown {
   const sort = params.get("sort")
   if (sort) {
     const order = params.get("order") === "desc" ? -1 : 1
-    result = [...result].sort((a, b) => {
+    result = result.toSorted((a, b) => {
       if (typeof a !== "object" || a === null) return 0
       if (typeof b !== "object" || b === null) return 0
       const aVal = (a as Record<string, string | number>)[sort]

@@ -225,7 +225,7 @@ function JsonArrayView({
       {!collapsed && (
         <div className="ml-4 space-y-0.5">
           {data.map((item, i) => (
-            <div key={i} className="flex items-baseline">
+            <div key={`${i}-${typeof item}`} className="flex items-baseline">
               {isExpandable(item) ? (
                 <JsonTreeView data={item} depth={depth + 1} label={String(i)} />
               ) : (
