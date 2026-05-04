@@ -99,6 +99,7 @@ export default function UploadPage() {
   const [isPublic, setIsPublic] = useState(true)
   const [urlCopied, setUrlCopied] = useState(false)
   const [isMac, setIsMac] = useState(false)
+  const [rawContent, setRawContent] = useState("")
 
   useEffect(() => {
     setIsMac(navigator.platform.includes("Mac"))
@@ -115,21 +116,13 @@ export default function UploadPage() {
   })
 
   const watchedFilename = form.watch("filename")
-  const watchedContent = form.watch("jsonContent")
 
-  const contentBytes = useMemo(() => {
-    const val = mode === "file" && file ? watchedContent : watchedContent
-    return val ? bytes(val) : 0
-  }, [mode, file, watchedContent])
-
+  const contentBytes = useMemo(() => bytes(rawContent), [rawContent])
   const sizePercent = Math.min((contentBytes / MAX_FILE_SIZE) * 100, 100)
-
   const jsonShape = useMemo(() => {
-    const val = mode === "file" && file ? watchedContent : watchedContent
-    return val ? getJsonShape(val) : null
-  }, [mode, file, watchedContent])
-
-  const hasContent = mode === "file" ? !!file : !!watchedContent
+    return rawContent ? getJsonShape(rawContent) : null
+  }, [rawContent])
+  const hasContent = mode === "file" ? !!file : !!rawContent
 
   const readFileContent = useCallback((f: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -156,6 +149,7 @@ export default function UploadPage() {
       const name = f.name.replace(/\.json$/, "")
       form.setValue("filename", name)
       const content = await readFileContent(f)
+      setRawContent(content)
       form.setValue("jsonContent", content)
       form.trigger()
       if (mode === "file") setFile(f)
@@ -196,6 +190,7 @@ export default function UploadPage() {
     setFile(null)
     setTypeError("")
     setSizeError("")
+    setRawContent("")
     form.setValue("filename", "")
     form.setValue("jsonContent", "")
     form.clearErrors("jsonContent")
@@ -203,8 +198,9 @@ export default function UploadPage() {
 
   const formatJson = () => {
     try {
-      const parsed = JSON.parse(watchedContent)
+      const parsed = JSON.parse(rawContent)
       const formatted = JSON.stringify(parsed, null, 2)
+      setRawContent(formatted)
       form.setValue("jsonContent", formatted)
       form.trigger("jsonContent")
     } catch {
@@ -214,8 +210,9 @@ export default function UploadPage() {
 
   const minifyJson = () => {
     try {
-      const parsed = JSON.parse(watchedContent)
+      const parsed = JSON.parse(rawContent)
       const minified = JSON.stringify(parsed)
+      setRawContent(minified)
       form.setValue("jsonContent", minified)
       form.trigger("jsonContent")
     } catch {
@@ -228,6 +225,7 @@ export default function UploadPage() {
     setFile(null)
     setTypeError("")
     setSizeError("")
+    setRawContent("")
     form.setValue("filename", "")
     form.setValue("jsonContent", "")
     form.clearErrors("jsonContent")
@@ -383,7 +381,7 @@ export default function UploadPage() {
                           variant="outline"
                           size="sm"
                           onClick={formatJson}
-                          disabled={!watchedContent}
+                          disabled={!rawContent}
                           className="gap-1.5"
                         >
                           <Sparkles className="size-3.5" />
@@ -394,7 +392,7 @@ export default function UploadPage() {
                           variant="outline"
                           size="sm"
                           onClick={minifyJson}
-                          disabled={!watchedContent}
+                          disabled={!rawContent}
                           className="gap-1.5"
                         >
                           <Minimize2 className="size-3.5" />
@@ -413,7 +411,9 @@ export default function UploadPage() {
                         value={field.value}
                         aria-invalid={fieldState.invalid}
                         onChange={(e) => {
-                          field.onChange(e.target.value)
+                          const val = e.target.value
+                          setRawContent(val)
+                          field.onChange(val)
                           form.trigger("jsonContent")
                         }}
                         onDragOver={(e) => {
