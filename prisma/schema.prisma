@@ -92,6 +92,7 @@ model JsonFile {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   versions  JsonFileVersion[]
   webhook   Webhook?
+  requestLogs FileRequestLog[]
 
   @@index([userId])
   @@map("json_file")
@@ -151,4 +152,17 @@ model Webhook {
 
   @@index([jsonFileId])
   @@map("webhook")
+}
+
+model FileRequestLog {
+  id        String   @id @default(cuid())
+  fileId    String
+  date      DateTime
+  count     Int      @default(0)
+  referrers Json?
+  file      JsonFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([fileId, date])
+  @@index([fileId])
+  @@map("file_request_log")
 }
