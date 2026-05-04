@@ -2,10 +2,6 @@ import type { Metadata } from "next"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import Link from "next/link"
-
-export const metadata: Metadata = {
-  title: "JSON Server — Your JSON, live.",
-}
 import { Button } from "@/components/ui/button"
 import { SignInButton } from "@/components/sign-in-button"
 import { Container } from "@/components/container"
@@ -14,13 +10,18 @@ import {
   FileJson,
   Search,
   Route,
-  InfinityIcon,
   Server,
-  Zap,
   Globe,
   ExternalLink,
   LogIn,
+  History,
+  Webhook,
+  Lock,
 } from "lucide-react"
+
+export const metadata: Metadata = {
+  title: "JSON Server — Your JSON, live.",
+}
 
 export default async function Home() {
   const session = await auth.api.getSession({
@@ -30,14 +31,15 @@ export default async function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="pt-24 pb-20 sm:pt-32 sm:pb-28">
+      <section className="pb-20 pt-24 sm:pb-28 sm:pt-32">
         <Container>
           <h1 className="text-5xl font-bold tracking-tight sm:text-7xl">
             Your JSON, instantly live.
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground sm:text-xl">
-            Upload any JSON file and get a public API endpoint instantly. No
-            setup, no backend, no limits.
+            Upload JSON files and get a public API endpoint instantly. Nested
+            paths, filtering, webhooks, version history, analytics — no backend
+            needed.
           </p>
           <div className="mt-10 flex items-center gap-4">
             {session ? (
@@ -97,7 +99,7 @@ export default async function Home() {
               <p className="mt-2 text-sm text-muted-foreground">
                 Drag and drop any{" "}
                 <code className="bg-muted px-1 py-0.5 text-xs">.json</code>{" "}
-                file. Give it a name.
+                file. Paste raw JSON. Give it a name.
               </p>
             </div>
             <div>
@@ -110,14 +112,14 @@ export default async function Home() {
                 <code className="bg-muted px-1 py-0.5 text-xs">
                   /username/filename
                 </code>
-                .
+                . Add paths, filters, or sort params.
               </p>
             </div>
           </div>
         </Container>
       </section>
 
-      {/* Features */}
+      {/* Features — Bento grid */}
       <section className="border-t py-20 sm:py-28">
         <Container>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
@@ -126,38 +128,46 @@ export default async function Home() {
           <p className="mt-3 text-muted-foreground">
             Every uploaded file becomes a fully queryable API
           </p>
-          <div className="mt-16 grid gap-px border bg-border sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-background p-6">
-              <Server className="size-5 text-foreground" />
-              <h3 className="mt-4 text-sm font-medium">Public API</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+          <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="border p-6 lg:col-span-2 flex flex-col justify-center">
+              <Server className="size-7 text-foreground" />
+              <h3 className="mt-5 text-lg font-medium">Public API</h3>
+              <p className="mt-2 max-w-md text-sm text-muted-foreground">
                 Every file served at{" "}
                 <code className="bg-muted px-1 py-0.5 text-xs">
                   GET /:username/:filename
                 </code>{" "}
-                with proper{" "}
-                <code className="bg-muted px-1 py-0.5 text-xs">
-                  Content-Type
-                </code>
-                .
+                with CORS headers. No auth needed for public files. Use from
+                browsers, mobile apps, or server-side.
               </p>
+              <div className="mt-5 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <Webhook className="size-3.5" /> Webhooks
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <History className="size-3.5" /> Version History
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Globe className="size-3.5" /> CORS Enabled
+                </span>
+              </div>
             </div>
-            <div className="bg-background p-6">
+            <div className="border p-6">
               <Route className="size-5 text-foreground" />
               <h3 className="mt-4 text-sm font-medium">Nested Paths</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Traverse objects and arrays via URL paths.{" "}
+                Drill into objects and arrays via URL segments.{" "}
                 <code className="bg-muted px-1 py-0.5 text-xs">
-                  /user/file/products/0/name
+                  /file/products/0/name
                 </code>{" "}
-                returns exactly the value you need.
+                returns the exact value.
               </p>
             </div>
-            <div className="bg-background p-6">
+            <div className="border p-6">
               <Search className="size-5 text-foreground" />
               <h3 className="mt-4 text-sm font-medium">Search &amp; Filter</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Use query params like{" "}
+                Query params for filtering, sorting, and searching.{" "}
                 <code className="bg-muted px-1 py-0.5 text-xs">
                   ?search=term
                 </code>
@@ -165,50 +175,41 @@ export default async function Home() {
                 <code className="bg-muted px-1 py-0.5 text-xs">
                   ?filter=key:value
                 </code>
-                , or{" "}
+                ,{" "}
                 <code className="bg-muted px-1 py-0.5 text-xs">
                   ?sort=field&order=desc
                 </code>
                 .
               </p>
             </div>
-            <div className="bg-background p-6">
-              <Zap className="size-5 text-foreground" />
-              <h3 className="mt-4 text-sm font-medium">Blazing Fast</h3>
+            <div className="border p-6 lg:col-span-2">
+              <Lock className="size-6 text-foreground" />
+              <h3 className="mt-4 text-base font-medium">Private Files</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Built on Next.js with Postgres. Your data is served directly
-                from the database, no cold starts.
-              </p>
-            </div>
-            <div className="bg-background p-6">
-              <Globe className="size-5 text-foreground" />
-              <h3 className="mt-4 text-sm font-medium">CORS Enabled</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Access your JSON from any origin. Use it in browsers, mobile
-                apps, or server-side — no restrictions.
-              </p>
-            </div>
-            <div className="bg-background p-6">
-              <InfinityIcon className="size-5 text-foreground" />
-              <h3 className="mt-4 text-sm font-medium">No Limits</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Upload as many files as you want. No rate limits on reads. Free
-                for everyone.
+                Mark files private and generate API keys. Authenticate via{" "}
+                <code className="bg-muted px-1 py-0.5 text-xs">
+                  Authorization: Bearer
+                </code>{" "}
+                header or{" "}
+                <code className="bg-muted px-1 py-0.5 text-xs">
+                  ?api_key=
+                </code>
+                . Keys are hashed, shown once.
               </p>
             </div>
           </div>
         </Container>
       </section>
 
-      {/* Pricing + CTA */}
+      {/* CTA */}
       <section className="border-t py-20 sm:py-28">
         <Container>
           <h2 className="mt-20 text-3xl font-bold tracking-tight sm:text-4xl">
             Ready to go?
           </h2>
           <p className="mt-3 text-muted-foreground">
-            No tiers, no hidden quotas, no credit card required. Sign in with
-            GitHub and upload your first JSON in under a minute.
+            No tiers, no credit card required. Sign in with GitHub and upload
+            your first JSON in under a minute.
           </p>
           <div className="mt-8">
             {session ? (
