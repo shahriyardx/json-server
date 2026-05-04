@@ -337,13 +337,10 @@ export default function MyJsonsPage() {
             const isExpanded = expandedId === file.id
             const size = computeSize(file.content)
             return (
-              <div key={file.id}>
+              <div key={file.id} className={cn("border-2", isExpanded && "bg-muted/30")}>
                 {/* Main row — flex layout */}
                 <div
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 border-2 transition-colors",
-                    isExpanded ? "bg-muted/30" : "bg-card",
-                  )}
+                  className="flex items-center gap-3 px-4 py-3 transition-colors"
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span className="truncate font-mono text-sm font-medium text-white">
