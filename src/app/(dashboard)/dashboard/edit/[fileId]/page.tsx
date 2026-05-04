@@ -2,19 +2,61 @@
 
 import { use, useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Controller, useForm } from "react-hook-form"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
 import { trpc } from "@/lib/trpc/client"
-import { ArrowLeft, Sparkles, Minimize2, Eye, EyeOff, Check, Webhook, Copy, RefreshCcw, Trash2, X } from "lucide-react"
+import {
+  ArrowLeft,
+  Sparkles,
+  Minimize2,
+  Eye,
+  EyeOff,
+  Check,
+  Webhook,
+  Copy,
+  RefreshCcw,
+  Trash2,
+  X,
+} from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
+
+const formSchema = z.object({
+  filename: z
+    .string()
+    .min(1, "Filename is required")
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      "Only letters, numbers, dashes, and underscores allowed",
+    ),
+  jsonContent: z
+    .string()
+    .min(1, "JSON content is required")
+    .refine(
+      (val) => {
+        try {
+          JSON.parse(val)
+          return true
+        } catch {
+          return false
+        }
+      },
+      { message: "Invalid JSON format" },
+    ),
+})
+
+type FormData = z.infer<typeof formSchema>
 
 function bytes(str: string) {
   return new TextEncoder().encode(str).length
@@ -65,18 +107,14 @@ export default function EditPage({
   const { data: session } = authClient.useSession()
   const username = session?.user?.username || session?.user?.name
   const { data: file, isPending } = trpc.upload.getJson.useQuery({ id: fileId })
-  const updateMutation = trpc.upload.updateJson.useMutation({
-    onSuccess: () => {
-      toast.success("File updated")
-      router.push("/dashboard/my-jsons")
-    },
-    onError: (err) => {
-      toast.error(err.message)
-    },
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { filename: "", jsonContent: "" },
   })
 
-  const [filename, setFilename] = useState("")
-  const [content, setContent] = useState("")
+  const watchedContent = form.watch("jsonContent")
+
   const [isPublic, setIsPublic] = useState(true)
   const [isMac, setIsMac] = useState(false)
   const [urlCopied, setUrlCopied] = useState(false)
@@ -100,9 +138,7 @@ export default function EditPage({
     onError: (err) => toast.error(err.message),
   })
   const toggleWebhook = trpc.webhooks.toggleWebhook.useMutation({
-    onSuccess: () => {
-      utils.webhooks.getWebhook.invalidate({ fileId })
-    },
+    onSuccess: () => utils.webhooks.getWebhook.invalidate({ fileId }),
     onError: (err) => toast.error(err.message),
   })
   const regenerateSecret = trpc.webhooks.regenerateSecret.useMutation({
@@ -124,43 +160,42 @@ export default function EditPage({
     onError: (err) => toast.error(err.message),
   })
 
+  const updateMutation = trpc.upload.updateJson.useMutation({
+    onSuccess: () => {
+      toast.success("File updated")
+      router.push("/dashboard/my-jsons")
+    },
+    onError: (err) => toast.error(err.message),
+  })
+
   useEffect(() => {
     setIsMac(navigator.platform.includes("Mac"))
   }, [])
 
   useEffect(() => {
     if (file) {
-      setFilename(file.filename)
-      setContent(file.content)
+      form.setValue("filename", file.filename)
+      form.setValue("jsonContent", file.content)
       setIsPublic(file.isPublic)
     }
-  }, [file])
+  }, [file, form])
 
   useEffect(() => {
-    if (webhook) {
-      setWebhookUrl(webhook.url)
-    }
+    if (webhook) setWebhookUrl(webhook.url)
   }, [webhook])
 
-  const contentBytes = useMemo(() => bytes(content), [content])
+  const contentBytes = useMemo(() => bytes(watchedContent || ""), [watchedContent])
   const sizePercent = Math.min((contentBytes / MAX_FILE_SIZE) * 100, 100)
   const jsonShape = useMemo(
-    () => (content ? getJsonShape(content) : null),
-    [content],
+    () => (watchedContent ? getJsonShape(watchedContent) : null),
+    [watchedContent],
   )
-  const isValid = (() => {
-    try {
-      JSON.parse(content)
-      return true
-    } catch {
-      return false
-    }
-  })()
 
   const formatJson = () => {
     try {
-      const parsed = JSON.parse(content)
-      setContent(JSON.stringify(parsed, null, 2))
+      const parsed = JSON.parse(watchedContent)
+      form.setValue("jsonContent", JSON.stringify(parsed, null, 2))
+      form.trigger("jsonContent")
     } catch {
       toast.error("Cannot format invalid JSON")
     }
@@ -168,27 +203,22 @@ export default function EditPage({
 
   const minifyJson = () => {
     try {
-      const parsed = JSON.parse(content)
-      setContent(JSON.stringify(parsed))
+      const parsed = JSON.parse(watchedContent)
+      form.setValue("jsonContent", JSON.stringify(parsed))
+      form.trigger("jsonContent")
     } catch {
       toast.error("Cannot minify invalid JSON")
     }
   }
 
-  const handleSave = () => {
-    if (!filename || !content || !isValid) return
-    updateMutation.mutate({ id: fileId, filename, jsonContent: content, isPublic })
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-      handleSave()
-    }
+  const handleSubmit = (data: FormData) => {
+    updateMutation.mutate({ id: fileId, ...data, isPublic })
   }
 
   const copyUrl = async () => {
-    if (!filename || !username) return
-    const url = `${window.location.origin}/${username}/${filename}`
+    const fn = form.getValues("filename")
+    if (!fn || !username) return
+    const url = `${window.location.origin}/${username}/${fn}`
     await navigator.clipboard.writeText(url)
     setUrlCopied(true)
     setTimeout(() => setUrlCopied(false), 2000)
@@ -220,62 +250,76 @@ export default function EditPage({
         Back to My JSONs
       </Link>
 
-      <div
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        onKeyDown={(e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+            form.handleSubmit(handleSubmit)()
+          }
+        }}
         className="space-y-8"
-        onKeyDown={handleKeyDown}
       >
         <FieldGroup>
           {/* JSON Content */}
-          <Field>
-            <FieldLabel htmlFor="json-content">
-              JSON Content
-            </FieldLabel>
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={formatJson}
-                  disabled={!content}
-                  className="gap-1.5"
-                >
-                  <Sparkles className="size-3.5" />
-                  Format
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={minifyJson}
-                  disabled={!content}
-                  className="gap-1.5"
-                >
-                  <Minimize2 className="size-3.5" />
-                  Minify
-                </Button>
-                {jsonShape && (
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    {jsonShape}
-                  </span>
+          <Controller
+            name="jsonContent"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="json-content">JSON Content</FieldLabel>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={formatJson}
+                      disabled={!watchedContent}
+                      className="gap-1.5"
+                    >
+                      <Sparkles className="size-3.5" />
+                      Format
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={minifyJson}
+                      disabled={!watchedContent}
+                      className="gap-1.5"
+                    >
+                      <Minimize2 className="size-3.5" />
+                      Minify
+                    </Button>
+                    {jsonShape && (
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {jsonShape}
+                      </span>
+                    )}
+                  </div>
+                  <textarea
+                    id="json-content"
+                    value={field.value}
+                    onChange={(e) => {
+                      field.onChange(e.target.value)
+                      form.trigger("jsonContent")
+                    }}
+                    rows={20}
+                    spellCheck={false}
+                    aria-invalid={fieldState.invalid || undefined}
+                    className="w-full rounded-lg border-2 bg-transparent p-3 font-mono text-sm transition-colors placeholder:text-muted-foreground/50 focus:outline-none focus:ring-0 aria-invalid:border-destructive"
+                  />
+                </div>
+                <FieldDescription>Edit JSON content above</FieldDescription>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
                 )}
-              </div>
-              <textarea
-                id="json-content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={20}
-                spellCheck={false}
-                className="w-full rounded-lg border-2 bg-transparent p-3 font-mono text-sm transition-colors placeholder:text-muted-foreground/50 focus:outline-none focus:ring-0 aria-invalid:border-destructive"
-              />
-            </div>
-            <FieldDescription>
-              Edit JSON content above
-            </FieldDescription>
-          </Field>
+              </Field>
+            )}
+          />
 
           {/* Size indicator */}
-          {content && (
+          {watchedContent && (
             <div className="-mt-2 space-y-1.5">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>{formatBytes(contentBytes)}</span>
@@ -293,19 +337,28 @@ export default function EditPage({
           )}
 
           {/* Filename */}
-          <Field>
-            <FieldLabel htmlFor="filename">Filename</FieldLabel>
-            <Input
-              id="filename"
-              value={filename}
-              onChange={(e) => setFilename(e.target.value)}
-              placeholder="my-data"
-              autoComplete="off"
-            />
-            <FieldDescription>
-              Only letters, numbers, dashes, and underscores allowed
-            </FieldDescription>
-          </Field>
+          <Controller
+            name="filename"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="filename">Filename</FieldLabel>
+                <Input
+                  {...field}
+                  id="filename"
+                  placeholder="my-data"
+                  autoComplete="off"
+                  aria-invalid={fieldState.invalid || undefined}
+                />
+                <FieldDescription>
+                  Only letters, numbers, dashes, and underscores allowed
+                </FieldDescription>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
 
           {/* Visibility */}
           <Field>
@@ -356,6 +409,7 @@ export default function EditPage({
                     autoComplete="off"
                   />
                   <Button
+                    type="button"
                     variant="outline"
                     onClick={() => {
                       if (!webhookUrl) return
@@ -370,7 +424,6 @@ export default function EditPage({
               </div>
             ) : (
               <div className="space-y-3 rounded-lg border px-4 py-3">
-                {/* New secret banner */}
                 {showNewSecret && plaintextSecret && (
                   <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
                     <div className="mb-1 flex items-center justify-between">
@@ -406,7 +459,6 @@ export default function EditPage({
                   </div>
                 )}
 
-                {/* URL + status row */}
                 <div className="flex items-center gap-2">
                   <span className="min-w-0 flex-1 truncate font-mono text-sm">
                     {webhook.url}
@@ -442,7 +494,6 @@ export default function EditPage({
                   </div>
                 </div>
 
-                {/* Action buttons */}
                 <div className="flex flex-wrap gap-2">
                   <Button
                     type="button"
@@ -468,7 +519,6 @@ export default function EditPage({
                   </Button>
                 </div>
 
-                {/* Masked secret */}
                 <p className="text-xs text-muted-foreground">
                   Secret: {webhook.secretMasked}
                 </p>
@@ -476,7 +526,9 @@ export default function EditPage({
             )}
           </Field>
         </FieldGroup>
-        {username && filename && (
+
+        {/* URL Preview */}
+        {username && (
           <div className="rounded-lg border bg-muted/20 px-4 py-3">
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs text-muted-foreground">Endpoint URL</p>
@@ -497,30 +549,30 @@ export default function EditPage({
               </Button>
             </div>
             <p className="mt-1 font-mono text-sm">
-              /{username}/{filename}
+              /{username}/{form.watch("filename") || "..."}
             </p>
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={handleSave}
-            disabled={
-              !filename || !content || !isValid || updateMutation.isPending
-            }
-            className="flex-1"
-          >
-            {updateMutation.isPending ? "Saving..." : "Save Changes"}
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/dashboard/my-jsons">Cancel</Link>
-          </Button>
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/my-jsons">Cancel</Link>
+            </Button>
+          </div>
+          <p className="text-center text-xs text-muted-foreground">
+            Press {isMac ? "⌘" : "Ctrl"}+Enter to save
+          </p>
         </div>
-        <p className="text-center text-xs text-muted-foreground">
-          Press {isMac ? "⌘" : "Ctrl"}+Enter to save
-        </p>
-      </div>
+      </form>
     </div>
   )
 }
