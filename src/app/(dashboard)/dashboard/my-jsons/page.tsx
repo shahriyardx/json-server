@@ -26,6 +26,7 @@ import {
   Pencil,
   Download,
   Eye,
+  BarChart3,
   History,
   Lock,
   Unlock,
@@ -406,6 +407,11 @@ export default function MyJsonsPage() {
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
+                          <Link href={`/dashboard/analytics/${file.id}`}>
+                            <BarChart3 className="mr-2 size-3" />Analytics
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
                           <Link href={`/dashboard/versions/${file.id}`}>
                             <History className="mr-2 size-3" />Versions
                           </Link>
@@ -491,11 +497,10 @@ export default function MyJsonsPage() {
                           Actions
                         </h4>
                         <div className="flex flex-col gap-2">
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="flex-1"
                               onClick={() => copyUrl(file.filename)}
                             >
                               <Copy className="mr-1 size-3" />
@@ -504,33 +509,36 @@ export default function MyJsonsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="flex-1"
                               onClick={() => downloadJson(file.filename, file.content)}
                             >
                               <Download className="mr-1 size-3" />
                               Download
                             </Button>
-                            <Button variant="outline" size="sm" className="flex-1" asChild>
+                            <Button variant="outline" size="sm" asChild>
                               <Link href={`/dashboard/explore/${file.id}`}>
                                 <Eye className="mr-1 size-3" />
                                 Explore
                               </Link>
                             </Button>
-                            <Button variant="outline" size="sm" className="flex-1" asChild>
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href={`/dashboard/analytics/${file.id}`}>
+                                <BarChart3 className="mr-1 size-3" />
+                                Analytics
+                              </Link>
+                            </Button>
+                            <Button variant="outline" size="sm" asChild>
                               <Link href={`/dashboard/docs/${username}/${file.filename}`}>
                                 <BookOpen className="mr-1 size-3" />
                                 Docs
                               </Link>
                             </Button>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm" className="flex-1" asChild>
+                            <Button variant="outline" size="sm" asChild>
                               <Link href={`/dashboard/versions/${file.id}`}>
                                 <History className="mr-1 size-3" />
                                 Versions
                               </Link>
                             </Button>
-                            <Button variant="outline" size="sm" className="flex-1" asChild>
+                            <Button variant="outline" size="sm" asChild>
                               <Link href={`/dashboard/edit/${file.id}`}>
                                 <Pencil className="mr-1 size-3" />
                                 Edit
@@ -539,7 +547,7 @@ export default function MyJsonsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="flex-1 text-red-500 hover:text-red-500"
+                              className="text-red-500 hover:text-red-500"
                               onClick={() =>
                                 setDeleteTarget({ id: file.id, filename: file.filename })
                               }
@@ -547,8 +555,6 @@ export default function MyJsonsPage() {
                               <Trash2 className="mr-1 size-3" />
                               Delete
                             </Button>
-                            {/* spacer to keep 4-column rhythm */}
-                            <div className="flex-1" />
                           </div>
                         </div>
                       </div>
