@@ -77,7 +77,7 @@ export const uploadRouter = router({
     const files = await ctx.prisma.jsonFile.findMany({
       where: { userId: ctx.user.id },
       orderBy: { createdAt: "desc" },
-      select: { id: true, filename: true, createdAt: true },
+      select: { id: true, filename: true, createdAt: true, content: true },
     })
     return files
   }),

@@ -1,14 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -72,84 +64,83 @@ export default function MyJsonsPage() {
           Your uploaded JSON files
         </p>
       </div>
-      <div className="overflow-x-auto rounded-lg border-2">
-        <Table>
-          <TableHeader>
-          <TableRow>
-            <TableHead>Filename</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="w-28">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {files.map((file) => (
-            <TableRow key={file.id}>
-              <TableCell className="font-mono text-sm">
+      <div className="grid gap-3">
+        {files.map((file) => {
+          const size = new TextEncoder().encode(file.content).length
+          const sizeLabel = size < 1024 ? `${size}B` : `${(size / 1024).toFixed(0)}KB`
+          return (
+          <div
+            key={file.id}
+            className="rounded-lg border-2"
+          >
+            <div className="flex items-center justify-between gap-4 rounded-t-lg bg-muted px-4 py-2.5">
+              <p className="truncate font-mono text-sm font-medium">
                 {file.filename}.json
-              </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                {new Date(file.createdAt).toLocaleDateString()}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-0.5">
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    onClick={() => copyUrl(file.filename)}
-                  >
-                    {copiedId === file.filename ? (
-                      <Check className="size-3" />
-                    ) : (
-                      <Copy className="size-3" />
-                    )}
+              </p>
+              <p className="shrink-0 text-xs text-muted-foreground">
+                {sizeLabel} · {new Date(file.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 px-4 py-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => copyUrl(file.filename)}
+              >
+                {copiedId === file.filename ? (
+                  <Check className="mr-1 size-3" />
+                ) : (
+                  <Copy className="mr-1 size-3" />
+                )}
+                Copy URL
+              </Button>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href={`/dashboard/docs/${username}/${file.filename}`}>
+                  <BookOpen className="mr-1 size-3" />
+                  Docs
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href={`/dashboard/edit/${file.id}`}>
+                  <Pencil className="mr-1 size-3" />
+                  Edit
+                </Link>
+              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Trash2 className="mr-1 size-3 text-destructive" />
+                    Delete
                   </Button>
-                  <Button variant="ghost" size="icon-xs" asChild>
-                    <Link href={`/dashboard/docs/${username}/${file.filename}`}>
-                      <BookOpen className="size-3" />
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="icon-xs" asChild>
-                    <Link href={`/dashboard/edit/${file.id}`}>
-                      <Pencil className="size-3" />
-                    </Link>
-                  </Button>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="ghost" size="icon-xs">
-                        <Trash2 className="size-3 text-destructive" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Delete JSON file</DialogTitle>
-                        <DialogDescription>
-                          Are you sure you want to delete{" "}
-                          <span className="font-medium text-foreground">
-                            {file.filename}.json
-                          </span>
-                          ? This action cannot be undone.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="flex justify-end gap-2">
-                        <DialogClose asChild>
-                          <Button variant="outline">Cancel</Button>
-                        </DialogClose>
-                        <Button
-                          variant="destructive"
-                          onClick={() => deleteMutation.mutate({ id: file.id })}
-                          disabled={deleteMutation.isPending}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Delete JSON file</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to delete{" "}
+                      <span className="font-medium text-foreground">
+                        {file.filename}.json
+                      </span>
+                      ? This action cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex justify-end gap-2">
+                    <DialogClose asChild>
+                      <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button
+                      variant="destructive"
+                      onClick={() => deleteMutation.mutate({ id: file.id })}
+                      disabled={deleteMutation.isPending}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        )})}
       </div>
     </div>
   )
