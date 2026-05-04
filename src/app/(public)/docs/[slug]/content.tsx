@@ -1,13 +1,13 @@
 import type { ReactNode } from "react"
 import { Comark } from "@comark/react"
-import { codeToHtml } from "shiki"
+import { codeToHtml, bundledLanguages } from "shiki"
 
 type HtmlProps = { children?: ReactNode; className?: string; [key: string]: unknown }
 type Segment =
   | { type: "markdown"; content: string }
   | { type: "html"; html: string }
 
-const codeBlockRe = /```(js|json)\n([\s\S]*?)```/g
+const codeBlockRe = /```(\w+)\n([\s\S]*?)```/g
 
 async function processCodeBlocks(content: string): Promise<Segment[]> {
   const segments: Segment[] = []
@@ -20,11 +20,17 @@ async function processCodeBlocks(content: string): Promise<Segment[]> {
     }
     const lang = match[1]
     const code = match[2].replace(/\n$/, "")
-    const html = await codeToHtml(code, {
-      lang,
-      themes: { light: "github-light", dark: "github-dark-dimmed" },
-    })
-    segments.push({ type: "html", html })
+
+    if (lang in bundledLanguages) {
+      const html = await codeToHtml(code, {
+        lang,
+        themes: { light: "github-light", dark: "github-dark-dimmed" },
+      })
+      segments.push({ type: "html", html })
+    } else {
+      segments.push({ type: "markdown", content: match[0] })
+    }
+
     lastIndex = match.index + match[0].length
   }
 
