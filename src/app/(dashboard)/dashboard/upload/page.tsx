@@ -258,7 +258,7 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-5">
+    <div className="max-w-2xl p-5">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold">Upload JSON</h1>

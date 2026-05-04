@@ -163,7 +163,7 @@ export default function EditPage({
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-5">
+    <div className="max-w-2xl p-5">
       <Link
         href="/dashboard/my-jsons"
         className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
@@ -171,13 +171,6 @@ export default function EditPage({
         <ArrowLeft className="size-3.5" />
         Back to My JSONs
       </Link>
-
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">Edit JSON File</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Edit filename, content, or visibility
-        </p>
-      </div>
 
       <div
         className="space-y-8"
