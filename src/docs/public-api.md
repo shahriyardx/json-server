@@ -52,8 +52,6 @@ Authorization: Bearer js_xxxxxxxxxxxx
 GET /<username>/<filename>?api_key=js_xxxxxxxxxxxx
 ```
 
-Authenticated requests also skip monthly rate limits.
-
 ## Error Responses
 
 | Status | Meaning |
