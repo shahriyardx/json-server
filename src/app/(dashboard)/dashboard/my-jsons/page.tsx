@@ -19,14 +19,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
   Copy,
   Check,
   Trash2,
@@ -49,7 +41,7 @@ import {
   Calendar,
   Clock,
 } from "lucide-react"
-import { useState, useCallback, useEffect, useMemo, Fragment } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
 import { trpc } from "@/lib/trpc/client"
@@ -340,243 +332,248 @@ export default function MyJsonsPage() {
           )}
         </div>
       ) : viewMode === "list" ? (
-        // ─── Table view ───
+        // ─── List view ───
         <div className="rounded-lg border-2">
           {isSearching && (
-            <p className="px-4 pt-3 text-xs text-muted-foreground">Searching...</p>
+            <p className="px-4 pt-3 pb-1 text-xs text-muted-foreground">Searching...</p>
           )}
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-10">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={toggleSelectAll}
-                    className="size-3.5 accent-indigo-500"
-                  />
-                </TableHead>
-                <TableHead>File Name</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Last Updated</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedFiles.map((file) => {
-                const isExpanded = expandedId === file.id
-                const size = computeSize(file.content)
-                return (
-                  <Fragment key={file.id}>
-                    <TableRow data-state={isExpanded ? "selected" : undefined}>
-                      <TableCell>
-                        <input
-                          type="checkbox"
-                          checked={selected.has(file.id)}
-                          onChange={() => toggleSelect(file.id)}
-                          className="size-3.5 accent-indigo-500"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2.5">
-                          <div className="flex size-8 items-center justify-center rounded-md border bg-indigo-500/10 text-indigo-500">
-                            <FileJson className="size-4" />
-                          </div>
-                          <span className="font-mono text-sm font-medium text-white">
-                            {file.filename}.json
-                          </span>
-                          <span className="rounded bg-indigo-500/10 px-1.5 py-0.5 text-[10px] font-medium text-indigo-500">
-                            JSON
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {size.label}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="size-3" />
-                          {new Date(file.updatedAt).toLocaleDateString()}
-                          <Clock className="ml-0.5 size-3" />
-                          {new Date(file.updatedAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-                            file.isPublic
-                              ? "bg-emerald-500/10 text-emerald-500"
-                              : "bg-amber-500/10 text-amber-500",
-                          )}
+
+          {/* Header row — hidden on mobile */}
+          <div className="hidden sm:grid grid-cols-[36px_1fr_80px_90px_auto_36px] gap-2 border-b bg-muted/50 px-4 py-2.5 text-xs font-medium text-muted-foreground items-center">
+            <div>
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={toggleSelectAll}
+                className="size-3.5 accent-indigo-500"
+              />
+            </div>
+            <div>File Name</div>
+            <div>Size</div>
+            <div>Status</div>
+            <div className="text-right">Actions</div>
+            <div />
+          </div>
+
+          {/* Rows */}
+          {paginatedFiles.map((file) => {
+            const isExpanded = expandedId === file.id
+            const size = computeSize(file.content)
+            return (
+              <div key={file.id}>
+                {/* Main row — responsive grid */}
+                <div
+                  className={cn(
+                    "grid grid-cols-[36px_1fr_auto] sm:grid-cols-[36px_1fr_80px_90px_auto_36px] gap-2 px-4 py-3 items-center border-b last:border-b-0 transition-colors",
+                    isExpanded && "bg-muted/30",
+                  )}
+                >
+                  <div>
+                    <input
+                      type="checkbox"
+                      checked={selected.has(file.id)}
+                      onChange={() => toggleSelect(file.id)}
+                      className="size-3.5 accent-indigo-500"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-indigo-500/10 text-indigo-500">
+                      <FileJson className="size-4" />
+                    </div>
+                    <span className="truncate font-mono text-sm font-medium text-white">
+                      {file.filename}.json
+                    </span>
+                    <span className="hidden sm:inline shrink-0 rounded bg-indigo-500/10 px-1.5 py-0.5 text-[10px] font-medium text-indigo-500">
+                      JSON
+                    </span>
+                  </div>
+                  <div className="hidden sm:block text-xs text-muted-foreground">{size.label}</div>
+                  <div className="hidden sm:block">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+                        file.isPublic
+                          ? "bg-emerald-500/10 text-emerald-500"
+                          : "bg-amber-500/10 text-amber-500",
+                      )}
+                    >
+                      {file.isPublic ? <Unlock className="size-3" /> : <Lock className="size-3" />}
+                      {file.isPublic ? "Public" : "Private"}
+                    </span>
+                  </div>
+                  {/* Actions: mobile = 3-dot only, desktop = copy + 3-dot + expand */}
+                  <div className="flex items-center justify-end gap-0.5">
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => copyUrl(file.filename)}
+                      title="Copy URL"
+                      className="hidden sm:inline-flex"
+                    >
+                      {copiedId === file.filename ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon-xs">
+                          <MoreHorizontal className="size-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="text-sm">
+                        <DropdownMenuItem onClick={() => copyUrl(file.filename)}>
+                          {copiedId === file.filename ? <Check className="mr-2 size-3" /> : <Copy className="mr-2 size-3" />}
+                          Copy URL
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => downloadJson(file.filename, file.content)}>
+                          <Download className="mr-2 size-3" />Download
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/dashboard/edit/${file.id}`}>
+                            <Pencil className="mr-2 size-3" />Edit
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/dashboard/explore/${file.id}`}>
+                            <Eye className="mr-2 size-3" />Explore
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/dashboard/versions/${file.id}`}>
+                            <History className="mr-2 size-3" />Versions
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/dashboard/docs/${username}/${file.filename}`}>
+                            <BookOpen className="mr-2 size-3" />Docs
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setDeleteTarget({ id: file.id, filename: file.filename })}
+                          className="text-destructive focus:text-destructive"
                         >
-                          {file.isPublic ? <Unlock className="size-3" /> : <Lock className="size-3" />}
-                          {file.isPublic ? "Public" : "Private"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-0.5">
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            onClick={() => downloadJson(file.filename, file.content)}
-                            title="Download"
-                          >
-                            <Download className="size-3.5" />
-                          </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon-xs">
-                                <MoreHorizontal className="size-3.5" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="text-sm">
-                              <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/edit/${file.id}`}>
-                                  <Pencil className="mr-2 size-3" />Edit
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/explore/${file.id}`}>
-                                  <Eye className="mr-2 size-3" />Explore
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/versions/${file.id}`}>
-                                  <History className="mr-2 size-3" />Versions
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/docs/${username}/${file.filename}`}>
-                                  <BookOpen className="mr-2 size-3" />Docs
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => setDeleteTarget({ id: file.id, filename: file.filename })}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="mr-2 size-3" />Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            onClick={() => setExpandedId(isExpanded ? null : file.id)}
-                          >
-                            <ChevronRight
-                              className={cn("size-3.5 transition-transform", isExpanded && "rotate-90")}
-                            />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                    {isExpanded && (
-                      <TableRow>
-                        <TableCell colSpan={7} className="p-0">
-                          <div className="border-t border-b px-6 py-5">
-                            <div className="grid grid-cols-2 gap-6">
-                              {/* Details */}
-                              <div>
-                                <h4 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                                  Details
-                                </h4>
-                                <div className="space-y-3">
-                                  <div className="flex items-center gap-3 text-sm">
-                                    <FileJson className="size-4 shrink-0 text-muted-foreground" />
-                                    <span className="text-muted-foreground w-16">Type:</span>
-                                    <span className="text-white capitalize">{contentType(file.content)}</span>
-                                  </div>
-                                  <div className="flex items-center gap-3 text-sm">
-                                    <Calendar className="size-4 shrink-0 text-muted-foreground" />
-                                    <span className="text-muted-foreground w-16">Created:</span>
-                                    <span className="text-white">
-                                      {new Date(file.createdAt).toLocaleDateString()}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-3 text-sm">
-                                    <Clock className="size-4 shrink-0 text-muted-foreground" />
-                                    <span className="text-muted-foreground w-16">Modified:</span>
-                                    <span className="text-white">
-                                      {new Date(file.updatedAt).toLocaleDateString()}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                              {/* Actions */}
-                              <div>
-                                <h4 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                                  Actions
-                                </h4>
-                                <div className="flex flex-col gap-2">
-                                  <div className="flex gap-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="flex-1"
-                                      onClick={() => copyUrl(file.filename)}
-                                    >
-                                      <Copy className="mr-1 size-3" />
-                                      Copy URL
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="flex-1"
-                                      onClick={() => downloadJson(file.filename, file.content)}
-                                    >
-                                      <Download className="mr-1 size-3" />
-                                      Download
-                                    </Button>
-                                    <Button variant="outline" size="sm" className="flex-1" asChild>
-                                      <Link href={`/dashboard/docs/${username}/${file.filename}`}>
-                                        <BookOpen className="mr-1 size-3" />
-                                        Docs
-                                      </Link>
-                                    </Button>
-                                  </div>
-                                  <div className="flex gap-2">
-                                    <Button variant="outline" size="sm" className="flex-1" asChild>
-                                      <Link href={`/dashboard/versions/${file.id}`}>
-                                        <History className="mr-1 size-3" />
-                                        Versions
-                                      </Link>
-                                    </Button>
-                                    <Button variant="outline" size="sm" className="flex-1" asChild>
-                                      <Link href={`/dashboard/edit/${file.id}`}>
-                                        <Pencil className="mr-1 size-3" />
-                                        Edit
-                                      </Link>
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="flex-1 text-red-500 hover:text-red-500"
-                                      onClick={() =>
-                                        setDeleteTarget({ id: file.id, filename: file.filename })
-                                      }
-                                    >
-                                      <Trash2 className="mr-1 size-3" />
-                                      Delete
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
+                          <Trash2 className="mr-2 size-3" />Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    {/* Expand chevron — desktop only */}
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => setExpandedId(isExpanded ? null : file.id)}
+                      className="hidden sm:inline-flex"
+                    >
+                      <ChevronRight
+                        className={cn("size-3.5 transition-transform", isExpanded && "rotate-90")}
+                      />
+                    </Button>
+                  </div>
+                  {/* spacer for chevron column in desktop grid */}
+                  <div className="hidden sm:block" />
+                </div>
+
+                {/* Expanded panel */}
+                {isExpanded && (
+                  <div className="border-t border-b bg-muted/20 px-8 py-5">
+                    <div className="grid grid-cols-2 gap-10">
+                      {/* Details */}
+                      <div>
+                        <h4 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                          Details
+                        </h4>
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-3 text-sm">
+                            <FileJson className="size-4 shrink-0 text-muted-foreground" />
+                            <span className="w-16 text-muted-foreground">Type:</span>
+                            <span className="text-white capitalize">{contentType(file.content)}</span>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </Fragment>
-                )
-              })}
-            </TableBody>
-          </Table>
+                          <div className="flex items-center gap-3 text-sm">
+                            <Calendar className="size-4 shrink-0 text-muted-foreground" />
+                            <span className="w-16 text-muted-foreground">Created:</span>
+                            <span className="text-white">
+                              {new Date(file.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm">
+                            <Clock className="size-4 shrink-0 text-muted-foreground" />
+                            <span className="w-16 text-muted-foreground">Modified:</span>
+                            <span className="text-white">
+                              {new Date(file.updatedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Actions */}
+                      <div>
+                        <h4 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                          Actions
+                        </h4>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => copyUrl(file.filename)}
+                            >
+                              <Copy className="mr-1 size-3" />
+                              Copy URL
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => downloadJson(file.filename, file.content)}
+                            >
+                              <Download className="mr-1 size-3" />
+                              Download
+                            </Button>
+                            <Button variant="outline" size="sm" className="flex-1" asChild>
+                              <Link href={`/dashboard/explore/${file.id}`}>
+                                <Eye className="mr-1 size-3" />
+                                Explore
+                              </Link>
+                            </Button>
+                            <Button variant="outline" size="sm" className="flex-1" asChild>
+                              <Link href={`/dashboard/docs/${username}/${file.filename}`}>
+                                <BookOpen className="mr-1 size-3" />
+                                Docs
+                              </Link>
+                            </Button>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" className="flex-1" asChild>
+                              <Link href={`/dashboard/versions/${file.id}`}>
+                                <History className="mr-1 size-3" />
+                                Versions
+                              </Link>
+                            </Button>
+                            <Button variant="outline" size="sm" className="flex-1" asChild>
+                              <Link href={`/dashboard/edit/${file.id}`}>
+                                <Pencil className="mr-1 size-3" />
+                                Edit
+                              </Link>
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 text-red-500 hover:text-red-500"
+                              onClick={() =>
+                                setDeleteTarget({ id: file.id, filename: file.filename })
+                              }
+                            >
+                              <Trash2 className="mr-1 size-3" />
+                              Delete
+                            </Button>
+                            {/* spacer to keep 4-column rhythm */}
+                            <div className="flex-1" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       ) : (
         // ─── Grid view ───
