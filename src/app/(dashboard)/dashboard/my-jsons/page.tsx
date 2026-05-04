@@ -343,9 +343,13 @@ export default function MyJsonsPage() {
                   className="flex items-center gap-3 px-4 py-3 transition-colors"
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className="truncate font-mono text-sm font-medium text-white">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedId(isExpanded ? null : file.id)}
+                      className="truncate font-mono text-sm font-medium text-white text-left cursor-pointer hover:underline"
+                    >
                       {file.filename}.json
-                    </span>
+                    </button>
                     <span className="hidden sm:inline text-xs text-muted-foreground ml-auto">
                       {size.label}
                     </span>
