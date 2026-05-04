@@ -447,16 +447,10 @@ export default function UploadPage() {
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{
-                    width: `${sizePercent}%`,
-                    backgroundColor:
-                      sizePercent > 90
-                        ? "hsl(var(--destructive))"
-                        : sizePercent > 70
-                          ? "hsl(var(--primary) / 0.7)"
-                          : "hsl(var(--primary))",
-                  }}
+                  className={`h-full rounded-full transition-all duration-300 ${
+                    sizePercent >= 100 ? "bg-destructive" : "bg-primary"
+                  }`}
+                  style={{ width: `${sizePercent}%` }}
                 />
               </div>
             </div>
