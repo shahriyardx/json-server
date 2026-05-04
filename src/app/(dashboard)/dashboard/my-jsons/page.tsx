@@ -228,7 +228,7 @@ export default function MyJsonsPage() {
         </div>
         {allFiles && allFiles.length > 0 && (
           <Button
-            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
             size="sm"
             onClick={exportAll}
             disabled={exporting}
@@ -361,8 +361,8 @@ export default function MyJsonsPage() {
                         className={cn(
                           "inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors",
                           file.isPublic
-                            ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                            : "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20",
+                            ? "bg-primary/10 text-primary hover:bg-primary/20"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80",
                         )}
                       >
                         {file.isPublic ? <Unlock className="size-3" /> : <Lock className="size-3" />}
@@ -648,7 +648,7 @@ export default function MyJsonsPage() {
                 key={p}
                 variant={p === page ? "default" : "ghost"}
                 size="icon-xs"
-                className={p === page ? "bg-indigo-600 hover:bg-indigo-700" : ""}
+                className={p === page ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}
                 onClick={() => setPage(p)}
               >
                 {p}
