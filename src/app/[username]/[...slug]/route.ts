@@ -69,6 +69,34 @@ async function checkAndIncrementRequest(userId: string): Promise<boolean> {
   return stats.count <= MONTHLY_LIMIT
 }
 
+async function logFileRequest(fileId: string, referer: string | null) {
+  const now = new Date()
+  const date = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
+  const referrerDomain = referer
+    ? new URL(referer).hostname.replace(/^www\./, "")
+    : "direct"
+
+  await prisma.fileRequestLog.upsert({
+    where: { fileId_date: { fileId, date } },
+    create: { fileId, date, count: 1, referrers: { [referrerDomain]: 1 } },
+    update: { count: { increment: 1 } },
+  })
+
+  // Update referrers separately — JSON merge not supported in Prisma
+  const current = await prisma.fileRequestLog.findUnique({
+    where: { fileId_date: { fileId, date } },
+    select: { referrers: true },
+  })
+  if (current) {
+    const refs = ((current.referrers ?? {}) as Record<string, number>)
+    refs[referrerDomain] = (refs[referrerDomain] ?? 0) + 1
+    await prisma.fileRequestLog.update({
+      where: { fileId_date: { fileId, date } },
+      data: { referrers: refs },
+    })
+  }
+}
+
 function traverse(data: unknown, segments: string[]): unknown {
   let current = data
   for (const segment of segments) {
@@ -180,6 +208,9 @@ export async function GET(
   if (!withinLimit) {
     return json({ error: "Monthly request limit exceeded" }, 429)
   }
+
+  // Fire-and-forget analytics logging
+  logFileRequest(jsonFile.id, req.headers.get("referer")).catch(() => {})
 
   let data: unknown
   try {
