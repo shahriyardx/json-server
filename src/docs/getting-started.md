@@ -24,12 +24,21 @@ By default the public API does **not** require authentication — anyone with th
 
 API keys are managed from the Dashboard → API Keys page. Use them via `Authorization: Bearer <key>` header or `?api_key=<key>` query parameter.
 
+## Rate Limits
+
+- **Per-file**: 60 requests per minute sliding window
+- **Per-account**: 100,000 requests per calendar month
+
+Rate limit violations return `429` with a `Retry-After` header. Monthly limits reset on the 1st of each month. API key requests count toward the same monthly pool.
+
 ## Features
 
 - **Data Browser** — explore JSON in the browser with sortable tables for arrays of objects or expandable tree views for nested structures
 - **Version History** — every edit saves a snapshot. Browse old versions, view diffs, and revert to any point
+- **Webhooks** — receive file update notifications via POST with HMAC-SHA256 signatures
+- **Analytics** — per-file request charts with daily breakdowns and referrer tracking
+- **Trash** — deleted files go to trash for recovery before permanent removal
 - **Search** — filter your files by name or content from the dashboard
-- **Size Chart** — track file size changes over time on the edit page
 - **Export** — download individual files or all files as a ZIP archive
 
 ## Example

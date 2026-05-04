@@ -30,16 +30,19 @@ Switch to **Paste** tab on the upload page to type or paste JSON content. The ed
 
 ## Managing Files
 
-Go to **My JSONs** in the dashboard to see all your uploaded files. Each entry shows:
+Go to **My JSONs** in the dashboard to see all your uploaded files. List or grid view with sorting (newest, name, size) and filtering (by type: array/object, by size: small/medium/large).
 
-- Filename with public/private status
-- File size and creation date
+Each file entry offers:
+
 - **Copy URL** — copy the public API URL
 - **Download** — download the file as `.json`
 - **Docs** — view API documentation for that file
 - **Explore** — browse JSON content in a table or tree viewer
+- **Analytics** — view request volume chart and referrer data
 - **Versions** — view version history and revert changes
-- **Edit** — modify the file content
-- **Delete** — remove the file
+- **Edit** — modify the file content (includes webhook configuration)
+- **Delete** — moves the file to trash
+
+Deleted files are moved to **Trash** where you can restore or permanently delete them.
 
 Use the **Export All ZIP** button to download all files as a single ZIP archive. Use the **search bar** to filter files by name or content.

@@ -6,7 +6,7 @@ order: 3
 
 # Public API
 
-Every uploaded JSON file is served as a public API endpoint.
+Every uploaded JSON file is served as a public API endpoint with CORS headers allowing cross-origin requests.
 
 ## Base URL
 
@@ -14,7 +14,7 @@ Every uploaded JSON file is served as a public API endpoint.
 GET /<username>/<filename>
 ```
 
-Returns the full JSON content with `Content-Type: application/json`.
+Returns the full JSON content with `Content-Type: application/json` and `Access-Control-Allow-Origin: *`.
 
 ### Example
 
@@ -33,7 +33,7 @@ Returns the full JSON content with `Content-Type: application/json`.
 If a file is marked **private**, the API returns `403` unless the request is authenticated:
 
 ```json
-{ "error": "Forbidden" }
+{ "error": "Forbidden. This file is private." }
 ```
 
 ### API Key Authentication
@@ -52,12 +52,20 @@ Authorization: Bearer js_xxxxxxxxxxxx
 GET /<username>/<filename>?api_key=js_xxxxxxxxxxxx
 ```
 
+## Rate Limits
+
+- **Per-file rate limit**: 60 requests per minute (sliding window). Exceeding returns `429` with a `Retry-After: 60` header.
+- **Monthly limit**: 100,000 requests per account across all files. Exceeding returns `429` with the message `"Monthly request limit exceeded"`. Resets on the 1st of each month.
+
+Rate limits apply to authenticated and unauthenticated requests alike. API keys do not increase the limit.
+
 ## Error Responses
 
 | Status | Meaning |
 |--------|---------|
 | `403` | File is private and request lacks a valid API key |
 | `404` | User, file, or nested path not found |
+| `429` | Rate limit exceeded (per-minute or monthly) |
 | `500` | Server error or invalid JSON content |
 
 Errors return JSON:
