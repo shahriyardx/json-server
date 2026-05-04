@@ -11,6 +11,12 @@ import {
   DialogDescription,
   DialogClose,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import {
   Copy,
@@ -25,6 +31,7 @@ import {
   Unlock,
   Search,
   Loader2,
+  MoreHorizontal,
 } from "lucide-react"
 import { useState, useCallback, useEffect } from "react"
 import { toast } from "sonner"
@@ -175,7 +182,7 @@ export default function MyJsonsPage() {
           )}
           {files.map((file) => (
             <div key={file.id} className="rounded-lg border-2">
-              <div className="flex items-center justify-between gap-4 rounded-t-lg bg-muted px-4 py-2.5">
+              <div className="flex items-center justify-between gap-2 rounded-t-lg bg-muted px-4 py-2.5">
                 <div className="flex min-w-0 items-center gap-2">
                   <p className="truncate font-mono text-sm font-medium">
                     {file.filename}.json
@@ -196,95 +203,107 @@ export default function MyJsonsPage() {
                     )}
                   </Button>
                 </div>
-                <p className="shrink-0 text-xs text-muted-foreground">
-                  {"isPublic" in file && !file.isPublic && (
-                    <span className="mr-1">Private ·</span>
-                  )}
-                  {sizeLabel(file.content)} ·{" "}
-                  {new Date(file.createdAt).toLocaleDateString()}
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground">
+                    {sizeLabel(file.content)} ·{" "}
+                    {new Date(file.createdAt).toLocaleDateString()}
+                  </span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon-xs">
+                        <MoreHorizontal className="size-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="text-sm">
+                      <DropdownMenuItem asChild>
+                        <Link href={`/dashboard/edit/${file.id}`}>
+                          <Pencil className="mr-2 size-3" />
+                          Edit
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href={`/dashboard/docs/${username}/${file.filename}`}
+                        >
+                          <BookOpen className="mr-2 size-3" />
+                          Docs
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/dashboard/explore/${file.id}`}>
+                          <Eye className="mr-2 size-3" />
+                          Explore
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/dashboard/versions/${file.id}`}>
+                          <History className="mr-2 size-3" />
+                          Versions
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          downloadJson(file.filename, file.content)
+                        }
+                      >
+                        <Download className="mr-2 size-3" />
+                        Download
+                      </DropdownMenuItem>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 size-3" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Delete JSON file</DialogTitle>
+                            <DialogDescription>
+                              Are you sure you want to delete{" "}
+                              <span className="font-medium text-foreground">
+                                {file.filename}.json
+                              </span>
+                              ? This action cannot be undone.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="flex justify-end gap-2">
+                            <DialogClose asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button
+                              variant="destructive"
+                              onClick={() =>
+                                deleteMutation.mutate({ id: file.id })
+                              }
+                              disabled={deleteMutation.isPending}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-1.5 px-4 py-3">
+              <div className="px-4 py-3">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => copyUrl(file.filename)}
+                  className="w-full"
                 >
                   {copiedId === file.filename ? (
                     <Check className="mr-1 size-3" />
                   ) : (
                     <Copy className="mr-1 size-3" />
                   )}
-                  Copy URL
+                  Copy URL — {username}/{file.filename}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => downloadJson(file.filename, file.content)}
-                >
-                  <Download className="mr-1 size-3" />
-                  Download
-                </Button>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link
-                    href={`/dashboard/docs/${username}/${file.filename}`}
-                  >
-                    <BookOpen className="mr-1 size-3" />
-                    Docs
-                  </Link>
-                </Button>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href={`/dashboard/explore/${file.id}`}>
-                    <Eye className="mr-1 size-3" />
-                    Explore
-                  </Link>
-                </Button>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href={`/dashboard/versions/${file.id}`}>
-                    <History className="mr-1 size-3" />
-                    Versions
-                  </Link>
-                </Button>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href={`/dashboard/edit/${file.id}`}>
-                    <Pencil className="mr-1 size-3" />
-                    Edit
-                  </Link>
-                </Button>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <Trash2 className="mr-1 size-3 text-destructive" />
-                      Delete
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Delete JSON file</DialogTitle>
-                      <DialogDescription>
-                        Are you sure you want to delete{" "}
-                        <span className="font-medium text-foreground">
-                          {file.filename}.json
-                        </span>
-                        ? This action cannot be undone.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex justify-end gap-2">
-                      <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
-                      </DialogClose>
-                      <Button
-                        variant="destructive"
-                        onClick={() =>
-                          deleteMutation.mutate({ id: file.id })
-                        }
-                        disabled={deleteMutation.isPending}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
               </div>
             </div>
           ))}
