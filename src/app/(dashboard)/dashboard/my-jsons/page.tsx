@@ -91,7 +91,6 @@ export default function MyJsonsPage() {
 
   // UI state
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [selected, setSelected] = useState<Set<string>>(new Set())
   const [viewMode, setViewMode] = useState<ViewMode>("list")
   const [sortBy, setSortBy] = useState<SortField>("newest")
   const [sizeFilter, setSizeFilter] = useState<SizeFilter>("all")
@@ -152,14 +151,9 @@ export default function MyJsonsPage() {
   const totalFiles = filteredFiles.length
   const totalPages = Math.max(1, Math.ceil(totalFiles / pageSize))
   const paginatedFiles = filteredFiles.slice((page - 1) * pageSize, page * pageSize)
-  const allSelected = paginatedFiles.length > 0 && selected.size === paginatedFiles.length
 
   // Reset page on filter change
   useEffect(() => { setPage(1) }, [searchQuery, sortBy, sizeFilter, typeFilter])
-
-  // Select handlers
-  const toggleSelect = (id: string) => setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
-  const toggleSelectAll = () => allSelected ? setSelected(new Set()) : setSelected(new Set(paginatedFiles.map((f) => f.id)))
 
   // Actions
   const copyUrl = async (filename: string) => {
@@ -338,71 +332,48 @@ export default function MyJsonsPage() {
             <p className="px-4 pt-3 pb-1 text-xs text-muted-foreground">Searching...</p>
           )}
 
-          {/* Header row — hidden on mobile */}
-          <div className="hidden sm:grid grid-cols-[36px_1fr_80px_90px_auto_36px] gap-2 border-b bg-muted/50 px-4 py-2.5 text-xs font-medium text-muted-foreground items-center">
-            <div>
-              <input
-                type="checkbox"
-                checked={allSelected}
-                onChange={toggleSelectAll}
-                className="size-3.5 accent-indigo-500"
-              />
-            </div>
-            <div>File Name</div>
-            <div>Size</div>
-            <div>Status</div>
-            <div className="text-right">Actions</div>
-            <div />
-          </div>
-
           {/* Rows */}
           {paginatedFiles.map((file) => {
             const isExpanded = expandedId === file.id
             const size = computeSize(file.content)
             return (
               <div key={file.id}>
-                {/* Main row — responsive grid */}
+                {/* Main row — flex layout */}
                 <div
                   className={cn(
-                    "grid grid-cols-[36px_1fr_auto] sm:grid-cols-[36px_1fr_80px_90px_auto_36px] gap-2 px-4 py-3 items-center border-b last:border-b-0 transition-colors",
+                    "flex items-center gap-3 px-4 py-3 border-b last:border-b-0 transition-colors",
                     isExpanded && "bg-muted/30",
                   )}
                 >
-                  <div>
-                    <input
-                      type="checkbox"
-                      checked={selected.has(file.id)}
-                      onChange={() => toggleSelect(file.id)}
-                      className="size-3.5 accent-indigo-500"
-                    />
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-indigo-500/10 text-indigo-500">
+                    <FileJson className="size-4" />
                   </div>
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-indigo-500/10 text-indigo-500">
-                      <FileJson className="size-4" />
-                    </div>
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span className="truncate font-mono text-sm font-medium text-white">
                       {file.filename}.json
                     </span>
                     <span className="hidden sm:inline shrink-0 rounded bg-indigo-500/10 px-1.5 py-0.5 text-[10px] font-medium text-indigo-500">
                       JSON
                     </span>
-                  </div>
-                  <div className="hidden sm:block text-xs text-muted-foreground">{size.label}</div>
-                  <div className="hidden sm:block">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-                        file.isPublic
-                          ? "bg-emerald-500/10 text-emerald-500"
-                          : "bg-amber-500/10 text-amber-500",
-                      )}
-                    >
-                      {file.isPublic ? <Unlock className="size-3" /> : <Lock className="size-3" />}
-                      {file.isPublic ? "Public" : "Private"}
+                    <span className="hidden sm:inline text-xs text-muted-foreground ml-auto">
+                      {size.label}
+                    </span>
+                    <span className="hidden sm:inline">
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+                          file.isPublic
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-amber-500/10 text-amber-500",
+                        )}
+                      >
+                        {file.isPublic ? <Unlock className="size-3" /> : <Lock className="size-3" />}
+                        {file.isPublic ? "Public" : "Private"}
+                      </span>
                     </span>
                   </div>
-                  {/* Actions: mobile = 3-dot only, desktop = copy + 3-dot + expand */}
-                  <div className="flex items-center justify-end gap-0.5">
+                  {/* Actions: mobile = 3-dot, desktop = copy + 3-dot + expand */}
+                  <div className="flex items-center gap-0.5 shrink-0">
                     <Button
                       variant="ghost"
                       size="icon-xs"
@@ -466,8 +437,6 @@ export default function MyJsonsPage() {
                       />
                     </Button>
                   </div>
-                  {/* spacer for chevron column in desktop grid */}
-                  <div className="hidden sm:block" />
                 </div>
 
                 {/* Expanded panel */}
