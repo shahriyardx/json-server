@@ -125,3 +125,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark) !important;
+}

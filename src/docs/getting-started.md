@@ -20,9 +20,7 @@ JSON Server lets you upload JSON files and access them via a public API at `/<us
 
 GitHub OAuth is the only sign-in method. Uploading and managing files requires authentication.
 
-By default the public API does **not** require authentication — anyone with the URL can fetch your JSON. You can make files **private** so the API returns `403` unless the request includes a valid **API key**.
-
-API keys are managed from the Dashboard → API Keys page. Use them via `Authorization: Bearer <key>` header or `?api_key=<key>` query parameter.
+By default the public API does **not** require authentication — anyone with the URL can fetch your JSON. Make files **private** to restrict access. See [Private API & API Keys](/docs/private-api) for details on generating keys and authenticating requests.
 
 ## Rate Limits
 

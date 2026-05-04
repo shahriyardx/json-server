@@ -28,30 +28,6 @@ Returns the full JSON content with `Content-Type: application/json` and `Access-
 ]
 ```
 
-## Private Files
-
-If a file is marked **private**, the API returns `403` unless the request is authenticated:
-
-```json
-{ "error": "Forbidden. This file is private." }
-```
-
-### API Key Authentication
-
-Generate an API key from the Dashboard → **API Keys** page. Two ways to authenticate:
-
-**Bearer header:**
-
-```
-Authorization: Bearer js_xxxxxxxxxxxx
-```
-
-**Query parameter:**
-
-```
-GET /<username>/<filename>?api_key=js_xxxxxxxxxxxx
-```
-
 ## Rate Limits
 
 - **Per-file rate limit**: 60 requests per minute (sliding window). Exceeding returns `429` with a `Retry-After: 60` header.
@@ -63,7 +39,6 @@ Rate limits apply to authenticated and unauthenticated requests alike. API keys 
 
 | Status | Meaning |
 |--------|---------|
-| `403` | File is private and request lacks a valid API key |
 | `404` | User, file, or nested path not found |
 | `429` | Rate limit exceeded (per-minute or monthly) |
 | `500` | Server error or invalid JSON content |

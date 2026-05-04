@@ -1,7 +1,39 @@
 import type { ReactNode } from "react"
 import { Comark } from "@comark/react"
+import { codeToHtml } from "shiki"
 
 type HtmlProps = { children?: ReactNode; className?: string; [key: string]: unknown }
+type Segment =
+  | { type: "markdown"; content: string }
+  | { type: "html"; html: string }
+
+const codeBlockRe = /```(js|json)\n([\s\S]*?)```/g
+
+async function processCodeBlocks(content: string): Promise<Segment[]> {
+  const segments: Segment[] = []
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = codeBlockRe.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: "markdown", content: content.slice(lastIndex, match.index) })
+    }
+    const lang = match[1]
+    const code = match[2].replace(/\n$/, "")
+    const html = await codeToHtml(code, {
+      lang,
+      themes: { light: "github-light", dark: "github-dark-dimmed" },
+    })
+    segments.push({ type: "html", html })
+    lastIndex = match.index + match[0].length
+  }
+
+  if (lastIndex < content.length) {
+    segments.push({ type: "markdown", content: content.slice(lastIndex) })
+  }
+
+  return segments
+}
 
 function HttpExample({ method = "GET", path = "/" }: { method?: string; path?: string }) {
   return (
@@ -115,10 +147,24 @@ const components = {
   ),
 }
 
-export function DocContent({ content }: { content: string }) {
+export async function DocContent({ content }: { content: string }) {
+  const segments = await processCodeBlocks(content)
+
   return (
     <article className="prose-custom">
-      <Comark components={components}>{content}</Comark>
+      {segments.map((seg, i) =>
+        seg.type === "markdown" ? (
+          <Comark key={i} components={components}>
+            {seg.content}
+          </Comark>
+        ) : (
+          <div
+            key={i}
+            className="mb-4 overflow-x-auto rounded-lg bg-muted p-4 font-mono text-xs leading-relaxed [&_.shiki]:!m-0 [&_.shiki]:!bg-transparent [&_.shiki]:!p-0"
+            dangerouslySetInnerHTML={{ __html: seg.html }}
+          />
+        ),
+      )}
     </article>
   )
 }
