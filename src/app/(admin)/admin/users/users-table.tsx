@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { authClient } from "@/lib/auth-client"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
 
 type User = {
   id: string
@@ -117,34 +118,34 @@ export function UsersTable({
                 <div className="flex items-center gap-1.5">
                   {/* Impersonate */}
                   {u.id !== currentUserId && (
-                    <button
-                      type="button"
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleImpersonate(u.id)}
-                      className="text-xs underline hover:text-foreground"
                     >
                       Login as
-                    </button>
+                    </Button>
                   )}
 
                   {/* Ban / Unban */}
                   {u.id !== currentUserId && u.role !== "superadmin" && (
                     <>
                       {u.banned ? (
-                        <button
-                          type="button"
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleUnban(u.id)}
-                          className="text-xs underline hover:text-foreground"
                         >
                           Unban
-                        </button>
+                        </Button>
                       ) : (
-                        <button
-                          type="button"
+                        <Button
+                          variant="destructive"
+                          size="sm"
                           onClick={() => setBanTarget(u.id)}
-                          className="text-xs text-destructive underline hover:text-destructive/80"
                         >
                           Ban
-                        </button>
+                        </Button>
                       )}
                     </>
                   )}
@@ -195,24 +196,16 @@ export function UsersTable({
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => {
+              <Button variant="outline" onClick={() => {
                   setBanTarget(null)
                   setBanReason("")
                   setBanDays("")
-                }}
-                className="rounded border px-3 py-1.5 text-sm"
-              >
+                }}>
                 Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => handleBan(banTarget)}
-                className="rounded bg-destructive px-3 py-1.5 text-sm text-destructive-foreground"
-              >
+              </Button>
+              <Button variant="destructive" onClick={() => handleBan(banTarget)}>
                 Ban
-              </button>
+              </Button>
             </div>
           </div>
         </div>
