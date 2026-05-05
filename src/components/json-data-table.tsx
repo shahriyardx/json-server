@@ -4,6 +4,7 @@ import { useState, useMemo } from "react"
 import { ChevronUp, ChevronDown, Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 type Row = Record<string, unknown>
 
@@ -88,7 +89,7 @@ export function JsonDataTable({ data }: JsonDataTableProps) {
         </p>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border-2">
+      <ScrollArea className="rounded-lg border-2">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted text-left">
@@ -137,7 +138,7 @@ export function JsonDataTable({ data }: JsonDataTableProps) {
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollArea>
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">

@@ -71,7 +71,9 @@ async function checkAndIncrementRequest(userId: string): Promise<boolean> {
 
 async function logFileRequest(fileId: string, referer: string | null) {
   const now = new Date()
-  const date = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
+  const date = new Date(
+    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
+  )
   const referrerDomain = referer
     ? new URL(referer).hostname.replace(/^www\./, "")
     : "direct"
@@ -88,7 +90,7 @@ async function logFileRequest(fileId: string, referer: string | null) {
     select: { referrers: true },
   })
   if (current) {
-    const refs = ((current.referrers ?? {}) as Record<string, number>)
+    const refs = (current.referrers ?? {}) as Record<string, number>
     refs[referrerDomain] = (refs[referrerDomain] ?? 0) + 1
     await prisma.fileRequestLog.update({
       where: { fileId_date: { fileId, date } },
@@ -150,7 +152,7 @@ function applyQueryParams(data: unknown, params: URLSearchParams): unknown {
   }
 
   for (const [key, value] of params.entries()) {
-    if (["search", "sort", "order", "filter"].includes(key)) continue
+    if (["search", "sort", "order", "filter", "api_key"].includes(key)) continue
     result = result.filter((item) => {
       if (typeof item === "object" && item !== null) {
         return String((item as Record<string, unknown>)[key]) === value
@@ -209,9 +211,6 @@ export async function GET(
     return json({ error: "Monthly request limit exceeded" }, 429)
   }
 
-  // Fire-and-forget analytics logging
-  logFileRequest(jsonFile.id, req.headers.get("referer")).catch(() => {})
-
   let data: unknown
   try {
     data = JSON.parse(jsonFile.content)
@@ -225,6 +224,8 @@ export async function GET(
       return json({ error: "Not found" }, 404)
     }
   }
+
+  logFileRequest(jsonFile.id, req.headers.get("referer")).catch(() => {})
 
   const { searchParams } = new URL(req.url)
   data = applyQueryParams(data, searchParams)
