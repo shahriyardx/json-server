@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
+import { ImpersonationBanner } from "@/components/impersonation-banner"
 import {
   SidebarInset,
   SidebarProvider,
@@ -39,7 +40,10 @@ export default async function DashboardLayout({
           />
           <span className="text-sm font-medium">Dashboard</span>
         </header>
-        <main className="flex-1 min-h-0">{children}</main>
+        <main className="flex-1 min-h-0">
+          <ImpersonationBanner />
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   )

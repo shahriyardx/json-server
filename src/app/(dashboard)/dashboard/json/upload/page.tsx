@@ -107,7 +107,6 @@ export default function UploadPage() {
 
   const uploadMutation = trpc.upload.uploadJson.useMutation()
   const aiMutation = trpc.ai.generateJson.useMutation()
-  const { data: aiConfigured } = trpc.ai.isConfigured.useQuery()
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -309,17 +308,15 @@ export default function UploadPage() {
           <Code className="size-4" />
           Paste
         </button>
-        {aiConfigured && (
-          <button
-            type="button"
-            onClick={() => switchMode("ai")}
-            data-active={mode === "ai" || undefined}
-            className="flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors data-active:bg-muted data-active:text-foreground text-muted-foreground hover:text-foreground"
-          >
-            <Bot className="size-4" />
-            AI
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => switchMode("ai")}
+          data-active={mode === "ai" || undefined}
+          className="flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors data-active:bg-muted data-active:text-foreground text-muted-foreground hover:text-foreground"
+        >
+          <Bot className="size-4" />
+          AI
+        </button>
       </div>
 
       <form

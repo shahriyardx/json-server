@@ -2,15 +2,39 @@ import { prismaAdapter } from "better-auth/adapters/prisma"
 
 import { nextCookies } from "better-auth/next-js"
 import { betterAuth } from "better-auth"
+import { admin } from "better-auth/plugins"
+import { createAccessControl } from "better-auth/plugins/access"
+import { defaultStatements, adminAc } from "better-auth/plugins/admin/access"
 import { prisma } from "./prisma"
 import { env } from "./env"
+
+const ac = createAccessControl({
+  ...defaultStatements,
+})
+
+const adminRole = ac.newRole({
+  ...adminAc.statements,
+})
+
+const superadminRole = ac.newRole({
+  ...adminAc.statements,
+})
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
   appName: "json-server",
-  plugins: [nextCookies()],
+  plugins: [
+    nextCookies(),
+    admin({
+      ac,
+      roles: {
+        admin: adminRole,
+        superadmin: superadminRole,
+      },
+    }),
+  ],
   databaseHooks: {
     user: {
       create: {

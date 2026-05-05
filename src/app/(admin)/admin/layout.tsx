@@ -3,6 +3,7 @@ import { headers } from "next/headers"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { AdminSidebar } from "@/components/admin-sidebar"
+import { ImpersonationBanner } from "@/components/impersonation-banner"
 import {
   SidebarInset,
   SidebarProvider,
@@ -40,7 +41,10 @@ export default async function AdminLayout({
           />
           <span className="text-sm font-medium">Admin</span>
         </header>
-        <main className="flex-1 min-h-0">{children}</main>
+        <main className="flex-1 min-h-0">
+          <ImpersonationBanner />
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   )

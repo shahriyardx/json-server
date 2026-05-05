@@ -1,40 +1,43 @@
-import type { Metadata } from "next"
-import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
+"use client"
+
+import { useEffect, useState } from "react"
+import { authClient } from "@/lib/auth-client"
+import { toast } from "sonner"
 import { UsersTable } from "./users-table"
 
-export const metadata: Metadata = {
-  title: "Admin Users",
-}
+export default function AdminUsersPage() {
+  const [users, setUsers] = useState<any[]>([])
+  const [total, setTotal] = useState(0)
+  const [loaded, setLoaded] = useState(false)
 
-export default async function AdminUsersPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  const currentUser = session
-    ? await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { id: true, role: true },
+  const loadUsers = async () => {
+    setLoaded(false)
+    try {
+      const res = await authClient.admin.listUsers({
+        query: {},
       })
-    : null
+      if (res.data) {
+        setUsers(res.data.users)
+        setTotal(res.data.total)
+      } else if (res.error) {
+        toast.error(res.error.message ?? "Failed to load users")
+      }
+    } catch {
+      toast.error("Failed to load users")
+    }
+    setLoaded(true)
+  }
 
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      username: true,
-      role: true,
-      createdAt: true,
-      _count: { select: { jsonFiles: true } },
-    },
-  })
+  useEffect(() => {
+    loadUsers()
+  }, [])
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold tracking-tight">Users</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{users.length} total users</p>
-      <UsersTable users={users} currentUserId={currentUser?.id} currentUserRole={currentUser?.role} />
+      <p className="mt-1 text-sm text-muted-foreground">{total} total users</p>
+
+      <UsersTable users={users} onRefresh={() => loadUsers()} />
     </div>
   )
 }
