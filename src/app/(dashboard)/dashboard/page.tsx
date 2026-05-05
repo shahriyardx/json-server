@@ -160,7 +160,7 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
         <div className="border p-5">
           <p className="text-sm text-muted-foreground">Files uploaded</p>
           <p className="mt-1 text-3xl font-bold">
@@ -226,8 +226,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="border p-5 lg:col-span-2">
+      <div className="grid gap-6 lg:grid-cols-3 min-w-0">
+        <div className="border p-5 lg:col-span-2 min-w-0 overflow-hidden">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-medium">Requests (Last 7 Days)</h2>
             <span className="text-2xl font-bold">

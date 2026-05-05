@@ -4,12 +4,10 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogClose,
 } from "@/components/ui/dialog"
 import {
   DropdownMenu,
@@ -50,13 +48,22 @@ import JSZip from "jszip"
 import { cn } from "@/lib/utils"
 
 type ViewMode = "list" | "grid"
-type SortField = "newest" | "oldest" | "name-asc" | "name-desc" | "size-asc" | "size-desc"
+type SortField =
+  | "newest"
+  | "oldest"
+  | "name-asc"
+  | "name-desc"
+  | "size-asc"
+  | "size-desc"
 type SizeFilter = "all" | "small" | "medium" | "large"
 type TypeFilter = "all" | "object" | "array"
 
 function computeSize(content: string) {
   const bytes = new TextEncoder().encode(content).length
-  return { bytes, label: bytes < 1024 ? `${bytes}B` : `${(bytes / 1024).toFixed(0)}KB` }
+  return {
+    bytes,
+    label: bytes < 1024 ? `${bytes}B` : `${(bytes / 1024).toFixed(0)}KB`,
+  }
 }
 
 function contentType(content: string): TypeFilter | "other" {
@@ -100,7 +107,10 @@ export default function MyJsonsPage() {
   const [pageSize, setPageSize] = useState(10)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; filename: string } | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string
+    filename: string
+  } | null>(null)
 
   // Mutations
   const deleteMutation = trpc.upload.deleteJson.useMutation({
@@ -129,21 +139,39 @@ export default function MyJsonsPage() {
   // Filter / sort
   const filteredFiles = useMemo(() => {
     let result = [...rawFiles]
-    if (sizeFilter === "small") result = result.filter((f) => computeSize(f.content).bytes < 1024)
-    if (sizeFilter === "medium") result = result.filter((f) => { const b = computeSize(f.content).bytes; return b >= 1024 && b < 10240 })
-    if (sizeFilter === "large") result = result.filter((f) => computeSize(f.content).bytes >= 10240)
-    if (typeFilter !== "all") result = result.filter((f) => contentType(f.content) === typeFilter)
+    if (sizeFilter === "small")
+      result = result.filter((f) => computeSize(f.content).bytes < 1024)
+    if (sizeFilter === "medium")
+      result = result.filter((f) => {
+        const b = computeSize(f.content).bytes
+        return b >= 1024 && b < 10240
+      })
+    if (sizeFilter === "large")
+      result = result.filter((f) => computeSize(f.content).bytes >= 10240)
+    if (typeFilter !== "all")
+      result = result.filter((f) => contentType(f.content) === typeFilter)
     result.sort((a, b) => {
       const aSize = computeSize(a.content).bytes
       const bSize = computeSize(b.content).bytes
       switch (sortBy) {
-        case "newest": return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        case "oldest": return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        case "name-asc": return a.filename.localeCompare(b.filename)
-        case "name-desc": return b.filename.localeCompare(a.filename)
-        case "size-asc": return aSize - bSize
-        case "size-desc": return bSize - aSize
-        default: return 0
+        case "newest":
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+        case "oldest":
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          )
+        case "name-asc":
+          return a.filename.localeCompare(b.filename)
+        case "name-desc":
+          return b.filename.localeCompare(a.filename)
+        case "size-asc":
+          return aSize - bSize
+        case "size-desc":
+          return bSize - aSize
+        default:
+          return 0
       }
     })
     return result
@@ -152,7 +180,10 @@ export default function MyJsonsPage() {
   // Pagination
   const totalFiles = filteredFiles.length
   const totalPages = Math.max(1, Math.ceil(totalFiles / pageSize))
-  const paginatedFiles = filteredFiles.slice((page - 1) * pageSize, page * pageSize)
+  const paginatedFiles = filteredFiles.slice(
+    (page - 1) * pageSize,
+    page * pageSize,
+  )
 
   // Reset page on filter change — handled inline in onChange
 
@@ -197,7 +228,8 @@ export default function MyJsonsPage() {
   }, [allFiles])
 
   // Keyboard shortcut for search
-  const isMac = typeof navigator !== "undefined" && navigator.platform.includes("Mac")
+  const isMac =
+    typeof navigator !== "undefined" && navigator.platform.includes("Mac")
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -252,7 +284,10 @@ export default function MyJsonsPage() {
             data-search-input
             placeholder="Search files by name or content..."
             value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setPage(1) }}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              setPage(1)
+            }}
             className="w-full pl-9 pr-16"
           />
           <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground">
@@ -262,7 +297,10 @@ export default function MyJsonsPage() {
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={sortBy}
-            onChange={(e) => { setSortBy(e.target.value as SortField); setPage(1) }}
+            onChange={(e) => {
+              setSortBy(e.target.value as SortField)
+              setPage(1)
+            }}
             className="hidden sm:inline-flex h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
           >
             <option value="newest">Sort: Newest</option>
@@ -274,7 +312,10 @@ export default function MyJsonsPage() {
           </select>
           <select
             value={typeFilter}
-            onChange={(e) => { setTypeFilter(e.target.value as TypeFilter); setPage(1) }}
+            onChange={(e) => {
+              setTypeFilter(e.target.value as TypeFilter)
+              setPage(1)
+            }}
             className="hidden sm:inline-flex h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
           >
             <option value="all">Type: All</option>
@@ -283,7 +324,10 @@ export default function MyJsonsPage() {
           </select>
           <select
             value={sizeFilter}
-            onChange={(e) => { setSizeFilter(e.target.value as SizeFilter); setPage(1) }}
+            onChange={(e) => {
+              setSizeFilter(e.target.value as SizeFilter)
+              setPage(1)
+            }}
             className="hidden sm:inline-flex h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
           >
             <option value="all">Size: All</option>
@@ -295,7 +339,10 @@ export default function MyJsonsPage() {
             <Button
               variant="ghost"
               size="sm"
-              className={cn("rounded-r-none", viewMode === "list" && "bg-muted")}
+              className={cn(
+                "rounded-r-none",
+                viewMode === "list" && "bg-muted",
+              )}
               onClick={() => setViewMode("list")}
             >
               <LayoutList className="size-3.5" />
@@ -303,7 +350,10 @@ export default function MyJsonsPage() {
             <Button
               variant="ghost"
               size="sm"
-              className={cn("rounded-l-none", viewMode === "grid" && "bg-muted")}
+              className={cn(
+                "rounded-l-none",
+                viewMode === "grid" && "bg-muted",
+              )}
               onClick={() => setViewMode("grid")}
             >
               <Grid3X3 className="size-3.5" />
@@ -340,11 +390,12 @@ export default function MyJsonsPage() {
             const isExpanded = expandedId === file.id
             const size = computeSize(file.content)
             return (
-              <div key={file.id} className={cn("border-2", isExpanded && "bg-muted/30")}>
+              <div
+                key={file.id}
+                className={cn("border-2", isExpanded && "bg-muted/30")}
+              >
                 {/* Main row — flex layout */}
-                <div
-                  className="flex items-center gap-3 px-4 py-3 transition-colors"
-                >
+                <div className="flex items-center gap-3 px-4 py-3 transition-colors">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <button
                       type="button"
@@ -368,7 +419,11 @@ export default function MyJsonsPage() {
                             : "bg-muted text-muted-foreground hover:bg-muted/80",
                         )}
                       >
-                        {file.isPublic ? <Unlock className="size-3" /> : <Lock className="size-3" />}
+                        {file.isPublic ? (
+                          <Unlock className="size-3" />
+                        ) : (
+                          <Lock className="size-3" />
+                        )}
                         {file.isPublic ? "Public" : "Private"}
                       </button>
                     </span>
@@ -382,7 +437,11 @@ export default function MyJsonsPage() {
                       title="Copy URL"
                       className="hidden sm:inline-flex"
                     >
-                      {copiedId === file.filename ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                      {copiedId === file.filename ? (
+                        <Check className="size-3.5" />
+                      ) : (
+                        <Copy className="size-3.5" />
+                      )}
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -391,43 +450,67 @@ export default function MyJsonsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="text-sm">
-                        <DropdownMenuItem onClick={() => copyUrl(file.filename)}>
-                          {copiedId === file.filename ? <Check className="mr-2 size-3" /> : <Copy className="mr-2 size-3" />}
+                        <DropdownMenuItem
+                          onClick={() => copyUrl(file.filename)}
+                        >
+                          {copiedId === file.filename ? (
+                            <Check className="mr-2 size-3" />
+                          ) : (
+                            <Copy className="mr-2 size-3" />
+                          )}
                           Copy URL
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => downloadJson(file.filename, file.content)}>
-                          <Download className="mr-2 size-3" />Download
+                        <DropdownMenuItem
+                          onClick={() =>
+                            downloadJson(file.filename, file.content)
+                          }
+                        >
+                          <Download className="mr-2 size-3" />
+                          Download
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href={`/dashboard/edit/${file.id}`}>
-                            <Pencil className="mr-2 size-3" />Edit
+                            <Pencil className="mr-2 size-3" />
+                            Edit
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href={`/dashboard/explore/${file.id}`}>
-                            <Eye className="mr-2 size-3" />Explore
+                            <Eye className="mr-2 size-3" />
+                            Explore
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href={`/dashboard/analytics/${file.id}`}>
-                            <BarChart3 className="mr-2 size-3" />Analytics
+                            <BarChart3 className="mr-2 size-3" />
+                            Analytics
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href={`/dashboard/versions/${file.id}`}>
-                            <History className="mr-2 size-3" />Versions
+                            <History className="mr-2 size-3" />
+                            Versions
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/docs/${username}/${file.filename}`}>
-                            <BookOpen className="mr-2 size-3" />Docs
+                          <Link
+                            href={`/dashboard/docs/${username}/${file.filename}`}
+                          >
+                            <BookOpen className="mr-2 size-3" />
+                            Docs
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => setDeleteTarget({ id: file.id, filename: file.filename })}
+                          onClick={() =>
+                            setDeleteTarget({
+                              id: file.id,
+                              filename: file.filename,
+                            })
+                          }
                           className="text-destructive focus:text-destructive"
                         >
-                          <Trash2 className="mr-2 size-3" />Delete
+                          <Trash2 className="mr-2 size-3" />
+                          Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -439,7 +522,10 @@ export default function MyJsonsPage() {
                       className="hidden sm:inline-flex"
                     >
                       <ChevronRight
-                        className={cn("size-3.5 transition-transform", isExpanded && "rotate-90")}
+                        className={cn(
+                          "size-3.5 transition-transform",
+                          isExpanded && "rotate-90",
+                        )}
                       />
                     </Button>
                   </div>
@@ -457,15 +543,27 @@ export default function MyJsonsPage() {
                         <div className="space-y-3">
                           <div className="flex items-center gap-3 text-sm">
                             <FileJson className="size-4 shrink-0 text-muted-foreground" />
-                            <span className="w-16 text-muted-foreground">Type:</span>
-                            <span className="text-white capitalize">{contentType(file.content)}</span>
+                            <span className="w-16 text-muted-foreground">
+                              Type:
+                            </span>
+                            <span className="text-white capitalize">
+                              {contentType(file.content)}
+                            </span>
                           </div>
                           <div className="flex items-center gap-3 text-sm">
-                            {file.isPublic ? <Unlock className="size-4 shrink-0 text-muted-foreground" /> : <Lock className="size-4 shrink-0 text-muted-foreground" />}
-                            <span className="w-16 text-muted-foreground">Status:</span>
+                            {file.isPublic ? (
+                              <Unlock className="size-4 shrink-0 text-muted-foreground" />
+                            ) : (
+                              <Lock className="size-4 shrink-0 text-muted-foreground" />
+                            )}
+                            <span className="w-16 text-muted-foreground">
+                              Status:
+                            </span>
                             <button
                               type="button"
-                              onClick={() => toggleVisibility.mutate({ id: file.id })}
+                              onClick={() =>
+                                toggleVisibility.mutate({ id: file.id })
+                              }
                               disabled={toggleVisibility.isPending}
                               className={cn(
                                 "inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors",
@@ -479,14 +577,18 @@ export default function MyJsonsPage() {
                           </div>
                           <div className="flex items-center gap-3 text-sm">
                             <Calendar className="size-4 shrink-0 text-muted-foreground" />
-                            <span className="w-16 text-muted-foreground">Created:</span>
+                            <span className="w-16 text-muted-foreground">
+                              Created:
+                            </span>
                             <span className="text-white">
                               {new Date(file.createdAt).toLocaleDateString()}
                             </span>
                           </div>
                           <div className="flex items-center gap-3 text-sm">
                             <Clock className="size-4 shrink-0 text-muted-foreground" />
-                            <span className="w-16 text-muted-foreground">Modified:</span>
+                            <span className="w-16 text-muted-foreground">
+                              Modified:
+                            </span>
                             <span className="text-white">
                               {new Date(file.updatedAt).toLocaleDateString()}
                             </span>
@@ -511,7 +613,9 @@ export default function MyJsonsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => downloadJson(file.filename, file.content)}
+                              onClick={() =>
+                                downloadJson(file.filename, file.content)
+                              }
                             >
                               <Download className="mr-1 size-3" />
                               Download
@@ -529,7 +633,9 @@ export default function MyJsonsPage() {
                               </Link>
                             </Button>
                             <Button variant="outline" size="sm" asChild>
-                              <Link href={`/dashboard/docs/${username}/${file.filename}`}>
+                              <Link
+                                href={`/dashboard/docs/${username}/${file.filename}`}
+                              >
                                 <BookOpen className="mr-1 size-3" />
                                 Docs
                               </Link>
@@ -551,7 +657,10 @@ export default function MyJsonsPage() {
                               size="sm"
                               className="text-red-500 hover:text-red-500"
                               onClick={() =>
-                                setDeleteTarget({ id: file.id, filename: file.filename })
+                                setDeleteTarget({
+                                  id: file.id,
+                                  filename: file.filename,
+                                })
                               }
                             >
                               <Trash2 className="mr-1 size-3" />
@@ -580,32 +689,50 @@ export default function MyJsonsPage() {
                   </p>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon-xs" className="shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        className="shrink-0"
+                      >
                         <MoreHorizontal className="size-3.5" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="text-sm">
                       <DropdownMenuItem onClick={() => copyUrl(file.filename)}>
-                        <Copy className="mr-2 size-3" />Copy URL
+                        <Copy className="mr-2 size-3" />
+                        Copy URL
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => downloadJson(file.filename, file.content)}>
-                        <Download className="mr-2 size-3" />Download
+                      <DropdownMenuItem
+                        onClick={() =>
+                          downloadJson(file.filename, file.content)
+                        }
+                      >
+                        <Download className="mr-2 size-3" />
+                        Download
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href={`/dashboard/edit/${file.id}`}>
-                          <Pencil className="mr-2 size-3" />Edit
+                          <Pencil className="mr-2 size-3" />
+                          Edit
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href={`/dashboard/explore/${file.id}`}>
-                          <Eye className="mr-2 size-3" />Explore
+                          <Eye className="mr-2 size-3" />
+                          Explore
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => setDeleteTarget({ id: file.id, filename: file.filename })}
+                        onClick={() =>
+                          setDeleteTarget({
+                            id: file.id,
+                            filename: file.filename,
+                          })
+                        }
                         className="text-destructive focus:text-destructive"
                       >
-                        <Trash2 className="mr-2 size-3" />Delete
+                        <Trash2 className="mr-2 size-3" />
+                        Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -625,7 +752,11 @@ export default function MyJsonsPage() {
                         : "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20",
                     )}
                   >
-                    {file.isPublic ? <Unlock className="size-3" /> : <Lock className="size-3" />}
+                    {file.isPublic ? (
+                      <Unlock className="size-3" />
+                    ) : (
+                      <Lock className="size-3" />
+                    )}
                     {file.isPublic ? "Public" : "Private"}
                   </button>
                 </div>
@@ -656,7 +787,11 @@ export default function MyJsonsPage() {
                 key={p}
                 variant={p === page ? "default" : "ghost"}
                 size="icon-xs"
-                className={p === page ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}
+                className={
+                  p === page
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : ""
+                }
                 onClick={() => setPage(p)}
               >
                 {p}
@@ -673,7 +808,10 @@ export default function MyJsonsPage() {
           </div>
           <select
             value={pageSize}
-            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1) }}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value))
+              setPage(1)
+            }}
             className="h-7 rounded border bg-background px-2 text-xs"
           >
             <option value={5}>5 per page</option>
@@ -687,7 +825,9 @@ export default function MyJsonsPage() {
       {/* ─── Delete confirmation dialog ─── */}
       <Dialog
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null)
+        }}
       >
         <DialogContent>
           <DialogHeader>
@@ -696,8 +836,8 @@ export default function MyJsonsPage() {
               Move{" "}
               <span className="font-medium text-foreground">
                 {deleteTarget?.filename}.json
-              </span>
-              {" "}to trash? You can restore it later.
+              </span>{" "}
+              to trash? You can restore it later.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2">
@@ -706,7 +846,9 @@ export default function MyJsonsPage() {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => deleteTarget && deleteMutation.mutate({ id: deleteTarget.id })}
+              onClick={() =>
+                deleteTarget && deleteMutation.mutate({ id: deleteTarget.id })
+              }
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? "Deleting..." : "Delete"}
