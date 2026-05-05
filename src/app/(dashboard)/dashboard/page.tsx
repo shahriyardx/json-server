@@ -10,17 +10,6 @@ export const metadata: Metadata = {
   title: "Dashboard",
 }
 
-function formatRelativeTime(date: Date) {
-  const diff = Date.now() - date.getTime()
-  const mins = Math.floor(diff / 60_000)
-  if (mins < 1) return "just now"
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
-}
-
 export default async function DashboardPage() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -41,7 +30,6 @@ export default async function DashboardPage() {
     apiKeyCount,
     privacyStats,
     requestLogs,
-    recentFiles,
     trashCount,
     versionCount,
     aiGenerationCount,
@@ -63,12 +51,6 @@ export default async function DashboardPage() {
     prisma.fileRequestLog.findMany({
       where: { file: { userId }, date: { gte: sevenDaysAgo } },
       select: { date: true, count: true },
-    }),
-    prisma.jsonFile.findMany({
-      where: { userId, deletedAt: null },
-      select: { id: true, filename: true, createdAt: true },
-      orderBy: { createdAt: "desc" },
-      take: 5,
     }),
     prisma.jsonFile.count({ where: { userId, deletedAt: { not: null } } }),
     prisma.jsonFileVersion.count({ where: { jsonFile: { userId } } }),
@@ -267,37 +249,6 @@ export default async function DashboardPage() {
           <RequestChart data={chartData} />
       </div>
 
-      <div className="border p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-medium">Recent Files</h2>
-          <Link
-            href="/dashboard/json"
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            View all
-          </Link>
-        </div>
-        {recentFiles.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No files yet.</p>
-        ) : (
-          <div className="divide-y">
-            {recentFiles.map((file) => (
-              <Link
-                key={file.id}
-                href={`/dashboard/json/${file.id}/edit`}
-                className="-mx-5 flex items-center justify-between px-5 py-2.5 transition-colors hover:bg-accent/50"
-              >
-                <span className="truncate text-sm font-medium">
-                  {file.filename}
-                </span>
-                <span className="ml-4 shrink-0 text-xs text-muted-foreground">
-                  {formatRelativeTime(file.createdAt)}
-                </span>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   )
 }
