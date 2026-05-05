@@ -5,7 +5,11 @@ import { authClient } from "@/lib/auth-client"
 
 export function SignInButton() {
   const signIn = () => {
-    authClient.signIn.social({ provider: "github" })
+    authClient.signIn.social({
+      provider: "github",
+      callbackURL: "/dashboard",
+      errorCallbackURL: "/",
+    })
   }
 
   return (

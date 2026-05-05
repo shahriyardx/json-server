@@ -38,6 +38,9 @@ export const auth = betterAuth({
       adminRoles: ["admin", "superadmin"],
     }),
   ],
+  onAPIError: {
+    errorURL: "/",
+  },
   databaseHooks: {
     user: {
       create: {

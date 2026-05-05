@@ -32,9 +32,9 @@ function cacheHeaders(etag: string, updatedAt: Date) {
 async function getJsonFile(username: string, filename: string) {
   const user = await prisma.user.findFirst({
     where: { username },
-    select: { id: true, role: true },
+    select: { id: true, role: true, banned: true },
   })
-  if (!user) return null
+  if (!user || user.banned) return null
 
   const file = await prisma.jsonFile.findFirst({
     where: { userId: user.id, filename, deletedAt: null },

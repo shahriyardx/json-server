@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { auth } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 import { headers } from "next/headers"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -23,13 +24,35 @@ export const metadata: Metadata = {
   title: "JSON Server — Your JSON, live.",
 }
 
-export default async function Home() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
+export default async function Home(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const [searchParams, session] = await Promise.all([
+    props.searchParams,
+    auth.api.getSession({ headers: await headers() }),
+  ])
+
+  let bannedUser: { banReason: string | null } | null = null
+  if (session?.user?.id) {
+    bannedUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { banReason: true },
+    })
+  }
+
+  const banError = bannedUser?.banReason
+    || (bannedUser ? "Your account has been banned." : null)
+    || (typeof searchParams.error_description === "string" ? searchParams.error_description : null)
+    || (typeof searchParams.error === "string" ? searchParams.error : null)
 
   return (
     <>
+      {banError && (
+        <div className="flex items-center justify-center bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <span className="font-medium">Access denied:</span>&nbsp;
+          <span>{banError}</span>
+        </div>
+      )}
       {/* Hero */}
       <section className="pb-20 pt-24 sm:pb-28 sm:pt-32">
         <Container>
