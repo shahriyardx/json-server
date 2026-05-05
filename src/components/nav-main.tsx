@@ -13,7 +13,7 @@ import { Home, FileJson, UploadCloud, BookOpen, KeyRound, Trash2 } from "lucide-
 
 const items = [
   { title: "Overview", url: "/dashboard", icon: <Home /> },
-  { title: "My JSONs", url: "/dashboard/json", icon: <FileJson /> },
+  { title: "JSON Files", url: "/dashboard/json", icon: <FileJson /> },
   { title: "Upload", url: "/dashboard/json/upload", icon: <UploadCloud /> },
   { title: "API Keys", url: "/dashboard/api-keys", icon: <KeyRound /> },
   { title: "Trash", url: "/dashboard/trash", icon: <Trash2 /> },

@@ -144,7 +144,7 @@ export default async function DashboardPage() {
           href="/dashboard/json"
           className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-accent"
         >
-          <FileText className="h-4 w-4" /> My JSONs
+          <FileText className="h-4 w-4" /> JSON Files
         </Link>
         <Link
           href="/dashboard/api-keys"

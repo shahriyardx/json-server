@@ -239,7 +239,7 @@ export default function EditPage({
         className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-3.5" />
-        Back to My JSONs
+        Back to JSON Files
       </Link>
 
       <form

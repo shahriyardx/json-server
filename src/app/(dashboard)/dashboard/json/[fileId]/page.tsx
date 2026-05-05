@@ -63,7 +63,7 @@ export default function ExplorePage({
         className="mb-4 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-3" />
-        Back to My JSONs
+        Back to JSON Files
       </Link>
 
       <div className="mb-6">
