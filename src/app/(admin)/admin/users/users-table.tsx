@@ -56,6 +56,16 @@ export function UsersTable({
     onError: (err) => toast.error(err.message),
   })
 
+  const roleMutation = trpc.admin.updateUserRole.useMutation({
+    onSuccess: () => {
+      toast.success("Role updated")
+      onRefresh()
+    },
+    onError: (err) => toast.error(err.message),
+  })
+
+  const isSuperAdmin = session?.user?.role === "superadmin"
+
   const handleBan = (userId: string) => {
     banMutation.mutate({
       userId,
@@ -88,7 +98,7 @@ export function UsersTable({
             <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Joined</TableHead>
-            <TableHead className="w-24" />
+            <TableHead className="w-56" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -137,6 +147,29 @@ export function UsersTable({
                     >
                       Login as
                     </Button>
+                  )}
+                  {isSuperAdmin && u.id !== currentUserId && u.role !== "superadmin" && (
+                    <>
+                      {u.role === "admin" ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => roleMutation.mutate({ userId: u.id, role: "user" })}
+                          disabled={roleMutation.isPending}
+                        >
+                          Remove Admin
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => roleMutation.mutate({ userId: u.id, role: "admin" })}
+                          disabled={roleMutation.isPending}
+                        >
+                          Make Admin
+                        </Button>
+                      )}
+                    </>
                   )}
                   {u.id !== currentUserId && u.role !== "superadmin" && (
                     <>
