@@ -23,7 +23,7 @@ import {
   SidebarMenuSkeleton,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { ChevronsUpDownIcon, LogOutIcon, UserIcon } from "lucide-react"
+import { ChevronsUpDownIcon, LogOutIcon, ShieldCheckIcon, UserIcon } from "lucide-react"
 
 export function NavUser() {
   const { push } = useRouter()
@@ -92,6 +92,14 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            {(session.user.role === "admin" || session.user.role === "superadmin") && (
+              <DropdownMenuItem asChild>
+                <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
+                  <ShieldCheckIcon />
+                  Admin Panel
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem asChild>
               <Link href="/dashboard/settings" className="flex items-center gap-2 cursor-pointer">
                 <UserIcon />
