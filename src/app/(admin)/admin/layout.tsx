@@ -16,18 +16,6 @@ async function getAdmin(
   if (!session) redirect("/")
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } })
-  const adminCount = await prisma.user.count({
-    where: { role: { in: ["admin", "superadmin"] } },
-  })
-
-  if (adminCount === 0) {
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { role: "superadmin" },
-    })
-    return
-  }
-
   if (user?.role !== "admin" && user?.role !== "superadmin")
     redirect("/dashboard")
 }

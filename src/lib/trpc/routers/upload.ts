@@ -39,11 +39,15 @@ export const uploadRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const count = await ctx.prisma.jsonFile.count({
-        where: { userId: ctx.user.id, deletedAt: null },
-      })
-      if (count >= 100) {
-        throw new Error("Limit reached. You can upload up to 100 JSON files.")
+      const isAdmin = (ctx.user?.role === "admin" || ctx.user?.role === "superadmin")
+
+      if (!isAdmin) {
+        const count = await ctx.prisma.jsonFile.count({
+          where: { userId: ctx.user.id, deletedAt: null },
+        })
+        if (count >= 100) {
+          throw new Error("Limit reached. You can upload up to 100 JSON files.")
+        }
       }
 
       const duplicate = await ctx.prisma.jsonFile.findFirst({
@@ -54,17 +58,19 @@ export const uploadRouter = router({
       }
 
       const fileSize = bytes(input.jsonContent)
-      if (fileSize > MAX_FILE_SIZE) {
+      if (!isAdmin && fileSize > MAX_FILE_SIZE) {
         throw new Error("File exceeds 1MB size limit.")
       }
 
-      const allFiles = await ctx.prisma.jsonFile.findMany({
-        where: { userId: ctx.user.id, deletedAt: null },
-        select: { content: true },
-      })
-      const totalBytes = allFiles.reduce((sum, f) => sum + bytes(f.content), 0) + fileSize
-      if (totalBytes > MAX_TOTAL_SIZE) {
-        throw new Error("Total storage limit of 50MB exceeded.")
+      if (!isAdmin) {
+        const allFiles = await ctx.prisma.jsonFile.findMany({
+          where: { userId: ctx.user.id, deletedAt: null },
+          select: { content: true },
+        })
+        const totalBytes = allFiles.reduce((sum, f) => sum + bytes(f.content), 0) + fileSize
+        if (totalBytes > MAX_TOTAL_SIZE) {
+          throw new Error("Total storage limit of 50MB exceeded.")
+        }
       }
 
       const jsonFile = await ctx.prisma.jsonFile.create({
@@ -137,19 +143,23 @@ export const uploadRouter = router({
         }
       }
 
+      const isAdmin = (ctx.user?.role === "admin" || ctx.user?.role === "superadmin")
+
       const newSize = bytes(input.jsonContent)
-      if (newSize > MAX_FILE_SIZE) {
+      if (!isAdmin && newSize > MAX_FILE_SIZE) {
         throw new Error("File exceeds 1MB size limit.")
       }
 
       if (input.jsonContent !== existing.content) {
-        const allOtherFiles = await ctx.prisma.jsonFile.findMany({
-          where: { userId: ctx.user.id, id: { not: input.id }, deletedAt: null },
-          select: { content: true },
-        })
-        const totalBytes = allOtherFiles.reduce((sum, f) => sum + bytes(f.content), 0) + newSize
-        if (totalBytes > MAX_TOTAL_SIZE) {
-          throw new Error("Total storage limit of 50MB exceeded.")
+        if (!isAdmin) {
+          const allOtherFiles = await ctx.prisma.jsonFile.findMany({
+            where: { userId: ctx.user.id, id: { not: input.id }, deletedAt: null },
+            select: { content: true },
+          })
+          const totalBytes = allOtherFiles.reduce((sum, f) => sum + bytes(f.content), 0) + newSize
+          if (totalBytes > MAX_TOTAL_SIZE) {
+            throw new Error("Total storage limit of 50MB exceeded.")
+          }
         }
         // Save previous content as version
         await ctx.prisma.jsonFileVersion.create({

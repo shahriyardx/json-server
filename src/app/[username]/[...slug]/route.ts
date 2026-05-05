@@ -30,12 +30,18 @@ function cacheHeaders(etag: string, updatedAt: Date) {
 }
 
 async function getJsonFile(username: string, filename: string) {
-  const user = await prisma.user.findFirst({ where: { username } })
+  const user = await prisma.user.findFirst({
+    where: { username },
+    select: { id: true, role: true },
+  })
   if (!user) return null
 
-  return prisma.jsonFile.findFirst({
+  const file = await prisma.jsonFile.findFirst({
     where: { userId: user.id, filename, deletedAt: null },
   })
+  if (!file) return null
+
+  return { ...file, owner: user }
 }
 
 async function authenticateRequest(
@@ -215,17 +221,21 @@ export async function GET(
   const { username, slug } = await params
   const [filename, ...segments] = slug
 
-  const { ok } = rateLimiter.check(`${username}/${filename}`)
-  if (!ok) {
-    return NextResponse.json(
-      { error: "Too many requests" },
-      { status: 429, headers: { ...corsHeaders, "Retry-After": "60" } },
-    )
-  }
-
   const jsonFile = await getJsonFile(username, filename)
   if (!jsonFile) {
     return json({ error: "Not found" }, 404)
+  }
+
+  const isAdmin = jsonFile.owner.role === "admin" || jsonFile.owner.role === "superadmin"
+
+  if (!isAdmin) {
+    const { ok } = rateLimiter.check(`${username}/${filename}`)
+    if (!ok) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        { status: 429, headers: { ...corsHeaders, "Retry-After": "60" } },
+      )
+    }
   }
 
   const isAuthed = await authenticateRequest(req, jsonFile.userId)
@@ -236,9 +246,11 @@ export async function GET(
     }
   }
 
-  const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
-  if (!withinLimit) {
-    return json({ error: "Monthly request limit exceeded" }, 429)
+  if (!isAdmin) {
+    const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
+    if (!withinLimit) {
+      return json({ error: "Monthly request limit exceeded" }, 429)
+    }
   }
 
   let data: unknown

@@ -11,6 +11,18 @@ export const auth = betterAuth({
   }),
   appName: "json-server",
   plugins: [nextCookies()],
+  databaseHooks: {
+    user: {
+      create: {
+        async before(user) {
+          const count = await prisma.user.count()
+          if (count === 0) {
+            return { data: { ...user, role: "superadmin" } }
+          }
+        },
+      },
+    },
+  },
   user: {
     additionalFields: {
       username: {

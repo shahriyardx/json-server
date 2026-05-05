@@ -100,9 +100,12 @@ export default async function DashboardPage() {
   )
   const storageLimit = 52_428_800
 
+  const isAdmin = session?.user?.role === "admin" || session?.user?.role === "superadmin"
+
   const requestCount = requestStats?.count ?? 0
-  const fileLimit = 100
-  const requestLimit = 100_000
+  const fileLimit = isAdmin ? Infinity : 100
+  const requestLimit = isAdmin ? Infinity : 100_000
+  const apiKeyLimit = isAdmin ? Infinity : 10
 
   const publicCount = privacyStats.find((s) => s.isPublic)?._count ?? 0
   const privateCount = privacyStats.find((s) => !s.isPublic)?._count ?? 0
@@ -164,16 +167,21 @@ export default async function DashboardPage() {
         <div className="border p-5">
           <p className="text-sm text-muted-foreground">Files uploaded</p>
           <p className="mt-1 text-3xl font-bold">
-            {fileCount} / {fileLimit}
+            {fileCount}
+            <span className="text-muted-foreground">
+              {" "}/ {isAdmin ? "∞" : fileLimit}
+            </span>
           </p>
-          <div className="mt-3 h-1.5 bg-border">
-            <div
-              className="h-full bg-foreground transition-all"
-              style={{
-                width: `${Math.min((fileCount / fileLimit) * 100, 100)}%`,
-              }}
-            />
-          </div>
+          {!isAdmin && (
+            <div className="mt-3 h-1.5 bg-border">
+              <div
+                className="h-full bg-foreground transition-all"
+                style={{
+                  width: `${Math.min((fileCount / fileLimit) * 100, 100)}%`,
+                }}
+              />
+            </div>
+          )}
           <p className="mt-1.5 text-xs text-muted-foreground">
             {publicCount} public / {privateCount} private
           </p>
@@ -183,46 +191,62 @@ export default async function DashboardPage() {
           <p className="mt-1 text-3xl font-bold">
             {bytesUsed < 1_048_576
               ? `${(bytesUsed / 1024).toFixed(0)}KB`
-              : `${(bytesUsed / 1_048_576).toFixed(1)}MB`}{" "}
-            / 50MB
+              : `${(bytesUsed / 1_048_576).toFixed(1)}MB`}
+            <span className="text-muted-foreground">
+              {" "}/ {isAdmin ? "∞" : "50MB"}
+            </span>
           </p>
-          <div className="mt-3 h-1.5 bg-border">
-            <div
-              className="h-full bg-foreground transition-all"
-              style={{
-                width: `${Math.min((bytesUsed / storageLimit) * 100, 100)}%`,
-              }}
-            />
-          </div>
+          {!isAdmin && (
+            <div className="mt-3 h-1.5 bg-border">
+              <div
+                className="h-full bg-foreground transition-all"
+                style={{
+                  width: `${Math.min((bytesUsed / storageLimit) * 100, 100)}%`,
+                }}
+              />
+            </div>
+          )}
         </div>
         <div className="border p-5">
           <p className="text-sm text-muted-foreground">Requests this month</p>
           <p className="mt-1 text-3xl font-bold">
-            {requestCount.toLocaleString()} / {requestLimit.toLocaleString()}
+            {requestCount.toLocaleString()}
+            <span className="text-muted-foreground">
+              {" "}/ {isAdmin ? "∞" : requestLimit.toLocaleString()}
+            </span>
           </p>
-          <div className="mt-3 h-1.5 bg-border">
-            <div
-              className="h-full bg-foreground transition-all"
-              style={{
-                width: `${Math.min(
-                  (requestCount / requestLimit) * 100,
-                  100,
-                )}%`,
-              }}
-            />
-          </div>
+          {!isAdmin && (
+            <div className="mt-3 h-1.5 bg-border">
+              <div
+                className="h-full bg-foreground transition-all"
+                style={{
+                  width: `${Math.min(
+                    (requestCount / requestLimit) * 100,
+                    100,
+                  )}%`,
+                }}
+              />
+            </div>
+          )}
         </div>
         <div className="border p-5">
           <p className="text-sm text-muted-foreground">API Keys</p>
-          <p className="mt-1 text-3xl font-bold">{apiKeyCount} / 10</p>
-          <div className="mt-3 h-1.5 bg-border">
-            <div
-              className="h-full bg-foreground transition-all"
-              style={{
-                width: `${Math.min((apiKeyCount / 10) * 100, 100)}%`,
-              }}
-            />
-          </div>
+          <p className="mt-1 text-3xl font-bold">
+            {apiKeyCount}
+            <span className="text-muted-foreground">
+              {" "}/ {isAdmin ? "∞" : apiKeyLimit}
+            </span>
+          </p>
+          {!isAdmin && (
+            <div className="mt-3 h-1.5 bg-border">
+              <div
+                className="h-full bg-foreground transition-all"
+                style={{
+                  width: `${Math.min((apiKeyCount / apiKeyLimit) * 100, 100)}%`,
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
