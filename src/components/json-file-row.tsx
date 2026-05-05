@@ -151,7 +151,7 @@ console.log(data)`
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon-xs">
+              <Button variant="ghost" size="icon-xs" className="sm:hidden">
                 <MoreHorizontal className="size-3.5" />
               </Button>
             </DropdownMenuTrigger>
@@ -229,47 +229,38 @@ console.log(data)`
               <h4 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Details
               </h4>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-sm">
-                  <FileJson className="size-4 shrink-0 text-muted-foreground" />
-                  <span className="w-16 text-muted-foreground">Type:</span>
-                  <span className="text-white capitalize">{contentType(file)}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
+              <div className="flex flex-col gap-1.5">
+                <span className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  <FileJson className="size-3.5" />
+                  Type:
+                  <span className="text-foreground capitalize">{contentType(file)}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={onToggleVisibility}
+                  disabled={isToggling}
+                  className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors text-left"
+                >
                   {file.isPublic ? (
-                    <Unlock className="size-4 shrink-0 text-muted-foreground" />
+                    <Unlock className="size-3.5" />
                   ) : (
-                    <Lock className="size-4 shrink-0 text-muted-foreground" />
+                    <Lock className="size-3.5" />
                   )}
-                  <span className="w-16 text-muted-foreground">Status:</span>
-                  <button
-                    type="button"
-                    onClick={onToggleVisibility}
-                    disabled={isToggling}
-                    className={cn(
-                      "inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors",
-                      file.isPublic
-                        ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                        : "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20",
-                    )}
-                  >
+                  Status:
+                  <span className={file.isPublic ? "text-emerald-500" : "text-amber-500"}>
                     {file.isPublic ? "Public" : "Private"}
-                  </button>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Calendar className="size-4 shrink-0 text-muted-foreground" />
-                  <span className="w-16 text-muted-foreground">Created:</span>
-                  <span className="text-white">
-                    {new Date(file.createdAt).toLocaleDateString()}
                   </span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Clock className="size-4 shrink-0 text-muted-foreground" />
-                  <span className="w-16 text-muted-foreground">Modified:</span>
-                  <span className="text-white">
-                    {new Date(file.updatedAt).toLocaleDateString()}
-                  </span>
-                </div>
+                </button>
+                <span className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  <Calendar className="size-3.5" />
+                  Created:
+                  <span className="text-foreground">{new Date(file.createdAt).toLocaleDateString()}</span>
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  <Clock className="size-3.5" />
+                  Modified:
+                  <span className="text-foreground">{new Date(file.updatedAt).toLocaleDateString()}</span>
+                </span>
               </div>
             </div>
             {/* Actions */}
@@ -277,56 +268,66 @@ console.log(data)`
               <h4 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Actions
               </h4>
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" onClick={onCopyUrl}>
-                    <Copy className="mr-1 size-3" />
-                    Copy URL
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={onDownload}>
-                    <Download className="mr-1 size-3" />
-                    Download
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/explore/${file.id}`}>
-                      <Eye className="mr-1 size-3" />
-                      Explore
-                    </Link>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/analytics/${file.id}`}>
-                      <BarChart3 className="mr-1 size-3" />
-                      Analytics
-                    </Link>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/docs/${username}/${file.filename}`}>
-                      <BookOpen className="mr-1 size-3" />
-                      Docs
-                    </Link>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/versions/${file.id}`}>
-                      <History className="mr-1 size-3" />
-                      Versions
-                    </Link>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/edit/${file.id}`}>
-                      <Pencil className="mr-1 size-3" />
-                      Edit
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-500 hover:text-red-500"
-                    onClick={onDelete}
-                  >
-                    <Trash2 className="mr-1 size-3" />
-                    Delete
-                  </Button>
-                </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={onCopyUrl}
+                  className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors text-left"
+                >
+                  <Copy className="size-3.5" />
+                  Copy URL
+                </button>
+                <button
+                  type="button"
+                  onClick={onDownload}
+                  className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors text-left"
+                >
+                  <Download className="size-3.5" />
+                  Download
+                </button>
+                <Link
+                  href={`/dashboard/explore/${file.id}`}
+                  className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Eye className="size-3.5" />
+                  Explore
+                </Link>
+                <Link
+                  href={`/dashboard/analytics/${file.id}`}
+                  className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <BarChart3 className="size-3.5" />
+                  Analytics
+                </Link>
+                <Link
+                  href={`/dashboard/docs/${username}/${file.filename}`}
+                  className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <BookOpen className="size-3.5" />
+                  Docs
+                </Link>
+                <Link
+                  href={`/dashboard/versions/${file.id}`}
+                  className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <History className="size-3.5" />
+                  Versions
+                </Link>
+                <Link
+                  href={`/dashboard/edit/${file.id}`}
+                  className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Pencil className="size-3.5" />
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-red-500 hover:text-red-400 transition-colors text-left"
+                >
+                  <Trash2 className="size-3.5" />
+                  Delete
+                </button>
               </div>
             </div>
           </div>
