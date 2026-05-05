@@ -2,8 +2,17 @@
 
 import { useState } from "react"
 import { authClient } from "@/lib/auth-client"
+import { trpc } from "@/lib/trpc/client"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 type User = {
   id: string
@@ -28,31 +37,35 @@ export function UsersTable({
   const [banDays, setBanDays] = useState("")
   const [banTarget, setBanTarget] = useState<string | null>(null)
 
-  const handleBan = async (userId: string) => {
-    try {
-      await authClient.admin.banUser({
-        userId,
-        banReason: banReason || undefined,
-        banExpiresIn: banDays ? Number(banDays) * 86400 : undefined,
-      })
+  const banMutation = trpc.admin.banUser.useMutation({
+    onSuccess: () => {
       toast.success("User banned")
       setBanTarget(null)
       setBanReason("")
       setBanDays("")
       onRefresh()
-    } catch (err: any) {
-      toast.error(err?.message ?? "Failed to ban user")
-    }
-  }
+    },
+    onError: (err) => toast.error(err.message),
+  })
 
-  const handleUnban = async (userId: string) => {
-    try {
-      await authClient.admin.unbanUser({ userId })
+  const unbanMutation = trpc.admin.unbanUser.useMutation({
+    onSuccess: () => {
       toast.success("User unbanned")
       onRefresh()
-    } catch (err: any) {
-      toast.error(err?.message ?? "Failed to unban user")
-    }
+    },
+    onError: (err) => toast.error(err.message),
+  })
+
+  const handleBan = (userId: string) => {
+    banMutation.mutate({
+      userId,
+      banReason: banReason || undefined,
+      banExpiresIn: banDays ? Number(banDays) * 86400 : undefined,
+    })
+  }
+
+  const handleUnban = (userId: string) => {
+    unbanMutation.mutate({ userId })
   }
 
   const handleImpersonate = async (userId: string) => {
@@ -66,22 +79,22 @@ export function UsersTable({
   }
 
   return (
-    <div className="mt-6 overflow-x-auto border">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b bg-muted text-left">
-            <th className="px-4 py-2 font-medium text-muted-foreground">Name</th>
-            <th className="px-4 py-2 font-medium text-muted-foreground">Email</th>
-            <th className="px-4 py-2 font-medium text-muted-foreground">Role</th>
-            <th className="px-4 py-2 font-medium text-muted-foreground">Status</th>
-            <th className="px-4 py-2 font-medium text-muted-foreground">Joined</th>
-            <th className="w-24 px-4 py-2" />
-          </tr>
-        </thead>
-        <tbody>
+    <div className="mt-6 border">
+      <Table>
+        <TableHeader className="bg-muted/50">
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Joined</TableHead>
+            <TableHead className="w-24" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {users.map((u) => (
-            <tr key={u.id} className="border-b last:border-0">
-              <td className="px-4 py-2 whitespace-nowrap">
+            <TableRow key={u.id}>
+              <TableCell>
                 <div>
                   <span>{u.name}</span>
                   {u.username && (
@@ -90,16 +103,16 @@ export function UsersTable({
                     </span>
                   )}
                 </div>
-              </td>
-              <td className="px-4 py-2 text-muted-foreground">{u.email}</td>
-              <td className="px-4 py-2">
+              </TableCell>
+              <TableCell className="text-muted-foreground">{u.email}</TableCell>
+              <TableCell>
                 <span
                   className={`text-xs font-medium ${u.role === "admin" || u.role === "superadmin" ? "text-foreground" : "text-muted-foreground"}`}
                 >
                   {u.role}
                 </span>
-              </td>
-              <td className="px-4 py-2">
+              </TableCell>
+              <TableCell>
                 {u.banned ? (
                   <span className="text-xs font-medium text-destructive">
                     Banned
@@ -110,13 +123,12 @@ export function UsersTable({
                 ) : (
                   <span className="text-xs text-muted-foreground">Active</span>
                 )}
-              </td>
-              <td className="px-4 py-2 text-muted-foreground">
+              </TableCell>
+              <TableCell className="text-muted-foreground">
                 {new Date(u.createdAt).toLocaleDateString()}
-              </td>
-              <td className="px-4 py-2">
+              </TableCell>
+              <TableCell>
                 <div className="flex items-center gap-1.5">
-                  {/* Impersonate */}
                   {u.id !== currentUserId && (
                     <Button
                       variant="ghost"
@@ -126,8 +138,6 @@ export function UsersTable({
                       Login as
                     </Button>
                   )}
-
-                  {/* Ban / Unban */}
                   {u.id !== currentUserId && u.role !== "superadmin" && (
                     <>
                       {u.banned ? (
@@ -135,6 +145,7 @@ export function UsersTable({
                           variant="ghost"
                           size="sm"
                           onClick={() => handleUnban(u.id)}
+                          disabled={unbanMutation.isPending}
                         >
                           Unban
                         </Button>
@@ -150,11 +161,11 @@ export function UsersTable({
                     </>
                   )}
                 </div>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
 
       {/* Ban dialog */}
       {banTarget && (
@@ -203,8 +214,8 @@ export function UsersTable({
                 }}>
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={() => handleBan(banTarget)}>
-                Ban
+              <Button variant="destructive" onClick={() => handleBan(banTarget)} disabled={banMutation.isPending}>
+                {banMutation.isPending ? "Banning..." : "Ban"}
               </Button>
             </div>
           </div>

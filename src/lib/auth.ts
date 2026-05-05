@@ -13,11 +13,13 @@ const ac = createAccessControl({
 })
 
 const adminRole = ac.newRole({
-  ...adminAc.statements,
+  user: ["create", "list", "impersonate", "get", "update"],
+  session: ["list", "revoke", "delete"],
 })
 
 const superadminRole = ac.newRole({
-  ...adminAc.statements,
+  user: [...adminAc.statements.user, "impersonate-admins"],
+  session: adminAc.statements.session,
 })
 
 export const auth = betterAuth({
@@ -33,6 +35,7 @@ export const auth = betterAuth({
         admin: adminRole,
         superadmin: superadminRole,
       },
+      adminRoles: ["admin", "superadmin"],
     }),
   ],
   databaseHooks: {
