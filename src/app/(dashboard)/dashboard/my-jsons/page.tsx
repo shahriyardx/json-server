@@ -245,7 +245,7 @@ export default function MyJsonsPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="mb-4 space-y-2">
+      <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -263,7 +263,7 @@ export default function MyJsonsPage() {
           <select
             value={sortBy}
             onChange={(e) => { setSortBy(e.target.value as SortField); setPage(1) }}
-            className="h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
+            className="hidden sm:inline-flex h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
           >
             <option value="newest">Sort: Newest</option>
             <option value="oldest">Sort: Oldest</option>
@@ -275,7 +275,7 @@ export default function MyJsonsPage() {
           <select
             value={typeFilter}
             onChange={(e) => { setTypeFilter(e.target.value as TypeFilter); setPage(1) }}
-            className="h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
+            className="hidden sm:inline-flex h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
           >
             <option value="all">Type: All</option>
             <option value="object">Object</option>
@@ -284,14 +284,14 @@ export default function MyJsonsPage() {
           <select
             value={sizeFilter}
             onChange={(e) => { setSizeFilter(e.target.value as SizeFilter); setPage(1) }}
-            className="h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
+            className="hidden sm:inline-flex h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
           >
             <option value="all">Size: All</option>
             <option value="small">&lt;1KB</option>
             <option value="medium">1-10KB</option>
             <option value="large">&gt;10KB</option>
           </select>
-          <div className="flex rounded-lg border">
+          <div className="hidden sm:flex rounded-lg border">
             <Button
               variant="ghost"
               size="sm"
