@@ -14,6 +14,8 @@ import {
   Eye,
   EyeOff,
   Check,
+  Bot,
+  Loader2,
 } from "lucide-react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
@@ -56,7 +58,7 @@ const formSchema = z.object({
 })
 
 type FormData = z.infer<typeof formSchema>
-type UploadMode = "file" | "paste"
+type UploadMode = "file" | "paste" | "ai"
 
 function bytes(str: string) {
   return new TextEncoder().encode(str).length
@@ -100,8 +102,12 @@ export default function UploadPage() {
   const [urlCopied, setUrlCopied] = useState(false)
   const isMac = typeof navigator !== "undefined" && navigator.platform.includes("Mac")
   const [rawContent, setRawContent] = useState("")
+  const [aiPrompt, setAiPrompt] = useState("")
+  const [aiResult, setAiResult] = useState("")
 
   const uploadMutation = trpc.upload.uploadJson.useMutation()
+  const aiMutation = trpc.ai.generateJson.useMutation()
+  const { data: aiConfigured } = trpc.ai.isConfigured.useQuery()
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -118,7 +124,7 @@ export default function UploadPage() {
   const jsonShape = useMemo(() => {
     return rawContent ? getJsonShape(rawContent) : null
   }, [rawContent])
-  const hasContent = mode === "file" ? !!file : !!rawContent
+  const hasContent = mode === "file" ? !!file : mode === "ai" ? !!aiResult : !!rawContent
 
   const readFileContent = useCallback((f: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -222,6 +228,8 @@ export default function UploadPage() {
     setTypeError("")
     setSizeError("")
     setRawContent("")
+    setAiPrompt("")
+    setAiResult("")
     form.setValue("filename", "")
     form.setValue("jsonContent", "")
     form.clearErrors("jsonContent")
@@ -243,6 +251,24 @@ export default function UploadPage() {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       form.handleSubmit(handleSubmit)()
     }
+  }
+
+  const handleGenerate = async () => {
+    if (!aiPrompt.trim()) return
+    try {
+      const result = await aiMutation.mutateAsync({ prompt: aiPrompt })
+      setAiResult(result.json)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Generation failed")
+    }
+  }
+
+  const handleAcceptAi = () => {
+    if (!aiResult) return
+    setRawContent(aiResult)
+    form.setValue("jsonContent", aiResult)
+    form.trigger("jsonContent")
+    setMode("paste")
   }
 
   const copyUrl = async () => {
@@ -283,6 +309,17 @@ export default function UploadPage() {
           <Code className="size-4" />
           Paste
         </button>
+        {aiConfigured && (
+          <button
+            type="button"
+            onClick={() => switchMode("ai")}
+            data-active={mode === "ai" || undefined}
+            className="flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors data-active:bg-muted data-active:text-foreground text-muted-foreground hover:text-foreground"
+          >
+            <Bot className="size-4" />
+            AI
+          </button>
+        )}
       </div>
 
       <form
@@ -365,6 +402,92 @@ export default function UploadPage() {
                       Select a .json file or drag & drop one here
                     </FieldDescription>
                   </Field>
+                ) : mode === "ai" ? (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>AI Prompt</FieldLabel>
+                    <div className="space-y-3">
+                      <textarea
+                        placeholder="Describe the JSON you want (e.g., '10 users with name, email, age, and address object')"
+                        rows={6}
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        className="w-full rounded-lg border-2 bg-transparent p-3 text-sm transition-colors placeholder:text-muted-foreground/50 focus:outline-none focus:ring-0"
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleGenerate}
+                        disabled={!aiPrompt.trim() || aiMutation.isPending}
+                        className="gap-2"
+                      >
+                        {aiMutation.isPending ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="size-4" />
+                            Generate JSON
+                          </>
+                        )}
+                      </Button>
+                      {aiResult && (
+                        <div className="space-y-2 rounded-lg border bg-muted/20 p-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">Generated JSON</span>
+                            <div className="flex items-center gap-1.5">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  try {
+                                    const formatted = JSON.stringify(JSON.parse(aiResult), null, 2)
+                                    setAiResult(formatted)
+                                  } catch { toast.error("Invalid JSON") }
+                                }}
+                                className="gap-1.5"
+                              >
+                                <Sparkles className="size-3.5" />
+                                Format
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  try {
+                                    setAiResult(JSON.stringify(JSON.parse(aiResult)))
+                                  } catch { toast.error("Invalid JSON") }
+                                }}
+                                className="gap-1.5"
+                              >
+                                <Minimize2 className="size-3.5" />
+                                Minify
+                              </Button>
+                            </div>
+                          </div>
+                          <textarea
+                            readOnly
+                            value={aiResult}
+                            rows={12}
+                            className="w-full rounded-lg border bg-transparent p-3 font-mono text-sm"
+                          />
+                          <Button
+                            type="button"
+                            onClick={handleAcceptAi}
+                            className="w-full gap-2"
+                          >
+                            <Check className="size-4" />
+                            Accept & Continue Editing
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    <FieldDescription>
+                      Describe what JSON you want and AI will generate it
+                    </FieldDescription>
+                  </Field>
                 ) : (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="json-paste">
@@ -435,7 +558,7 @@ export default function UploadPage() {
           />
 
           {/* Size indicator */}
-          {hasContent && (
+          {mode !== "ai" && hasContent && (
             <div className="-mt-2 space-y-1.5">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>{formatBytes(contentBytes)}</span>
@@ -453,60 +576,64 @@ export default function UploadPage() {
           )}
 
           {/* Filename */}
-          <Controller
-            name="filename"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="filename">Filename</FieldLabel>
-                <Input
-                  {...field}
-                  id="filename"
-                  placeholder="my-data"
-                  autoComplete="off"
-                  aria-invalid={fieldState.invalid}
-                />
-                <FieldDescription>
-                  Only letters, numbers, dashes, and underscores allowed
-                </FieldDescription>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
+          {mode !== "ai" && (
+            <Controller
+              name="filename"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="filename">Filename</FieldLabel>
+                  <Input
+                    {...field}
+                    id="filename"
+                    placeholder="my-data"
+                    autoComplete="off"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  <FieldDescription>
+                    Only letters, numbers, dashes, and underscores allowed
+                  </FieldDescription>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          )}
 
           {/* Visibility */}
-          <Field>
-            <FieldLabel>Visibility</FieldLabel>
-            <div className="flex items-center gap-3 rounded-lg border px-4 py-3">
-              <button
-                type="button"
-                onClick={() => setIsPublic(!isPublic)}
-                data-public={isPublic || undefined}
-                data-private={!isPublic || undefined}
-                className="flex items-center gap-2 text-sm transition-colors data-public:text-primary data-private:text-muted-foreground"
-              >
-                {isPublic ? (
-                  <Eye className="size-4" />
-                ) : (
-                  <EyeOff className="size-4" />
-                )}
-                <span className="font-medium">
-                  {isPublic ? "Public" : "Private"}
+          {mode !== "ai" && (
+            <Field>
+              <FieldLabel>Visibility</FieldLabel>
+              <div className="flex items-center gap-3 rounded-lg border px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setIsPublic(!isPublic)}
+                  data-public={isPublic || undefined}
+                  data-private={!isPublic || undefined}
+                  className="flex items-center gap-2 text-sm transition-colors data-public:text-primary data-private:text-muted-foreground"
+                >
+                  {isPublic ? (
+                    <Eye className="size-4" />
+                  ) : (
+                    <EyeOff className="size-4" />
+                  )}
+                  <span className="font-medium">
+                    {isPublic ? "Public" : "Private"}
+                  </span>
+                </button>
+                <span className="text-xs text-muted-foreground">
+                  {isPublic
+                    ? "Anyone with the link can access this JSON"
+                    : "Only you and users with an API key can access"}
                 </span>
-              </button>
-              <span className="text-xs text-muted-foreground">
-                {isPublic
-                  ? "Anyone with the link can access this JSON"
-                  : "Only you and users with an API key can access"}
-              </span>
-            </div>
-          </Field>
+              </div>
+            </Field>
+          )}
         </FieldGroup>
 
         {/* URL Preview */}
-        {username && watchedFilename && (
+        {mode !== "ai" && username && watchedFilename && (
           <div className="rounded-lg border bg-muted/20 px-4 py-3">
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs text-muted-foreground">
@@ -536,22 +663,24 @@ export default function UploadPage() {
         )}
 
         {/* Submit */}
-        <div className="space-y-2">
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={!hasContent || uploadMutation.isPending}
-          >
-            {uploadMutation.isPending ? (
-              "Uploading..."
-            ) : (
-              `Upload ${watchedFilename ? `"${watchedFilename}"` : "JSON"}`
-            )}
-          </Button>
-          <p className="text-center text-xs text-muted-foreground">
-            Press {isMac ? "⌘" : "Ctrl"}+Enter to submit
-          </p>
-        </div>
+        {mode !== "ai" && (
+          <div className="space-y-2">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={!hasContent || uploadMutation.isPending}
+            >
+              {uploadMutation.isPending ? (
+                "Uploading..."
+              ) : (
+                `Upload ${watchedFilename ? `"${watchedFilename}"` : "JSON"}`
+              )}
+            </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              Press {isMac ? "⌘" : "Ctrl"}+Enter to submit
+            </p>
+          </div>
+        )}
       </form>
     </div>
   )

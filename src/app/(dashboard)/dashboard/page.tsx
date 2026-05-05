@@ -44,6 +44,7 @@ export default async function DashboardPage() {
     recentFiles,
     trashCount,
     versionCount,
+    aiGenerationCount,
   ] = await Promise.all([
     prisma.jsonFile.count({ where: { userId } }),
     prisma.userMonthlyRequest.findUnique({
@@ -71,6 +72,10 @@ export default async function DashboardPage() {
     }),
     prisma.jsonFile.count({ where: { userId, deletedAt: { not: null } } }),
     prisma.jsonFileVersion.count({ where: { jsonFile: { userId } } }),
+    prisma.userMonthlyAiGeneration.findUnique({
+      where: { userId_month_year: { userId, month, year } },
+      select: { count: true },
+    }),
   ])
 
   // 7-day chart data
@@ -106,6 +111,8 @@ export default async function DashboardPage() {
   const fileLimit = isAdmin ? Infinity : 100
   const requestLimit = isAdmin ? Infinity : 100_000
   const apiKeyLimit = isAdmin ? Infinity : 10
+  const aiLimit = isAdmin ? Infinity : 30
+  const aiCount = aiGenerationCount?.count ?? 0
 
   const publicCount = privacyStats.find((s) => s.isPublic)?._count ?? 0
   const privateCount = privacyStats.find((s) => !s.isPublic)?._count ?? 0
@@ -163,7 +170,7 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
         <div className="border p-5">
           <p className="text-sm text-muted-foreground">Files uploaded</p>
           <p className="mt-1 text-3xl font-bold">
@@ -230,11 +237,11 @@ export default async function DashboardPage() {
           )}
         </div>
         <div className="border p-5">
-          <p className="text-sm text-muted-foreground">API Keys</p>
+          <p className="text-sm text-muted-foreground">AI Generations</p>
           <p className="mt-1 text-3xl font-bold">
-            {apiKeyCount}
+            {aiCount}
             <span className="text-muted-foreground">
-              {" "}/ {isAdmin ? "∞" : apiKeyLimit}
+              {" "}/ {isAdmin ? "∞" : aiLimit}
             </span>
           </p>
           {!isAdmin && (
@@ -242,7 +249,7 @@ export default async function DashboardPage() {
               <div
                 className="h-full bg-foreground transition-all"
                 style={{
-                  width: `${Math.min((apiKeyCount / apiKeyLimit) * 100, 100)}%`,
+                  width: `${Math.min((aiCount / aiLimit) * 100, 100)}%`,
                 }}
               />
             </div>
@@ -250,8 +257,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3 min-w-0">
-        <div className="border p-5 lg:col-span-2 min-w-0 overflow-hidden">
+      <div className="border p-5 min-w-0 overflow-hidden">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-medium">Requests (Last 7 Days)</h2>
             <span className="text-2xl font-bold">
@@ -259,43 +265,6 @@ export default async function DashboardPage() {
             </span>
           </div>
           <RequestChart data={chartData} />
-        </div>
-        <div className="space-y-4">
-          <div className="border p-5">
-            <p className="text-sm text-muted-foreground">Total Versions</p>
-            <p className="mt-1 text-3xl font-bold">
-              {versionCount.toLocaleString()}
-            </p>
-          </div>
-          <div className="border p-5">
-            <p className="text-sm text-muted-foreground">Trash</p>
-            <Link
-              href="/dashboard/trash"
-              className="mt-1 block text-3xl font-bold hover:underline"
-            >
-              {trashCount}
-            </Link>
-          </div>
-          <div className="border p-5">
-            <p className="mb-2 text-sm text-muted-foreground">
-              Storage by Type
-            </p>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between">
-                <span>Arrays</span>
-                <span className="font-medium">{arrayCount}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Objects</span>
-                <span className="font-medium">{objectCount}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Primitives</span>
-                <span className="font-medium">{primitiveCount}</span>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div className="border p-5">

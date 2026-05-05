@@ -24,9 +24,10 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
-  jsonFiles     JsonFile[]
-  apiKeys       ApiKey[]
-  monthlyRequests UserMonthlyRequest[]
+  jsonFiles          JsonFile[]
+  apiKeys            ApiKey[]
+  monthlyRequests    UserMonthlyRequest[]
+  monthlyAiGenerations UserMonthlyAiGeneration[]
 
   @@unique([email])
   @@map("user")
@@ -135,6 +136,19 @@ model UserMonthlyRequest {
   @@unique([userId, month, year])
   @@index([userId])
   @@map("user_monthly_request")
+}
+
+model UserMonthlyAiGeneration {
+  id     String @id @default(cuid())
+  userId String
+  month  Int
+  year   Int
+  count  Int    @default(0)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year])
+  @@index([userId])
+  @@map("user_monthly_ai_generation")
 }
 
 model Webhook {

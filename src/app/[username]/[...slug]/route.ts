@@ -246,11 +246,9 @@ export async function GET(
     }
   }
 
-  if (!isAdmin) {
-    const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
-    if (!withinLimit) {
-      return json({ error: "Monthly request limit exceeded" }, 429)
-    }
+  const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
+  if (!isAdmin && !withinLimit) {
+    return json({ error: "Monthly request limit exceeded" }, 429)
   }
 
   let data: unknown
