@@ -17,6 +17,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Copy,
   Trash2,
   Download,
@@ -309,46 +316,58 @@ console.log(data)`
           </kbd>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <select
+          <Select
             value={sortBy}
-            onChange={(e) => {
-              setSortBy(e.target.value as SortField)
+            onValueChange={(v) => {
+              setSortBy(v as SortField)
               setPage(1)
             }}
-            className="hidden sm:inline-flex h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
           >
-            <option value="newest">Sort: Newest</option>
-            <option value="oldest">Sort: Oldest</option>
-            <option value="name-asc">Name A-Z</option>
-            <option value="name-desc">Name Z-A</option>
-            <option value="size-asc">Size ↑</option>
-            <option value="size-desc">Size ↓</option>
-          </select>
-          <select
+            <SelectTrigger className="hidden sm:inline-flex h-9 w-[130px]">
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="oldest">Oldest</SelectItem>
+              <SelectItem value="name-asc">Name A-Z</SelectItem>
+              <SelectItem value="name-desc">Name Z-A</SelectItem>
+              <SelectItem value="size-asc">Size ↑</SelectItem>
+              <SelectItem value="size-desc">Size ↓</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
             value={typeFilter}
-            onChange={(e) => {
-              setTypeFilter(e.target.value as TypeFilter)
+            onValueChange={(v) => {
+              setTypeFilter(v as TypeFilter)
               setPage(1)
             }}
-            className="hidden sm:inline-flex h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
           >
-            <option value="all">Type: All</option>
-            <option value="object">Object</option>
-            <option value="array">Array</option>
-          </select>
-          <select
+            <SelectTrigger className="hidden sm:inline-flex h-9 w-[120px]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="object">Object</SelectItem>
+              <SelectItem value="array">Array</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
             value={sizeFilter}
-            onChange={(e) => {
-              setSizeFilter(e.target.value as SizeFilter)
+            onValueChange={(v) => {
+              setSizeFilter(v as SizeFilter)
               setPage(1)
             }}
-            className="hidden sm:inline-flex h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
           >
-            <option value="all">Size: All</option>
-            <option value="small">&lt;1KB</option>
-            <option value="medium">1-10KB</option>
-            <option value="large">&gt;10KB</option>
-          </select>
+            <SelectTrigger className="hidden sm:inline-flex h-9 w-[110px]">
+              <SelectValue placeholder="Size" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="small">&lt;1KB</SelectItem>
+              <SelectItem value="medium">1-10KB</SelectItem>
+              <SelectItem value="large">&gt;10KB</SelectItem>
+            </SelectContent>
+          </Select>
           <div className="hidden sm:flex rounded-lg border">
             <Button
               variant="ghost"
@@ -548,19 +567,23 @@ console.log(data)`
               <ChevronRight className="size-3.5" />
             </Button>
           </div>
-          <select
-            value={pageSize}
-            onChange={(e) => {
-              setPageSize(Number(e.target.value))
+          <Select
+            value={String(pageSize)}
+            onValueChange={(v) => {
+              setPageSize(Number(v))
               setPage(1)
             }}
-            className="h-7 rounded border bg-background px-2 text-xs"
           >
-            <option value={5}>5 per page</option>
-            <option value={10}>10 per page</option>
-            <option value={20}>20 per page</option>
-            <option value={50}>50 per page</option>
-          </select>
+            <SelectTrigger className="h-7 w-[110px] text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5 per page</SelectItem>
+              <SelectItem value="10">10 per page</SelectItem>
+              <SelectItem value="20">20 per page</SelectItem>
+              <SelectItem value="50">50 per page</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       )}
 
