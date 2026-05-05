@@ -56,6 +56,9 @@
     "sharp",
     "unrs-resolver"
   ],
+  "prisma": {
+    "seed": "bun prisma/seed.ts"
+  },
   "trustedDependencies": [
     "sharp",
     "unrs-resolver"

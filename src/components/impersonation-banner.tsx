@@ -1,17 +1,15 @@
 "use client"
 
 import { authClient } from "@/lib/auth-client"
-import { useRouter } from "next/navigation"
 
 export function ImpersonationBanner() {
   const { data: session } = authClient.useSession()
-  const router = useRouter()
 
   if (!session?.session?.impersonatedBy) return null
 
   const handleStop = async () => {
     await authClient.admin.stopImpersonating()
-    router.refresh()
+    window.location.href = "/admin"
   }
 
   return (

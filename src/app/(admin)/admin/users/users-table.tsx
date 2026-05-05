@@ -6,6 +6,12 @@ import { trpc } from "@/lib/trpc/client"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   Table,
   TableBody,
   TableCell,
@@ -13,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { MoreHorizontalIcon, UserIcon, BanIcon, ShieldCheckIcon, ShieldOffIcon } from "lucide-react"
 
 type User = {
   id: string
@@ -65,6 +72,13 @@ export function UsersTable({
   })
 
   const isSuperAdmin = session?.user?.role === "superadmin"
+  const isAdmin = session?.user?.role === "admin"
+
+  const canImpersonate = (targetRole: string) =>
+    isSuperAdmin || (isAdmin && targetRole === "user")
+
+  const canBan = (targetRole: string) =>
+    targetRole !== "superadmin" && (isSuperAdmin || (isAdmin && targetRole === "user"))
 
   const handleBan = (userId: string) => {
     banMutation.mutate({
@@ -98,7 +112,7 @@ export function UsersTable({
             <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Joined</TableHead>
-            <TableHead className="w-56" />
+            <TableHead className="w-12">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -139,59 +153,54 @@ export function UsersTable({
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-1.5">
-                  {u.id !== currentUserId && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleImpersonate(u.id)}
-                    >
-                      Login as
-                    </Button>
-                  )}
-                  {isSuperAdmin && u.id !== currentUserId && u.role !== "superadmin" && (
-                    <>
-                      {u.role === "admin" ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => roleMutation.mutate({ userId: u.id, role: "user" })}
-                          disabled={roleMutation.isPending}
-                        >
-                          Remove Admin
+                  {u.id !== currentUserId && (canImpersonate(u.role) || canBan(u.role) || (isSuperAdmin && u.role !== "superadmin")) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="size-8">
+                          <MoreHorizontalIcon className="size-4" />
                         </Button>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => roleMutation.mutate({ userId: u.id, role: "admin" })}
-                          disabled={roleMutation.isPending}
-                        >
-                          Make Admin
-                        </Button>
-                      )}
-                    </>
-                  )}
-                  {u.id !== currentUserId && u.role !== "superadmin" && (
-                    <>
-                      {u.banned ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleUnban(u.id)}
-                          disabled={unbanMutation.isPending}
-                        >
-                          Unban
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setBanTarget(u.id)}
-                        >
-                          Ban
-                        </Button>
-                      )}
-                    </>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="min-w-40">
+                        {canImpersonate(u.role) && (
+                          <DropdownMenuItem onClick={() => handleImpersonate(u.id)}>
+                            <UserIcon className="mr-2 size-4" />
+                            Login as
+                          </DropdownMenuItem>
+                        )}
+                        {isSuperAdmin && u.role !== "superadmin" && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              roleMutation.mutate({
+                                userId: u.id,
+                                role: u.role === "admin" ? "user" : "admin",
+                              })
+                            }
+                          >
+                            {u.role === "admin" ? (
+                              <>
+                                <ShieldOffIcon className="mr-2 size-4" />
+                                Remove Admin
+                              </>
+                            ) : (
+                              <>
+                                <ShieldCheckIcon className="mr-2 size-4" />
+                                Make Admin
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                        )}
+                        {canBan(u.role) && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              u.banned ? handleUnban(u.id) : setBanTarget(u.id)
+                            }
+                          >
+                            <BanIcon className="mr-2 size-4" />
+                            {u.banned ? "Unban" : "Ban"}
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
                 </div>
               </TableCell>
