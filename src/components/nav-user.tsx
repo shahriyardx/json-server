@@ -93,9 +93,9 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/profile" className="flex items-center gap-2 cursor-pointer">
+              <Link href="/dashboard/settings" className="flex items-center gap-2 cursor-pointer">
                 <UserIcon />
-                Profile
+                Settings
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleLogout}>
