@@ -246,7 +246,10 @@ export async function GET(
   const { searchParams } = new URL(req.url)
   data = applyQueryParams(data, searchParams)
 
-  const etag = crypto.createHash("sha1").update(JSON.stringify(data)).digest("hex")
+  const etag = crypto
+    .createHash("sha1")
+    .update(JSON.stringify(data))
+    .digest("hex")
 
   const ifNoneMatch = req.headers.get("if-none-match")
   if (ifNoneMatch === `"${etag}"`) {
@@ -259,7 +262,7 @@ export async function GET(
   const ifModifiedSince = req.headers.get("if-modified-since")
   if (ifModifiedSince) {
     const since = new Date(ifModifiedSince)
-    if (!isNaN(since.getTime()) && jsonFile.updatedAt <= since) {
+    if (!Number.isNaN(since.getTime()) && jsonFile.updatedAt <= since) {
       return new Response(null, {
         status: 304,
         headers: { ...corsHeaders, ...cacheHeaders(etag, jsonFile.updatedAt) },

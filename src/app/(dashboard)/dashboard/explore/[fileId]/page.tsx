@@ -1,11 +1,13 @@
 "use client"
 
-import { use } from "react"
+import { use, useEffect, useState } from "react"
 import Link from "next/link"
 import { trpc } from "@/lib/trpc/client"
+import { authClient } from "@/lib/auth-client"
 import { JsonDataTable } from "@/components/json-data-table"
 import { JsonTreeView } from "@/components/json-tree-view"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { ApiSnippets } from "@/components/api-snippets"
 import { ArrowLeft } from "lucide-react"
 
 export default function ExplorePage({
@@ -14,6 +16,11 @@ export default function ExplorePage({
   params: Promise<{ fileId: string }>
 }) {
   const { fileId } = use(params)
+  const { data: session } = authClient.useSession()
+  const username = session?.user?.username || session?.user?.name
+  const [origin, setOrigin] = useState("")
+  useEffect(() => { setOrigin(window.location.origin) }, [])
+
   const { data: file, isPending } = trpc.upload.getJson.useQuery({
     id: fileId,
   })
@@ -75,6 +82,10 @@ export default function ExplorePage({
           </div>
         </ScrollArea>
       )}
+
+      <div className="mt-8">
+        {username && <ApiSnippets url={`${origin}/${username}/${file.filename}`} />}
+      </div>
     </div>
   )
 }

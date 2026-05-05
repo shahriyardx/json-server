@@ -18,34 +18,30 @@ import {
 import { Input } from "@/components/ui/input"
 import {
   Copy,
-  Check,
   Trash2,
-  BookOpen,
-  Pencil,
   Download,
   Eye,
-  BarChart3,
-  History,
   Lock,
   Unlock,
   Search,
   Loader2,
   MoreHorizontal,
   FileJson,
+  Pencil,
   Upload,
   ChevronRight,
   ChevronLeft,
   LayoutList,
   Grid3X3,
-  Calendar,
-  Clock,
 } from "lucide-react"
 import { useState, useCallback, useEffect, useMemo } from "react"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
 import { trpc } from "@/lib/trpc/client"
+import { highlightCode } from "@/actions/highlight"
 import JSZip from "jszip"
 import { cn } from "@/lib/utils"
+import { JsonFileRow } from "@/components/json-file-row"
 
 type ViewMode = "list" | "grid"
 type SortField =
@@ -106,6 +102,9 @@ export default function MyJsonsPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [origin, setOrigin] = useState("")
+  useEffect(() => { setOrigin(window.location.origin) }, [])
+  const [highlightedSnippets, setHighlightedSnippets] = useState<Record<string, string>>({})
   const [exporting, setExporting] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string
@@ -240,6 +239,21 @@ export default function MyJsonsPage() {
     document.addEventListener("keydown", handler)
     return () => document.removeEventListener("keydown", handler)
   }, [])
+
+  // Highlight JS snippet when file expanded
+  useEffect(() => {
+    if (!expandedId || !origin || !allFiles) return
+    const file = allFiles.find((f) => f.id === expandedId)
+    if (!file) return
+
+    const code = `const res = await fetch('${origin}/${username}/${file.filename}')
+const data = await res.json()
+console.log(data)`
+
+    highlightCode(code, "javascript").then((html) => {
+      setHighlightedSnippets((prev) => ({ ...prev, [expandedId]: html }))
+    })
+  }, [expandedId, origin, username])
 
   if (isPending) {
     return (
@@ -386,295 +400,23 @@ export default function MyJsonsPage() {
           )}
 
           {/* Rows */}
-          {paginatedFiles.map((file) => {
-            const isExpanded = expandedId === file.id
-            const size = computeSize(file.content)
-            return (
-              <div
-                key={file.id}
-                className={cn("border-2", isExpanded && "bg-muted/30")}
-              >
-                {/* Main row — flex layout */}
-                <div className="flex items-center gap-3 px-4 py-3 transition-colors">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <button
-                      type="button"
-                      onClick={() => setExpandedId(isExpanded ? null : file.id)}
-                      className="truncate font-mono text-sm font-medium text-white text-left cursor-pointer hover:underline"
-                    >
-                      {file.filename}.json
-                    </button>
-                    <span className="hidden sm:inline text-xs text-muted-foreground ml-auto">
-                      {size.label}
-                    </span>
-                    <span className="hidden sm:inline">
-                      <button
-                        type="button"
-                        onClick={() => toggleVisibility.mutate({ id: file.id })}
-                        disabled={toggleVisibility.isPending}
-                        className={cn(
-                          "inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors",
-                          file.isPublic
-                            ? "bg-primary/10 text-primary hover:bg-primary/20"
-                            : "bg-muted text-muted-foreground hover:bg-muted/80",
-                        )}
-                      >
-                        {file.isPublic ? (
-                          <Unlock className="size-3" />
-                        ) : (
-                          <Lock className="size-3" />
-                        )}
-                        {file.isPublic ? "Public" : "Private"}
-                      </button>
-                    </span>
-                  </div>
-                  {/* Actions: mobile = 3-dot, desktop = copy + 3-dot + expand */}
-                  <div className="flex items-center gap-0.5 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      onClick={() => copyUrl(file.filename)}
-                      title="Copy URL"
-                      className="hidden sm:inline-flex"
-                    >
-                      {copiedId === file.filename ? (
-                        <Check className="size-3.5" />
-                      ) : (
-                        <Copy className="size-3.5" />
-                      )}
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon-xs">
-                          <MoreHorizontal className="size-3.5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="text-sm">
-                        <DropdownMenuItem
-                          onClick={() => copyUrl(file.filename)}
-                        >
-                          {copiedId === file.filename ? (
-                            <Check className="mr-2 size-3" />
-                          ) : (
-                            <Copy className="mr-2 size-3" />
-                          )}
-                          Copy URL
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            downloadJson(file.filename, file.content)
-                          }
-                        >
-                          <Download className="mr-2 size-3" />
-                          Download
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/edit/${file.id}`}>
-                            <Pencil className="mr-2 size-3" />
-                            Edit
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/explore/${file.id}`}>
-                            <Eye className="mr-2 size-3" />
-                            Explore
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/analytics/${file.id}`}>
-                            <BarChart3 className="mr-2 size-3" />
-                            Analytics
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/versions/${file.id}`}>
-                            <History className="mr-2 size-3" />
-                            Versions
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link
-                            href={`/dashboard/docs/${username}/${file.filename}`}
-                          >
-                            <BookOpen className="mr-2 size-3" />
-                            Docs
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            setDeleteTarget({
-                              id: file.id,
-                              filename: file.filename,
-                            })
-                          }
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="mr-2 size-3" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    {/* Expand chevron — desktop only */}
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      onClick={() => setExpandedId(isExpanded ? null : file.id)}
-                      className="hidden sm:inline-flex"
-                    >
-                      <ChevronRight
-                        className={cn(
-                          "size-3.5 transition-transform",
-                          isExpanded && "rotate-90",
-                        )}
-                      />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Expanded panel */}
-                {isExpanded && (
-                  <div className="border-t-2 bg-muted/20 px-8 py-5">
-                    <div className="grid grid-cols-2 gap-10">
-                      {/* Details */}
-                      <div>
-                        <h4 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                          Details
-                        </h4>
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-3 text-sm">
-                            <FileJson className="size-4 shrink-0 text-muted-foreground" />
-                            <span className="w-16 text-muted-foreground">
-                              Type:
-                            </span>
-                            <span className="text-white capitalize">
-                              {contentType(file.content)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3 text-sm">
-                            {file.isPublic ? (
-                              <Unlock className="size-4 shrink-0 text-muted-foreground" />
-                            ) : (
-                              <Lock className="size-4 shrink-0 text-muted-foreground" />
-                            )}
-                            <span className="w-16 text-muted-foreground">
-                              Status:
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                toggleVisibility.mutate({ id: file.id })
-                              }
-                              disabled={toggleVisibility.isPending}
-                              className={cn(
-                                "inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors",
-                                file.isPublic
-                                  ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                                  : "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20",
-                              )}
-                            >
-                              {file.isPublic ? "Public" : "Private"}
-                            </button>
-                          </div>
-                          <div className="flex items-center gap-3 text-sm">
-                            <Calendar className="size-4 shrink-0 text-muted-foreground" />
-                            <span className="w-16 text-muted-foreground">
-                              Created:
-                            </span>
-                            <span className="text-white">
-                              {new Date(file.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3 text-sm">
-                            <Clock className="size-4 shrink-0 text-muted-foreground" />
-                            <span className="w-16 text-muted-foreground">
-                              Modified:
-                            </span>
-                            <span className="text-white">
-                              {new Date(file.updatedAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      {/* Actions */}
-                      <div>
-                        <h4 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                          Actions
-                        </h4>
-                        <div className="flex flex-col gap-2">
-                          <div className="flex flex-wrap gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => copyUrl(file.filename)}
-                            >
-                              <Copy className="mr-1 size-3" />
-                              Copy URL
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                downloadJson(file.filename, file.content)
-                              }
-                            >
-                              <Download className="mr-1 size-3" />
-                              Download
-                            </Button>
-                            <Button variant="outline" size="sm" asChild>
-                              <Link href={`/dashboard/explore/${file.id}`}>
-                                <Eye className="mr-1 size-3" />
-                                Explore
-                              </Link>
-                            </Button>
-                            <Button variant="outline" size="sm" asChild>
-                              <Link href={`/dashboard/analytics/${file.id}`}>
-                                <BarChart3 className="mr-1 size-3" />
-                                Analytics
-                              </Link>
-                            </Button>
-                            <Button variant="outline" size="sm" asChild>
-                              <Link
-                                href={`/dashboard/docs/${username}/${file.filename}`}
-                              >
-                                <BookOpen className="mr-1 size-3" />
-                                Docs
-                              </Link>
-                            </Button>
-                            <Button variant="outline" size="sm" asChild>
-                              <Link href={`/dashboard/versions/${file.id}`}>
-                                <History className="mr-1 size-3" />
-                                Versions
-                              </Link>
-                            </Button>
-                            <Button variant="outline" size="sm" asChild>
-                              <Link href={`/dashboard/edit/${file.id}`}>
-                                <Pencil className="mr-1 size-3" />
-                                Edit
-                              </Link>
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-red-500 hover:text-red-500"
-                              onClick={() =>
-                                setDeleteTarget({
-                                  id: file.id,
-                                  filename: file.filename,
-                                })
-                              }
-                            >
-                              <Trash2 className="mr-1 size-3" />
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )
-          })}
+          {paginatedFiles.map((file) => (
+            <JsonFileRow
+              key={file.id}
+              file={file}
+              isExpanded={expandedId === file.id}
+              origin={origin}
+              username={username}
+              copiedId={copiedId}
+              highlightedSnippets={highlightedSnippets}
+              isToggling={toggleVisibility.isPending}
+              onToggleExpand={() => setExpandedId(expandedId === file.id ? null : file.id)}
+              onCopyUrl={() => copyUrl(file.filename)}
+              onDownload={() => downloadJson(file.filename, file.content)}
+              onToggleVisibility={() => toggleVisibility.mutate({ id: file.id })}
+              onDelete={() => setDeleteTarget({ id: file.id, filename: file.filename })}
+            />
+          ))}
         </div>
       ) : (
         // ─── Grid view ───
