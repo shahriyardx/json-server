@@ -5,8 +5,7 @@ import Link from "next/link"
 import { trpc } from "@/lib/trpc/client"
 import { authClient } from "@/lib/auth-client"
 import { JsonDataTable } from "@/components/json-data-table"
-import { JsonTreeView } from "@/components/json-tree-view"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { JsonExplorer } from "@/components/json-explorer"
 import { ApiSnippets } from "@/components/api-snippets"
 import { ArrowLeft } from "lucide-react"
 
@@ -76,11 +75,7 @@ export default function ExplorePage({
       ) : isArrayOfObjects ? (
         <JsonDataTable data={parsed as Record<string, unknown>[]} />
       ) : (
-        <ScrollArea className="rounded-lg border-2 p-3 text-xs">
-          <div className="whitespace-nowrap">
-            <JsonTreeView data={parsed} />
-          </div>
-        </ScrollArea>
+        <JsonExplorer data={parsed} />
       )}
 
       <div className="mt-8">
