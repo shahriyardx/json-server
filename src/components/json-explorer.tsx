@@ -11,12 +11,6 @@ interface JsonExplorerProps {
   data: unknown
 }
 
-function formatCount(data: unknown): string {
-  if (Array.isArray(data)) return `[${data.length}]`
-  if (typeof data === "object" && data !== null) return `{${Object.keys(data).length}}`
-  return ""
-}
-
 function isExpandable(val: unknown): boolean {
   if (val === null || val === undefined) return false
   if (Array.isArray(val)) return val.length > 0
@@ -33,6 +27,21 @@ function getValueLabel(val: unknown): { text: string; cls: string } {
   if (typeof val === "boolean")
     return { text: String(val), cls: "text-purple-600 dark:text-purple-400" }
   return { text: String(val), cls: "" }
+}
+
+function getCollapsedLabel(val: unknown): { text: string; cls: string } {
+  if (Array.isArray(val)) return { text: `[${val.length} items]`, cls: "text-muted-foreground" }
+  if (typeof val === "object" && val !== null)
+    return { text: `{${Object.keys(val).length} items}`, cls: "text-muted-foreground" }
+  return getValueLabel(val)
+}
+
+const MAX_PREVIEW_ENTRIES = 6
+
+function getEntries(data: unknown): [string | number, unknown][] {
+  return Array.isArray(data)
+    ? (data as unknown[]).map((item, i) => [i, item])
+    : Object.entries(data as Record<string, unknown>)
 }
 
 // Walk tree and return paths that match search term
@@ -269,6 +278,57 @@ export function JsonExplorer({ data }: JsonExplorerProps) {
   )
 }
 
+// ─── Collapsed Preview ─────────────────────────────
+
+function CollapsedPreview({
+  entries,
+  data,
+}: {
+  entries: [string | number, unknown][]
+  data: unknown
+}) {
+  const isArray = Array.isArray(data)
+  const previewCount = Math.min(entries.length, MAX_PREVIEW_ENTRIES)
+  const remaining = entries.length - previewCount
+
+  if (isArray) {
+    return (
+      <span className="ml-1">
+        <span className="text-muted-foreground">
+          {entries.slice(0, previewCount).map(([, val], i) => (
+            <span key={i}>
+              <CollapsedValue val={val} />
+              {i < previewCount - 1 || remaining > 0 ? <span className="text-muted-foreground/50">, </span> : null}
+            </span>
+          ))}
+          {remaining > 0 && <span> +{remaining} more</span>}
+        </span>
+      </span>
+    )
+  }
+
+  return (
+    <span className="ml-0.5">
+      <span className="text-muted-foreground">
+        {entries.slice(0, previewCount).map(([key, val], i) => (
+          <span key={String(key)}>
+            <span className="text-violet-600 dark:text-violet-400">&quot;{String(key)}&quot;</span>
+            <span className="text-muted-foreground/50">: </span>
+            <CollapsedValue val={val} />
+            {i < previewCount - 1 || remaining > 0 ? <span className="text-muted-foreground/50">, </span> : null}
+          </span>
+        ))}
+        {remaining > 0 && <span> +{remaining} more</span>}
+      </span>
+    </span>
+  )
+}
+
+function CollapsedValue({ val }: { val: unknown }) {
+  const label = getCollapsedLabel(val)
+  return <span className={label.cls}>{label.text}</span>
+}
+
 // ─── TreeNode ──────────────────────────────────────
 
 interface TreeNodeProps {
@@ -358,16 +418,14 @@ function TreeNode({
         </span>
         {depth > 0 && <span className="text-muted-foreground"> </span>}
         <span className="font-mono text-xs leading-6">
-          {openBracket}
-          <span className="text-muted-foreground text-[10px] ml-1">{count}</span>
-          {collapsed && (
-            <>
-              <span className="text-muted-foreground"> ... </span>
-              <span>{closeBracket}</span>
-            </>
+          <span>{openBracket}</span>
+          {collapsed ? (
+            <CollapsedPreview entries={entries} data={data} />
+          ) : (
+            <span className="text-muted-foreground text-[10px] ml-1">{count}</span>
           )}
+          <span>{closeBracket}</span>
         </span>
-        {collapsed && <Comma offset={0} />}
       </div>
 
       {/* Children */}
