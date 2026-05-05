@@ -245,7 +245,7 @@ export default function MyJsonsPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-4 space-y-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -253,60 +253,62 @@ export default function MyJsonsPage() {
             placeholder="Search files by name or content..."
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setPage(1) }}
-            className="pl-9 pr-16"
+            className="w-full pl-9 pr-16"
           />
           <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground">
             {isMac ? "⌘" : "Ctrl"}K
           </kbd>
         </div>
-        <select
-          value={sortBy}
-          onChange={(e) => { setSortBy(e.target.value as SortField); setPage(1) }}
-          className="h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
-        >
-          <option value="newest">Sort by: Newest</option>
-          <option value="oldest">Sort by: Oldest</option>
-          <option value="name-asc">Name A-Z</option>
-          <option value="name-desc">Name Z-A</option>
-          <option value="size-asc">Size (smallest)</option>
-          <option value="size-desc">Size (largest)</option>
-        </select>
-        <select
-          value={typeFilter}
-          onChange={(e) => { setTypeFilter(e.target.value as TypeFilter); setPage(1) }}
-          className="h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
-        >
-          <option value="all">All types</option>
-          <option value="object">Object</option>
-          <option value="array">Array</option>
-        </select>
-        <select
-          value={sizeFilter}
-          onChange={(e) => { setSizeFilter(e.target.value as SizeFilter); setPage(1) }}
-          className="h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
-        >
-          <option value="all">All sizes</option>
-          <option value="small">Small (&lt;1KB)</option>
-          <option value="medium">Medium (1-10KB)</option>
-          <option value="large">Large (&gt;10KB)</option>
-        </select>
-        <div className="flex rounded-lg border">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn("rounded-r-none", viewMode === "list" && "bg-muted")}
-            onClick={() => setViewMode("list")}
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={sortBy}
+            onChange={(e) => { setSortBy(e.target.value as SortField); setPage(1) }}
+            className="h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
           >
-            <LayoutList className="size-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn("rounded-l-none", viewMode === "grid" && "bg-muted")}
-            onClick={() => setViewMode("grid")}
+            <option value="newest">Sort: Newest</option>
+            <option value="oldest">Sort: Oldest</option>
+            <option value="name-asc">Name A-Z</option>
+            <option value="name-desc">Name Z-A</option>
+            <option value="size-asc">Size ↑</option>
+            <option value="size-desc">Size ↓</option>
+          </select>
+          <select
+            value={typeFilter}
+            onChange={(e) => { setTypeFilter(e.target.value as TypeFilter); setPage(1) }}
+            className="h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
           >
-            <Grid3X3 className="size-3.5" />
-          </Button>
+            <option value="all">Type: All</option>
+            <option value="object">Object</option>
+            <option value="array">Array</option>
+          </select>
+          <select
+            value={sizeFilter}
+            onChange={(e) => { setSizeFilter(e.target.value as SizeFilter); setPage(1) }}
+            className="h-9 rounded-lg border bg-background px-3 text-xs text-muted-foreground"
+          >
+            <option value="all">Size: All</option>
+            <option value="small">&lt;1KB</option>
+            <option value="medium">1-10KB</option>
+            <option value="large">&gt;10KB</option>
+          </select>
+          <div className="flex rounded-lg border">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn("rounded-r-none", viewMode === "list" && "bg-muted")}
+              onClick={() => setViewMode("list")}
+            >
+              <LayoutList className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn("rounded-l-none", viewMode === "grid" && "bg-muted")}
+              onClick={() => setViewMode("grid")}
+            >
+              <Grid3X3 className="size-3.5" />
+            </Button>
+          </div>
         </div>
       </div>
 
