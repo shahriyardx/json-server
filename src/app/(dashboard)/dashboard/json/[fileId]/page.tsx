@@ -2,10 +2,10 @@
 
 import { use, useEffect, useState } from "react"
 import Link from "next/link"
+import ReactJson from "@microlink/react-json-view"
 import { trpc } from "@/lib/trpc/client"
 import { authClient } from "@/lib/auth-client"
 import { JsonDataTable } from "@/components/json-data-table"
-import { JsonExplorer } from "@/components/json-explorer"
 import { ApiSnippets } from "@/components/api-snippets"
 import { ArrowLeft } from "lucide-react"
 
@@ -18,7 +18,16 @@ export default function ExplorePage({
   const { data: session } = authClient.useSession()
   const username = session?.user?.username || session?.user?.name
   const [origin, setOrigin] = useState("")
-  useEffect(() => { setOrigin(window.location.origin) }, [])
+  const [dark, setDark] = useState(false)
+
+  useEffect(() => {
+    setOrigin(window.location.origin)
+    const check = () => setDark(document.documentElement.classList.contains("dark"))
+    check()
+    const observer = new MutationObserver(check)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] })
+    return () => observer.disconnect()
+  }, [])
 
   const { data: file, isPending } = trpc.upload.getJson.useQuery({
     id: fileId,
@@ -75,7 +84,19 @@ export default function ExplorePage({
       ) : isArrayOfObjects ? (
         <JsonDataTable data={parsed as Record<string, unknown>[]} />
       ) : (
-        <JsonExplorer data={parsed} />
+        <div className="rounded-lg border overflow-auto max-h-[70vh]">
+          <div className="p-4">
+            <ReactJson
+              src={parsed as Record<string, unknown> | unknown[]}
+              theme={dark ? "monokai" : "summerfruit"}
+              collapsed={2}
+              enableClipboard={true}
+              displayDataTypes={false}
+              name={false}
+              iconStyle="triangle"
+            />
+          </div>
+        </div>
       )}
 
       <div className="mt-8">

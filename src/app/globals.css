@@ -130,3 +130,7 @@
 .dark .shiki span {
   color: var(--shiki-dark) !important;
 }
+
+.react-json-view {
+  background: transparent !important;
+}
