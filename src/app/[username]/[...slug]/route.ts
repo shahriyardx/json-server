@@ -1,3 +1,4 @@
+import crypto from "crypto"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { rateLimit } from "@/lib/rate-limit"
@@ -9,8 +10,23 @@ const rateLimiter = rateLimit({ interval: 60_000, max: 60 })
 
 const corsHeaders = { "Access-Control-Allow-Origin": "*" }
 
-function json(data: unknown, status = 200) {
-  return NextResponse.json(data, { status, headers: corsHeaders })
+function json(
+  data: unknown,
+  status = 200,
+  extraHeaders?: Record<string, string>,
+) {
+  return NextResponse.json(data, {
+    status,
+    headers: { ...corsHeaders, ...extraHeaders },
+  })
+}
+
+function cacheHeaders(etag: string, updatedAt: Date) {
+  return {
+    ETag: `"${etag}"`,
+    "Last-Modified": updatedAt.toUTCString(),
+    "Cache-Control": "no-cache",
+  }
 }
 
 async function getJsonFile(username: string, filename: string) {
@@ -230,7 +246,28 @@ export async function GET(
   const { searchParams } = new URL(req.url)
   data = applyQueryParams(data, searchParams)
 
-  return json(data)
+  const etag = crypto.createHash("sha1").update(JSON.stringify(data)).digest("hex")
+
+  const ifNoneMatch = req.headers.get("if-none-match")
+  if (ifNoneMatch === `"${etag}"`) {
+    return new Response(null, {
+      status: 304,
+      headers: { ...corsHeaders, ...cacheHeaders(etag, jsonFile.updatedAt) },
+    })
+  }
+
+  const ifModifiedSince = req.headers.get("if-modified-since")
+  if (ifModifiedSince) {
+    const since = new Date(ifModifiedSince)
+    if (!isNaN(since.getTime()) && jsonFile.updatedAt <= since) {
+      return new Response(null, {
+        status: 304,
+        headers: { ...corsHeaders, ...cacheHeaders(etag, jsonFile.updatedAt) },
+      })
+    }
+  }
+
+  return json(data, 200, cacheHeaders(etag, jsonFile.updatedAt))
 }
 
 export async function OPTIONS() {
