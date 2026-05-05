@@ -5,7 +5,6 @@ import Link from "next/link"
 import ReactJson from "@microlink/react-json-view"
 import { trpc } from "@/lib/trpc/client"
 import { authClient } from "@/lib/auth-client"
-import { JsonDataTable } from "@/components/json-data-table"
 import { ApiSnippets } from "@/components/api-snippets"
 import { ArrowLeft } from "lucide-react"
 
@@ -56,14 +55,6 @@ export default function ExplorePage({
     parsed = null
   }
 
-  const isArrayOfObjects =
-    Array.isArray(parsed) &&
-    parsed.length > 0 &&
-    parsed.every(
-      (item) =>
-        typeof item === "object" && item !== null && !Array.isArray(item),
-    )
-
   return (
     <div className="p-5">
       <Link
@@ -81,8 +72,6 @@ export default function ExplorePage({
 
       {parsed === null ? (
         <p className="text-sm text-destructive">Invalid JSON content.</p>
-      ) : isArrayOfObjects ? (
-        <JsonDataTable data={parsed as Record<string, unknown>[]} />
       ) : (
         <div className="rounded-lg border overflow-auto max-h-[70vh]">
           <div className="p-4">
