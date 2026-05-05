@@ -404,7 +404,7 @@ console.log(data)`
           </p>
           {!searchQuery && (
             <Button variant="outline" size="sm" className="mt-3" asChild>
-              <Link href="/dashboard/upload">
+              <Link href="/dashboard/json/upload">
                 <Upload className="mr-1 size-3" />
                 Upload your first file
               </Link>
@@ -472,13 +472,13 @@ console.log(data)`
                         Download
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href={`/dashboard/edit/${file.id}`}>
+                        <Link href={`/dashboard/json/${file.id}/edit`}>
                           <Pencil className="mr-2 size-3" />
                           Edit
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href={`/dashboard/explore/${file.id}`}>
+                        <Link href={`/dashboard/json/${file.id}`}>
                           <Eye className="mr-2 size-3" />
                           Explore
                         </Link>

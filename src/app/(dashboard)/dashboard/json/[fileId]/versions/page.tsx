@@ -53,7 +53,7 @@ export default function VersionsPage({
   return (
     <div className="p-5">
       <Link
-        href="/dashboard/my-jsons"
+        href="/dashboard/json"
         className="mb-4 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-3" />
@@ -80,7 +80,7 @@ export default function VersionsPage({
                 </p>
               </div>
               <Button variant="ghost" size="sm" asChild>
-                <Link href={`/dashboard/edit/${fileId}`}>
+                <Link href={`/dashboard/json/${fileId}/edit`}>
                   <Pencil className="mr-1 size-3" />
                   Edit
                 </Link>

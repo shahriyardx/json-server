@@ -135,13 +135,13 @@ export default async function DashboardPage() {
 
       <div className="flex flex-wrap gap-3">
         <Link
-          href="/dashboard/upload"
+          href="/dashboard/json/upload"
           className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-accent"
         >
           <Upload className="h-4 w-4" /> Upload New
         </Link>
         <Link
-          href="/dashboard/my-jsons"
+          href="/dashboard/json"
           className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-accent"
         >
           <FileText className="h-4 w-4" /> My JSONs
@@ -278,7 +278,7 @@ export default async function DashboardPage() {
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-medium">Recent Files</h2>
           <Link
-            href="/dashboard/my-jsons"
+            href="/dashboard/json"
             className="text-sm text-muted-foreground hover:underline"
           >
             View all
@@ -291,7 +291,7 @@ export default async function DashboardPage() {
             {recentFiles.map((file) => (
               <Link
                 key={file.id}
-                href={`/dashboard/edit/${file.id}`}
+                href={`/dashboard/json/${file.id}/edit`}
                 className="-mx-5 flex items-center justify-between px-5 py-2.5 transition-colors hover:bg-accent/50"
               >
                 <span className="truncate text-sm font-medium">

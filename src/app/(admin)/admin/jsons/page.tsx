@@ -35,7 +35,7 @@ export default async function AdminJsonsPage() {
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {f.user.username ? (
                     <Link
-                      href={`/dashboard/docs/${f.user.username}/${f.filename}`}
+                      href={`/dashboard/json/${f.id}/docs`}
                       className="hover:text-foreground"
                     >
                       {f.user.username}

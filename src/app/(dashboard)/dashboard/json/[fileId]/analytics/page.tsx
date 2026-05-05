@@ -53,7 +53,7 @@ export default function AnalyticsPage({
   return (
     <div className="p-5">
       <Link
-        href="/dashboard/my-jsons"
+        href="/dashboard/json"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-3.5" />

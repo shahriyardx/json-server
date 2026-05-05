@@ -163,7 +163,7 @@ export default function EditPage({
   const updateMutation = trpc.upload.updateJson.useMutation({
     onSuccess: () => {
       toast.success("File updated")
-      push("/dashboard/my-jsons")
+      push("/dashboard/json")
     },
     onError: (err) => toast.error(err.message),
   })
@@ -235,7 +235,7 @@ export default function EditPage({
   return (
     <div className="max-w-2xl p-5">
       <Link
-        href="/dashboard/my-jsons"
+        href="/dashboard/json"
         className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-3.5" />
@@ -557,7 +557,7 @@ export default function EditPage({
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/dashboard/my-jsons">Cancel</Link>
+              <Link href="/dashboard/json">Cancel</Link>
             </Button>
           </div>
           <p className="text-center text-xs text-muted-foreground">

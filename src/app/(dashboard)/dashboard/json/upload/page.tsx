@@ -233,7 +233,7 @@ export default function UploadPage() {
       const url = `${window.location.origin}/${username}/${result.filename}`
       await navigator.clipboard.writeText(url)
       toast.success("JSON uploaded! URL copied to clipboard.")
-      push("/dashboard/my-jsons")
+      push("/dashboard/json")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Upload failed")
     }

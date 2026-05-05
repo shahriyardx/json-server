@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
+import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
+import { ArrowLeft } from "lucide-react"
 import { DocClient } from "./doc-client"
 
 type PathInfo = {
@@ -57,31 +59,33 @@ function countArrays(data: unknown): number {
   return 0
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ username: string; filename: string }> }): Promise<Metadata> {
-  const { username, filename } = await params
+export async function generateMetadata({ params }: { params: Promise<{ fileId: string }> }): Promise<Metadata> {
+  const { fileId } = await params
+  const jsonFile = await prisma.jsonFile.findUnique({ where: { id: fileId }, select: { filename: true } })
   return {
-    title: `${filename}.json — ${username}`,
+    title: jsonFile ? `${jsonFile.filename}.json — Docs` : "Docs",
   }
 }
 
 export default async function JsonDocPage({
   params,
 }: {
-  params: Promise<{ username: string; filename: string }>
+  params: Promise<{ fileId: string }>
 }) {
-  const { username, filename } = await params
+  const { fileId } = await params
 
-  const user = await prisma.user.findFirst({ where: { username } })
-  if (!user) notFound()
-
-  const jsonFile = await prisma.jsonFile.findFirst({
-    where: { userId: user.id, filename, deletedAt: null },
+  const jsonFile = await prisma.jsonFile.findUnique({
+    where: { id: fileId, deletedAt: null },
+    select: { id: true, filename: true, content: true, user: { select: { username: true } } },
   })
   if (!jsonFile) notFound()
 
+  const { filename, content, user } = jsonFile
+  const username = user.username
+
   let data: unknown
   try {
-    data = JSON.parse(jsonFile.content)
+    data = JSON.parse(content)
   } catch {
     notFound()
   }
@@ -93,6 +97,14 @@ export default async function JsonDocPage({
   return (
     <div className="min-h-screen">
       <div className="p-5">
+        <Link
+          href="/dashboard/json"
+          className="mb-4 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-3" />
+          Back to My JSONs
+        </Link>
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">{filename}.json</h1>
           <p className="mt-1 text-sm text-muted-foreground">

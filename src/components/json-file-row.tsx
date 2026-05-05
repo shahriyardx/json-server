@@ -169,31 +169,31 @@ console.log(data)`
                 Download
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/edit/${file.id}`}>
+                <Link href={`/dashboard/json/${file.id}/edit`}>
                   <Pencil className="mr-2 size-3" />
                   Edit
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/explore/${file.id}`}>
+                <Link href={`/dashboard/json/${file.id}`}>
                   <Eye className="mr-2 size-3" />
                   Explore
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/analytics/${file.id}`}>
+                <Link href={`/dashboard/json/${file.id}/analytics`}>
                   <BarChart3 className="mr-2 size-3" />
                   Analytics
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/versions/${file.id}`}>
+                <Link href={`/dashboard/json/${file.id}/versions`}>
                   <History className="mr-2 size-3" />
                   Versions
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/docs/${username}/${file.filename}`}>
+                <Link href={`/dashboard/json/${file.id}/docs`}>
                   <BookOpen className="mr-2 size-3" />
                   Docs
                 </Link>
@@ -286,35 +286,35 @@ console.log(data)`
                   Download
                 </button>
                 <Link
-                  href={`/dashboard/explore/${file.id}`}
+                  href={`/dashboard/json/${file.id}`}
                   className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Eye className="size-3.5" />
                   Explore
                 </Link>
                 <Link
-                  href={`/dashboard/analytics/${file.id}`}
+                  href={`/dashboard/json/${file.id}/analytics`}
                   className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <BarChart3 className="size-3.5" />
                   Analytics
                 </Link>
                 <Link
-                  href={`/dashboard/docs/${username}/${file.filename}`}
+                  href={`/dashboard/json/${file.id}/docs`}
                   className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <BookOpen className="size-3.5" />
                   Docs
                 </Link>
                 <Link
-                  href={`/dashboard/versions/${file.id}`}
+                  href={`/dashboard/json/${file.id}/versions`}
                   className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <History className="size-3.5" />
                   Versions
                 </Link>
                 <Link
-                  href={`/dashboard/edit/${file.id}`}
+                  href={`/dashboard/json/${file.id}/edit`}
                   className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Pencil className="size-3.5" />
