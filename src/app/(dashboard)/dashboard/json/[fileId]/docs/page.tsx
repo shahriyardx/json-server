@@ -182,6 +182,11 @@ export default async function JsonDocPage({
                     <td className="px-4 py-2 text-xs text-muted-foreground">Slice result range</td>
                   </tr>
                   <tr className="border-b">
+                    <td className="px-4 py-2 font-mono text-xs">_skip</td>
+                    <td className="px-4 py-2 font-mono text-xs">?_skip=10</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">Skip N results (alias for _start)</td>
+                  </tr>
+                  <tr className="border-b">
                     <td className="px-4 py-2 font-mono text-xs">sort</td>
                     <td className="px-4 py-2 font-mono text-xs">?sort=price&order=desc</td>
                     <td className="px-4 py-2 text-xs text-muted-foreground">Sort by field (asc/desc)</td>

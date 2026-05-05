@@ -168,7 +168,7 @@ function applyQueryParams(data: unknown, params: URLSearchParams): unknown {
   }
 
   for (const [key, value] of params.entries()) {
-    if (["search", "sort", "order", "filter", "api_key", "_limit", "_start", "_end"].includes(key)) continue
+    if (["search", "sort", "order", "filter", "api_key", "_limit", "_start", "_end", "_skip"].includes(key)) continue
     result = result.filter((item) => {
       if (typeof item === "object" && item !== null) {
         return String((item as Record<string, unknown>)[key]) === value
@@ -191,10 +191,11 @@ function applyQueryParams(data: unknown, params: URLSearchParams): unknown {
     })
   }
 
-  const start = params.get("_start")
+  const skip = params.get("_skip")
+  const startParam = skip || params.get("_start")
   const end = params.get("_end")
-  if (start || end) {
-    const s = parseInt(start || "0", 10)
+  if (startParam || end) {
+    const s = parseInt(startParam || "0", 10)
     const e = end ? parseInt(end, 10) : result.length
     result = result.slice(s, e)
   }
