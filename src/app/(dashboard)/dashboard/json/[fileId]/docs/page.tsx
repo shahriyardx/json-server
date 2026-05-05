@@ -172,6 +172,16 @@ export default async function JsonDocPage({
                     <td className="px-4 py-2 text-xs text-muted-foreground">Filter by key:value pair</td>
                   </tr>
                   <tr className="border-b">
+                    <td className="px-4 py-2 font-mono text-xs">_limit</td>
+                    <td className="px-4 py-2 font-mono text-xs">?_limit=5</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">Limit number of results</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="px-4 py-2 font-mono text-xs">_start / _end</td>
+                    <td className="px-4 py-2 font-mono text-xs">?_start=2&_end=5</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">Slice result range</td>
+                  </tr>
+                  <tr className="border-b">
                     <td className="px-4 py-2 font-mono text-xs">sort</td>
                     <td className="px-4 py-2 font-mono text-xs">?sort=price&order=desc</td>
                     <td className="px-4 py-2 text-xs text-muted-foreground">Sort by field (asc/desc)</td>
