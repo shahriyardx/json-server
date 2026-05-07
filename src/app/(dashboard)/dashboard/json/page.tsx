@@ -279,7 +279,7 @@ console.log(data)`
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">JSON Files</h1>
+          <h1 className="text-2xl font-bold text-foreground">JSON Files</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Your uploaded JSON files
           </p>
@@ -455,7 +455,7 @@ console.log(data)`
             return (
               <div key={file.id} className="rounded-lg border-2 p-4">
                 <div className="mb-2 flex items-start justify-between gap-2">
-                  <p className="truncate font-mono text-sm font-medium text-white min-w-0">
+                  <p className="truncate font-mono text-sm font-medium text-foreground min-w-0">
                     {file.filename}.json
                   </p>
                   <DropdownMenu>

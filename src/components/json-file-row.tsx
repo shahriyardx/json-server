@@ -114,7 +114,7 @@ console.log(data)`
         }}
       >
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <span className="truncate font-mono text-sm font-medium text-white">
+          <span className="truncate font-mono text-sm font-medium text-foreground">
             {file.filename}.json
           </span>
           <span className="hidden sm:inline text-xs text-muted-foreground ml-auto">

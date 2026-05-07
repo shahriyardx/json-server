@@ -10,6 +10,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -39,6 +40,9 @@ export default async function DashboardLayout({
             className="mr-2 data-vertical:h-4 data-vertical:self-auto"
           />
           <span className="text-sm font-medium">Dashboard</span>
+          <div className="ml-auto">
+            <ThemeToggle />
+          </div>
         </header>
         <main className="flex flex-1 flex-col min-h-0">
           <ImpersonationBanner />

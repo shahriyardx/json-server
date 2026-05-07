@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { SignInButton } from "@/components/sign-in-button"
 import { Container } from "@/components/container"
 import { MobileNav } from "@/components/mobile-nav"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export async function Navbar() {
   const session = await auth.api.getSession({
@@ -45,6 +46,7 @@ export async function Navbar() {
           ) : (
             <SignInButton />
           )}
+          <ThemeToggle />
         </nav>
         <MobileNav signedIn={!!session} />
       </Container>

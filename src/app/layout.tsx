@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { TRPCProvider } from "@/lib/trpc/provider"
 import { Toaster } from "sonner"
+import { ThemeProvider } from "next-themes"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -81,8 +82,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
-        "h-full dark",
+        "h-full",
         "antialiased",
         geistSans.variable,
         geistMono.variable,
@@ -92,7 +94,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <TooltipProvider>
-          <TRPCProvider>{children}</TRPCProvider>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+            <TRPCProvider>{children}</TRPCProvider>
+          </ThemeProvider>
         </TooltipProvider>
         <Toaster />
       </body>

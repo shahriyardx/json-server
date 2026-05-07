@@ -17,14 +17,14 @@ export default function ExplorePage({
   const { data: session } = authClient.useSession()
   const username = session?.user?.username || session?.user?.name
   const [origin, setOrigin] = useState("")
-  const [dark, setDark] = useState(false)
+  const [isDark, setIsDark] = useState(true)
 
   useEffect(() => {
     setOrigin(window.location.origin)
-    const check = () =>
-      setDark(document.documentElement.classList.contains("dark"))
-    check()
-    const observer = new MutationObserver(check)
+    setIsDark(document.documentElement.classList.contains("dark"))
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"))
+    })
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class"],
@@ -81,7 +81,7 @@ export default function ExplorePage({
           <div className="p-4">
             <ReactJson
               src={parsed as Record<string, unknown> | unknown[]}
-              theme={dark ? "monokai" : "summerfruit"}
+              theme={isDark ? "monokai" : "rjv-default"}
               collapsed={2}
               enableClipboard={true}
               displayDataTypes={false}
