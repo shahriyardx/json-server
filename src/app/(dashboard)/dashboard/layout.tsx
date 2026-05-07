@@ -40,7 +40,7 @@ export default async function DashboardLayout({
           />
           <span className="text-sm font-medium">Dashboard</span>
         </header>
-        <main className="flex-1 min-h-0">
+        <main className="flex flex-1 flex-col min-h-0">
           <ImpersonationBanner />
           {children}
         </main>
