@@ -204,6 +204,10 @@ export default function EditPage({
   }
 
   const handleSubmit = (data: FormData) => {
+    if (contentBytes > MAX_FILE_SIZE) {
+      toast.error("File exceeds 1MB size limit.")
+      return
+    }
     updateMutation.mutate({ id: fileId, ...data, isPublic })
   }
 
@@ -552,7 +556,7 @@ export default function EditPage({
             <Button
               type="submit"
               className="flex-1"
-              disabled={updateMutation.isPending}
+              disabled={contentBytes > MAX_FILE_SIZE || updateMutation.isPending}
             >
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>

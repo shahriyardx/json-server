@@ -175,7 +175,9 @@ export function ApiExample({
         <span className="rounded bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
           {method}
         </span>
-        <span className="text-foreground">{path}</span>
+        <div className="min-w-0 overflow-x-auto">
+          <span className="whitespace-nowrap text-foreground">{path}</span>
+        </div>
       </div>
       <div className="border-b">
         <div className="flex">

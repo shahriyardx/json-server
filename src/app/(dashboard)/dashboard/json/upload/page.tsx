@@ -235,6 +235,10 @@ export default function UploadPage() {
   }
 
   const handleSubmit = async (data: FormData) => {
+    if (contentBytes > MAX_FILE_SIZE) {
+      toast.error("File exceeds 1MB size limit.")
+      return
+    }
     try {
       const result = await uploadMutation.mutateAsync({ ...data, isPublic })
       const url = `${window.location.origin}/${username}/${result.filename}`
@@ -665,7 +669,7 @@ export default function UploadPage() {
             <Button
               type="submit"
               className="w-full"
-              disabled={!hasContent || uploadMutation.isPending}
+              disabled={!hasContent || contentBytes > MAX_FILE_SIZE || !!sizeError || !!typeError || uploadMutation.isPending}
             >
               {uploadMutation.isPending ? (
                 "Uploading..."

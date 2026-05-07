@@ -45,7 +45,9 @@ function HttpExample({ method = "GET", path = "/" }: { method?: string; path?: s
         <span className="rounded bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
           {method}
         </span>
-        <span className="text-foreground">{path}</span>
+        <div className="min-w-0 overflow-x-auto">
+          <span className="whitespace-nowrap text-foreground">{path}</span>
+        </div>
       </div>
     </div>
   )
@@ -116,6 +118,11 @@ const components = {
       </pre>
     )
   },
+  pre: ({ children, ...props }: HtmlProps) => (
+    <pre className="mb-4 overflow-x-auto rounded-lg bg-muted p-4 font-mono text-xs leading-relaxed" {...props}>
+      {children}
+    </pre>
+  ),
   table: ({ children, ...props }: HtmlProps) => (
     <div className="mb-4 overflow-x-auto">
       <table className="w-full text-sm" {...props}>
