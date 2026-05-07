@@ -46,7 +46,12 @@ export function DocClient({
 
       <div className="mb-4 flex items-end gap-3">
         <div className="flex-1">
-          <label htmlFor="doc-path" className="mb-1 block text-xs text-muted-foreground">Path</label>
+          <label
+            htmlFor="doc-path"
+            className="mb-1 block text-xs text-muted-foreground"
+          >
+            Path
+          </label>
           <div className="flex items-center border">
             <span className="shrink-0 px-3 py-2 text-xs text-muted-foreground">
               {baseUrl}
@@ -88,7 +93,9 @@ export function DocClient({
       {response && (
         <div className="mb-4">
           <div className="border-b bg-muted px-4 py-2">
-            <span className="text-xs font-medium text-muted-foreground">RESPONSE</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              RESPONSE
+            </span>
           </div>
           <pre className="overflow-x-auto border px-4 py-3">
             <code className="text-xs">{response}</code>
@@ -108,27 +115,41 @@ export function DocClient({
         <div className="space-y-2 text-sm">
           <div className="border">
             <div className="flex items-center gap-3 border-b bg-muted px-4 py-2">
-              <span className="rounded bg-primary px-1.5 py-0.5 text-xs font-semibold text-primary-foreground">GET</span>
+              <span className="rounded bg-primary px-1.5 py-0.5 text-xs font-semibold text-primary-foreground">
+                GET
+              </span>
               <code className="text-xs">{baseUrl}</code>
             </div>
-            <div className="px-4 py-2 text-xs text-muted-foreground">Full JSON file</div>
+            <div className="px-4 py-2 text-xs text-muted-foreground">
+              Full JSON file
+            </div>
           </div>
           {isRootArray && (
             <div className="border">
               <div className="flex items-center gap-3 border-b bg-muted px-4 py-2">
-                <span className="rounded bg-primary px-1.5 py-0.5 text-xs font-semibold text-primary-foreground">GET</span>
+                <span className="rounded bg-primary px-1.5 py-0.5 text-xs font-semibold text-primary-foreground">
+                  GET
+                </span>
                 <code className="text-xs">{baseUrl}?search=term</code>
               </div>
-              <div className="px-4 py-2 text-xs text-muted-foreground">Search across fields</div>
+              <div className="px-4 py-2 text-xs text-muted-foreground">
+                Search across fields
+              </div>
             </div>
           )}
           {firstKey && (
             <div className="border">
               <div className="flex items-center gap-3 border-b bg-muted px-4 py-2">
-                <span className="rounded bg-primary px-1.5 py-0.5 text-xs font-semibold text-primary-foreground">GET</span>
-                <code className="text-xs">{baseUrl}/{firstKey}</code>
+                <span className="rounded bg-primary px-1.5 py-0.5 text-xs font-semibold text-primary-foreground">
+                  GET
+                </span>
+                <code className="text-xs">
+                  {baseUrl}/{firstKey}
+                </code>
               </div>
-              <div className="px-4 py-2 text-xs text-muted-foreground">Access &quot;{firstKey}&quot; field</div>
+              <div className="px-4 py-2 text-xs text-muted-foreground">
+                Access &quot;{firstKey}&quot; field
+              </div>
             </div>
           )}
         </div>

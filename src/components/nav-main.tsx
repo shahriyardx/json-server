@@ -9,7 +9,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { Home, FileJson, UploadCloud, BookOpen, KeyRound, Trash2 } from "lucide-react"
+import {
+  Home,
+  FileJson,
+  UploadCloud,
+  BookOpen,
+  KeyRound,
+  Trash2,
+} from "lucide-react"
 
 const items = [
   { title: "Overview", url: "/dashboard", icon: <Home /> },
@@ -29,7 +36,16 @@ export function NavMain() {
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>
-            <SidebarMenuButton asChild isActive={pathname === item.url || (item.url === "/dashboard/json" && pathname.startsWith("/dashboard/json/") && pathname !== "/dashboard/json/upload")} tooltip={item.title}>
+            <SidebarMenuButton
+              asChild
+              isActive={
+                pathname === item.url ||
+                (item.url === "/dashboard/json" &&
+                  pathname.startsWith("/dashboard/json/") &&
+                  pathname !== "/dashboard/json/upload")
+              }
+              tooltip={item.title}
+            >
               <Link href={item.url}>
                 {item.icon}
                 <span>{item.title}</span>

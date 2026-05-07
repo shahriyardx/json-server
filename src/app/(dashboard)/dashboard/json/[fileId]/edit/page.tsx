@@ -116,7 +116,8 @@ export default function EditPage({
   const watchedContent = form.watch("jsonContent")
 
   const [isPublic, setIsPublic] = useState(true)
-  const isMac = typeof navigator !== "undefined" && navigator.platform.includes("Mac")
+  const isMac =
+    typeof navigator !== "undefined" && navigator.platform.includes("Mac")
   const [urlCopied, setUrlCopied] = useState(false)
   const [draftUrl, setDraftUrl] = useState("")
   const [plaintextSecret, setPlaintextSecret] = useState<string | null>(null)
@@ -176,7 +177,10 @@ export default function EditPage({
     }
   }, [file, form])
 
-  const contentBytes = useMemo(() => bytes(watchedContent || ""), [watchedContent])
+  const contentBytes = useMemo(
+    () => bytes(watchedContent || ""),
+    [watchedContent],
+  )
   const sizePercent = Math.min((contentBytes / MAX_FILE_SIZE) * 100, 100)
   const jsonShape = useMemo(
     () => (watchedContent ? getJsonShape(watchedContent) : null),
@@ -556,7 +560,9 @@ export default function EditPage({
             <Button
               type="submit"
               className="flex-1"
-              disabled={contentBytes > MAX_FILE_SIZE || updateMutation.isPending}
+              disabled={
+                contentBytes > MAX_FILE_SIZE || updateMutation.isPending
+              }
             >
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>

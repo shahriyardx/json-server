@@ -40,9 +40,12 @@ export default async function Home(props: {
     })
   }
 
-  const banError = bannedUser?.banReason
-    || (typeof searchParams.error_description === "string" ? searchParams.error_description : null)
-    || (typeof searchParams.error === "string" ? searchParams.error : null)
+  const banError =
+    bannedUser?.banReason ||
+    (typeof searchParams.error_description === "string"
+      ? searchParams.error_description
+      : null) ||
+    (typeof searchParams.error === "string" ? searchParams.error : null)
 
   return (
     <>
@@ -213,10 +216,8 @@ export default async function Home(props: {
                   Authorization: Bearer
                 </code>{" "}
                 header or{" "}
-                <code className="bg-muted px-1 py-0.5 text-xs">
-                  ?api_key=
-                </code>
-                . Keys are hashed, shown once.
+                <code className="bg-muted px-1 py-0.5 text-xs">?api_key=</code>.
+                Keys are hashed, shown once.
               </p>
             </div>
           </div>

@@ -13,7 +13,13 @@ export const analyticsRouter = router({
 
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29)
-      const start = new Date(Date.UTC(thirtyDaysAgo.getFullYear(), thirtyDaysAgo.getMonth(), thirtyDaysAgo.getDate()))
+      const start = new Date(
+        Date.UTC(
+          thirtyDaysAgo.getFullYear(),
+          thirtyDaysAgo.getMonth(),
+          thirtyDaysAgo.getDate(),
+        ),
+      )
 
       const logs = await ctx.prisma.fileRequestLog.findMany({
         where: {
@@ -43,7 +49,9 @@ export const analyticsRouter = router({
           }
         }
       }
-      const topReferrer = Object.entries(referrerTotals).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
+      const topReferrer =
+        Object.entries(referrerTotals).sort((a, b) => b[1] - a[1])[0]?.[0] ??
+        null
 
       return { daily, total30d, avgDaily, topReferrer }
     }),

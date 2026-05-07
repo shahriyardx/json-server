@@ -117,10 +117,7 @@ export default function ApiKeysPage() {
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button
-                  type="submit"
-                  disabled={createMutation.isPending}
-                >
+                <Button type="submit" disabled={createMutation.isPending}>
                   {createMutation.isPending ? "Creating..." : "Create"}
                 </Button>
               </div>
@@ -171,7 +168,11 @@ export default function ApiKeysPage() {
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   Created {new Date(key.createdAt).toLocaleDateString()}
                   {key.lastUsedAt && (
-                    <> · Last used {new Date(key.lastUsedAt).toLocaleDateString()}</>
+                    <>
+                      {" "}
+                      · Last used{" "}
+                      {new Date(key.lastUsedAt).toLocaleDateString()}
+                    </>
                   )}
                 </p>
               </div>

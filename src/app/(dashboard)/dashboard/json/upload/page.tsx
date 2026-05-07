@@ -74,7 +74,15 @@ function getJsonShape(val: string): string | null {
   try {
     const parsed = JSON.parse(val)
     if (Array.isArray(parsed)) {
-      const itemTypes = new Set(parsed.map((i) => (typeof i === "object" && i !== null ? (Array.isArray(i) ? "array" : "object") : typeof i)))
+      const itemTypes = new Set(
+        parsed.map((i) =>
+          typeof i === "object" && i !== null
+            ? Array.isArray(i)
+              ? "array"
+              : "object"
+            : typeof i,
+        ),
+      )
       return `Array(${parsed.length})${itemTypes.size === 1 ? ` of ${[...itemTypes][0]}` : ""}`
     }
     if (typeof parsed === "object" && parsed !== null) {
@@ -100,7 +108,8 @@ export default function UploadPage() {
   const [sizeError, setSizeError] = useState("")
   const [isPublic, setIsPublic] = useState(true)
   const [urlCopied, setUrlCopied] = useState(false)
-  const isMac = typeof navigator !== "undefined" && navigator.platform.includes("Mac")
+  const isMac =
+    typeof navigator !== "undefined" && navigator.platform.includes("Mac")
   const [rawContent, setRawContent] = useState("")
   const [aiPrompt, setAiPrompt] = useState("")
   const [aiResult, setAiResult] = useState("")
@@ -123,7 +132,8 @@ export default function UploadPage() {
   const jsonShape = useMemo(() => {
     return rawContent ? getJsonShape(rawContent) : null
   }, [rawContent])
-  const hasContent = mode === "file" ? !!file : mode === "ai" ? !!aiResult : !!rawContent
+  const hasContent =
+    mode === "file" ? !!file : mode === "ai" ? !!aiResult : !!rawContent
 
   const readFileContent = useCallback((f: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -337,9 +347,7 @@ export default function UploadPage() {
               <>
                 {mode === "file" ? (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="file-dropzone">
-                      JSON File
-                    </FieldLabel>
+                    <FieldLabel htmlFor="file-dropzone">JSON File</FieldLabel>
                     {file && (
                       <div className="mb-2 flex items-center gap-2 rounded-lg border bg-muted/30 px-4 py-2.5">
                         <FileJson className="size-4 text-primary" />
@@ -390,12 +398,18 @@ export default function UploadPage() {
                       <FieldError errors={[fieldState.error]} />
                     )}
                     {typeError && (
-                      <p className="text-sm font-normal text-destructive" role="alert">
+                      <p
+                        className="text-sm font-normal text-destructive"
+                        role="alert"
+                      >
                         {typeError}
                       </p>
                     )}
                     {sizeError && (
-                      <p className="text-sm font-normal text-destructive" role="alert">
+                      <p
+                        className="text-sm font-normal text-destructive"
+                        role="alert"
+                      >
                         {sizeError}
                       </p>
                     )}
@@ -435,7 +449,9 @@ export default function UploadPage() {
                       {aiResult && (
                         <div className="space-y-2 rounded-lg border bg-muted/20 p-4">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">Generated JSON</span>
+                            <span className="text-sm font-medium">
+                              Generated JSON
+                            </span>
                             <div className="flex items-center gap-1.5">
                               <Button
                                 type="button"
@@ -443,9 +459,15 @@ export default function UploadPage() {
                                 size="sm"
                                 onClick={() => {
                                   try {
-                                    const formatted = JSON.stringify(JSON.parse(aiResult), null, 2)
+                                    const formatted = JSON.stringify(
+                                      JSON.parse(aiResult),
+                                      null,
+                                      2,
+                                    )
                                     setAiResult(formatted)
-                                  } catch { toast.error("Invalid JSON") }
+                                  } catch {
+                                    toast.error("Invalid JSON")
+                                  }
                                 }}
                                 className="gap-1.5"
                               >
@@ -458,8 +480,12 @@ export default function UploadPage() {
                                 size="sm"
                                 onClick={() => {
                                   try {
-                                    setAiResult(JSON.stringify(JSON.parse(aiResult)))
-                                  } catch { toast.error("Invalid JSON") }
+                                    setAiResult(
+                                      JSON.stringify(JSON.parse(aiResult)),
+                                    )
+                                  } catch {
+                                    toast.error("Invalid JSON")
+                                  }
                                 }}
                                 className="gap-1.5"
                               >
@@ -491,9 +517,7 @@ export default function UploadPage() {
                   </Field>
                 ) : (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="json-paste">
-                      JSON Content
-                    </FieldLabel>
+                    <FieldLabel htmlFor="json-paste">JSON Content</FieldLabel>
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5">
                         <Button
@@ -637,9 +661,7 @@ export default function UploadPage() {
         {mode !== "ai" && username && watchedFilename && (
           <div className="rounded-lg border bg-muted/20 px-4 py-3">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-xs text-muted-foreground">
-                Endpoint URL
-              </p>
+              <p className="text-xs text-muted-foreground">Endpoint URL</p>
               <Button
                 type="button"
                 variant="ghost"
@@ -669,13 +691,17 @@ export default function UploadPage() {
             <Button
               type="submit"
               className="w-full"
-              disabled={!hasContent || contentBytes > MAX_FILE_SIZE || !!sizeError || !!typeError || uploadMutation.isPending}
+              disabled={
+                !hasContent ||
+                contentBytes > MAX_FILE_SIZE ||
+                !!sizeError ||
+                !!typeError ||
+                uploadMutation.isPending
+              }
             >
-              {uploadMutation.isPending ? (
-                "Uploading..."
-              ) : (
-                `Upload ${watchedFilename ? `"${watchedFilename}"` : "JSON"}`
-              )}
+              {uploadMutation.isPending
+                ? "Uploading..."
+                : `Upload ${watchedFilename ? `"${watchedFilename}"` : "JSON"}`}
             </Button>
             <p className="text-center text-xs text-muted-foreground">
               Press {isMac ? "⌘" : "Ctrl"}+Enter to submit

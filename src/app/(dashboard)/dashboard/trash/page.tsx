@@ -179,7 +179,9 @@ export default function TrashPage() {
               Cancel
             </Button>
             <Button
-              variant={confirm?.action === "restore" ? "default" : "destructive"}
+              variant={
+                confirm?.action === "restore" ? "default" : "destructive"
+              }
               onClick={handleConfirm}
               disabled={
                 restoreMutation.isPending || permanentDeleteMutation.isPending

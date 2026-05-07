@@ -28,9 +28,7 @@ export default async function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-medium text-foreground">
-              How we use it
-            </h2>
+            <h2 className="mb-2 font-medium text-foreground">How we use it</h2>
             <p>
               GitHub profile data for authentication and displaying your
               username on public JSON endpoints. Uploaded JSON files are served
@@ -41,9 +39,7 @@ export default async function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-medium text-foreground">
-              Data retention
-            </h2>
+            <h2 className="mb-2 font-medium text-foreground">Data retention</h2>
             <p>
               Data stored in Postgres. Delete your account from the dashboard to
               remove all associated data. Deleted files move to trash and are

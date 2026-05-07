@@ -17,13 +17,24 @@ function buildPaths(data: unknown, base = ""): PathInfo[] {
   function walk(value: unknown, currentPath: string, depth: number) {
     if (Array.isArray(value)) {
       const first = value[0]
-      paths.push({ path: currentPath || "/", type: `Array<${describeShape(first)}>`, description: `Array of ${describeShape(first)} (${value.length} items)` })
+      paths.push({
+        path: currentPath || "/",
+        type: `Array<${describeShape(first)}>`,
+        description: `Array of ${describeShape(first)} (${value.length} items)`,
+      })
     } else if (typeof value === "object" && value !== null) {
-      for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+      for (const [key, val] of Object.entries(
+        value as Record<string, unknown>,
+      )) {
         const subPath = currentPath ? `${currentPath}/${key}` : `/${key}`
-        const isObjOrArray = Array.isArray(val) || (typeof val === "object" && val !== null)
+        const isObjOrArray =
+          Array.isArray(val) || (typeof val === "object" && val !== null)
         if (depth === 0 || isObjOrArray) {
-          paths.push({ path: subPath, type: describeShape(val), description: describeValue(val) })
+          paths.push({
+            path: subPath,
+            type: describeShape(val),
+            description: describeValue(val),
+          })
         }
         if (depth < 1 && isObjOrArray && !Array.isArray(val)) {
           walk(val, subPath, depth + 1)
@@ -54,14 +65,23 @@ function describeValue(value: unknown, maxLen = 60): string {
 function countArrays(data: unknown): number {
   if (Array.isArray(data)) return 1 + countArrays(data[0])
   if (typeof data === "object" && data !== null) {
-    return (Object.values(data as Record<string, unknown>) as unknown[]).reduce<number>((sum, v) => sum + countArrays(v), 0)
+    return (
+      Object.values(data as Record<string, unknown>) as unknown[]
+    ).reduce<number>((sum, v) => sum + countArrays(v), 0)
   }
   return 0
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ fileId: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ fileId: string }>
+}): Promise<Metadata> {
   const { fileId } = await params
-  const jsonFile = await prisma.jsonFile.findUnique({ where: { id: fileId }, select: { filename: true } })
+  const jsonFile = await prisma.jsonFile.findUnique({
+    where: { id: fileId },
+    select: { filename: true },
+  })
   return {
     title: jsonFile ? `${jsonFile.filename}.json — Docs` : "Docs",
   }
@@ -76,7 +96,12 @@ export default async function JsonDocPage({
 
   const jsonFile = await prisma.jsonFile.findUnique({
     where: { id: fileId, deletedAt: null },
-    select: { id: true, filename: true, content: true, user: { select: { username: true } } },
+    select: {
+      id: true,
+      filename: true,
+      content: true,
+      user: { select: { username: true } },
+    },
   })
   if (!jsonFile) notFound()
 
@@ -114,7 +139,9 @@ export default async function JsonDocPage({
 
         <div className="mb-8 border">
           <div className="border-b bg-muted px-4 py-2">
-            <span className="text-xs font-medium text-muted-foreground">BASE URL</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              BASE URL
+            </span>
           </div>
           <div className="px-4 py-3">
             <code className="text-sm">{baseUrl}</code>
@@ -127,17 +154,27 @@ export default async function JsonDocPage({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted">
-                  <th className="px-4 py-2 text-left font-medium text-muted-foreground">Path</th>
-                  <th className="px-4 py-2 text-left font-medium text-muted-foreground">Type</th>
-                  <th className="px-4 py-2 text-left font-medium text-muted-foreground">Preview</th>
+                  <th className="px-4 py-2 text-left font-medium text-muted-foreground">
+                    Path
+                  </th>
+                  <th className="px-4 py-2 text-left font-medium text-muted-foreground">
+                    Type
+                  </th>
+                  <th className="px-4 py-2 text-left font-medium text-muted-foreground">
+                    Preview
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {paths.map((p) => (
                   <tr key={p.path} className="border-b last:border-0">
                     <td className="px-4 py-2 font-mono text-xs">{p.path}</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">{p.type}</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">{p.description}</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      {p.type}
+                    </td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      {p.description}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -155,46 +192,78 @@ export default async function JsonDocPage({
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted">
-                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">Parameter</th>
-                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">Example</th>
-                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">Description</th>
+                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">
+                      Parameter
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">
+                      Example
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">
+                      Description
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="border-b">
                     <td className="px-4 py-2 font-mono text-xs">search</td>
-                    <td className="px-4 py-2 font-mono text-xs">?search=phone</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">Search across string values</td>
+                    <td className="px-4 py-2 font-mono text-xs">
+                      ?search=phone
+                    </td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      Search across string values
+                    </td>
                   </tr>
                   <tr className="border-b">
                     <td className="px-4 py-2 font-mono text-xs">filter</td>
-                    <td className="px-4 py-2 font-mono text-xs">?filter=categoryId:1</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">Filter by key:value pair</td>
+                    <td className="px-4 py-2 font-mono text-xs">
+                      ?filter=categoryId:1
+                    </td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      Filter by key:value pair
+                    </td>
                   </tr>
                   <tr className="border-b">
                     <td className="px-4 py-2 font-mono text-xs">_limit</td>
                     <td className="px-4 py-2 font-mono text-xs">?_limit=5</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">Limit number of results</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      Limit number of results
+                    </td>
                   </tr>
                   <tr className="border-b">
-                    <td className="px-4 py-2 font-mono text-xs">_start / _end</td>
-                    <td className="px-4 py-2 font-mono text-xs">?_start=2&_end=5</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">Slice result range</td>
+                    <td className="px-4 py-2 font-mono text-xs">
+                      _start / _end
+                    </td>
+                    <td className="px-4 py-2 font-mono text-xs">
+                      ?_start=2&_end=5
+                    </td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      Slice result range
+                    </td>
                   </tr>
                   <tr className="border-b">
                     <td className="px-4 py-2 font-mono text-xs">_skip</td>
                     <td className="px-4 py-2 font-mono text-xs">?_skip=10</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">Skip N results (alias for _start)</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      Skip N results (alias for _start)
+                    </td>
                   </tr>
                   <tr className="border-b">
                     <td className="px-4 py-2 font-mono text-xs">sort</td>
-                    <td className="px-4 py-2 font-mono text-xs">?sort=price&order=desc</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">Sort by field (asc/desc)</td>
+                    <td className="px-4 py-2 font-mono text-xs">
+                      ?sort=price&order=desc
+                    </td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      Sort by field (asc/desc)
+                    </td>
                   </tr>
                   <tr>
                     <td className="px-4 py-2 font-mono text-xs">key=value</td>
-                    <td className="px-4 py-2 font-mono text-xs">?categoryId=2</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">Direct filter by any field</td>
+                    <td className="px-4 py-2 font-mono text-xs">
+                      ?categoryId=2
+                    </td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      Direct filter by any field
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -202,7 +271,10 @@ export default async function JsonDocPage({
           </div>
         )}
 
-        <DocClient baseUrl={baseUrl} initialJson={JSON.stringify(data, null, 2)} />
+        <DocClient
+          baseUrl={baseUrl}
+          initialJson={JSON.stringify(data, null, 2)}
+        />
       </div>
     </div>
   )

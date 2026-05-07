@@ -9,9 +9,7 @@ export default async function AboutPage() {
   return (
     <Container className="py-16 sm:py-24">
       <div className="mx-auto max-w-2xl">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          About
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">About</h1>
 
         <div className="mt-8 space-y-6 text-sm leading-relaxed text-muted-foreground">
           <section>
@@ -28,22 +26,18 @@ export default async function AboutPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-medium text-foreground">
-              Why it exists
-            </h2>
+            <h2 className="mb-2 font-medium text-foreground">Why it exists</h2>
             <p>
               Mock APIs, frontend prototypes, and data-driven projects often
-              need a quick backend. JSON Server eliminates the setup:
-              sign in with GitHub, upload a file, and your data is live as a
-              fully queryable REST endpoint. Useful for rapid prototyping,
-              static site data, and sharing structured data with a URL.
+              need a quick backend. JSON Server eliminates the setup: sign in
+              with GitHub, upload a file, and your data is live as a fully
+              queryable REST endpoint. Useful for rapid prototyping, static site
+              data, and sharing structured data with a URL.
             </p>
           </section>
 
           <section>
-            <h2 className="mb-2 font-medium text-foreground">
-              Technology
-            </h2>
+            <h2 className="mb-2 font-medium text-foreground">Technology</h2>
             <p>
               Built with Next.js 16 and Turbopack, tRPC for type-safe APIs,
               Prisma with PostgreSQL for storage, and better-auth for GitHub
@@ -53,9 +47,7 @@ export default async function AboutPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-medium text-foreground">
-              Open source
-            </h2>
+            <h2 className="mb-2 font-medium text-foreground">Open source</h2>
             <p>
               The source code is available on GitHub. Contributions, bug
               reports, and feature requests are welcome.

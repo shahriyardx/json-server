@@ -15,11 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
   DialogClose,
@@ -105,8 +101,7 @@ export default function SettingsPage() {
             </Avatar>
             <div>
               <p className="text-sm">
-                Signed in with{" "}
-                <span className="font-medium">GitHub</span>
+                Signed in with <span className="font-medium">GitHub</span>
               </p>
               <p className="text-xs text-muted-foreground">
                 Avatar sourced from GitHub

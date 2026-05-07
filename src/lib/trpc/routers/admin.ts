@@ -57,7 +57,10 @@ export const adminRouter = router({
         where: { id: ctx.user.id },
         select: { role: true },
       })
-      if (!caller || (caller.role !== "admin" && caller.role !== "superadmin")) {
+      if (
+        !caller ||
+        (caller.role !== "admin" && caller.role !== "superadmin")
+      ) {
         throw new TRPCError({ code: "FORBIDDEN" })
       }
 
@@ -67,10 +70,16 @@ export const adminRouter = router({
       })
       if (!target) throw new TRPCError({ code: "NOT_FOUND" })
       if (input.userId === ctx.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Cannot ban yourself" })
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot ban yourself",
+        })
       }
       if (caller.role === "admin" && target.role !== "user") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Cannot ban admin or superadmin" })
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot ban admin or superadmin",
+        })
       }
 
       await ctx.prisma.user.update({
@@ -92,7 +101,10 @@ export const adminRouter = router({
         where: { id: ctx.user.id },
         select: { role: true },
       })
-      if (!caller || (caller.role !== "admin" && caller.role !== "superadmin")) {
+      if (
+        !caller ||
+        (caller.role !== "admin" && caller.role !== "superadmin")
+      ) {
         throw new TRPCError({ code: "FORBIDDEN" })
       }
 
@@ -102,7 +114,10 @@ export const adminRouter = router({
       })
       if (!target) throw new TRPCError({ code: "NOT_FOUND" })
       if (caller.role === "admin" && target.role !== "user") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Cannot unban admin or superadmin" })
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot unban admin or superadmin",
+        })
       }
 
       await ctx.prisma.user.update({

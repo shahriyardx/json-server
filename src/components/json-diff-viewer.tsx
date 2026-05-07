@@ -24,7 +24,13 @@ function computeDiff(oldLines: string[], newLines: string[]): DiffLine[] {
     } else if (newLine === undefined) {
       result.push({ type: "removed", oldLine, oldNum: i + 1 })
     } else if (oldLine === newLine) {
-      result.push({ type: "same", oldLine, newLine, oldNum: i + 1, newNum: i + 1 })
+      result.push({
+        type: "same",
+        oldLine,
+        newLine,
+        oldNum: i + 1,
+        newNum: i + 1,
+      })
     } else {
       result.push({ type: "removed", oldLine, oldNum: i + 1 })
       result.push({ type: "added", newLine, newNum: i + 1 })
@@ -33,7 +39,10 @@ function computeDiff(oldLines: string[], newLines: string[]): DiffLine[] {
   return result
 }
 
-export function JsonDiffViewer({ oldContent, newContent }: JsonDiffViewerProps) {
+export function JsonDiffViewer({
+  oldContent,
+  newContent,
+}: JsonDiffViewerProps) {
   const oldLines = oldContent.split("\n")
   const newLines = newContent.split("\n")
   const diff = computeDiff(oldLines, newLines)
@@ -45,7 +54,10 @@ export function JsonDiffViewer({ oldContent, newContent }: JsonDiffViewerProps) 
         <div className="w-1/2 px-3 py-1.5 font-medium">New</div>
       </div>
       {diff.map((line, i) => (
-        <div key={`${line.type}-${line.oldNum ?? ""}-${line.newNum ?? ""}`} className="flex">
+        <div
+          key={`${line.type}-${line.oldNum ?? ""}-${line.newNum ?? ""}`}
+          className="flex"
+        >
           <div
             className={`flex w-1/2 border-r ${
               line.type === "removed"

@@ -106,7 +106,12 @@ console.log(data)`
         onClick={onToggleExpand}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggleExpand() } }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            onToggleExpand()
+          }
+        }}
       >
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <span className="truncate font-mono text-sm font-medium text-white">
@@ -118,7 +123,10 @@ console.log(data)`
           <span className="hidden sm:inline">
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); onToggleVisibility() }}
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggleVisibility()
+              }}
               disabled={isToggling}
               className={cn(
                 "inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors",
@@ -141,7 +149,10 @@ console.log(data)`
           <Button
             variant="ghost"
             size="icon-xs"
-            onClick={(e) => { e.stopPropagation(); onCopyUrl() }}
+            onClick={(e) => {
+              e.stopPropagation()
+              onCopyUrl()
+            }}
             title="Copy URL"
             className="hidden sm:inline-flex"
           >
@@ -153,65 +164,71 @@ console.log(data)`
           </Button>
           <div onClick={(e) => e.stopPropagation()}>
             <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon-xs" className="sm:hidden">
-                <MoreHorizontal className="size-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="text-sm">
-              <DropdownMenuItem onClick={onCopyUrl}>
-                {copiedId === file.filename ? (
-                  <Check className="mr-2 size-3" />
-                ) : (
-                  <Copy className="mr-2 size-3" />
-                )}
-                Copy URL
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onDownload}>
-                <Download className="mr-2 size-3" />
-                Download
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/dashboard/json/${file.id}/edit`}>
-                  <Pencil className="mr-2 size-3" />
-                  Edit
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/dashboard/json/${file.id}`}>
-                  <Eye className="mr-2 size-3" />
-                  Explore
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/dashboard/json/${file.id}/analytics`}>
-                  <BarChart3 className="mr-2 size-3" />
-                  Analytics
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/dashboard/json/${file.id}/versions`}>
-                  <History className="mr-2 size-3" />
-                  Versions
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/dashboard/json/${file.id}/docs`}>
-                  <BookOpen className="mr-2 size-3" />
-                  Docs
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onDelete} className="text-destructive focus:text-destructive">
-                <Trash2 className="mr-2 size-3" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon-xs" className="sm:hidden">
+                  <MoreHorizontal className="size-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="text-sm">
+                <DropdownMenuItem onClick={onCopyUrl}>
+                  {copiedId === file.filename ? (
+                    <Check className="mr-2 size-3" />
+                  ) : (
+                    <Copy className="mr-2 size-3" />
+                  )}
+                  Copy URL
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onDownload}>
+                  <Download className="mr-2 size-3" />
+                  Download
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/dashboard/json/${file.id}/edit`}>
+                    <Pencil className="mr-2 size-3" />
+                    Edit
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/dashboard/json/${file.id}`}>
+                    <Eye className="mr-2 size-3" />
+                    Explore
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/dashboard/json/${file.id}/analytics`}>
+                    <BarChart3 className="mr-2 size-3" />
+                    Analytics
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/dashboard/json/${file.id}/versions`}>
+                    <History className="mr-2 size-3" />
+                    Versions
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/dashboard/json/${file.id}/docs`}>
+                    <BookOpen className="mr-2 size-3" />
+                    Docs
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={onDelete}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 size-3" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <Button
             variant="ghost"
             size="icon-xs"
-            onClick={(e) => { e.stopPropagation(); onToggleExpand() }}
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggleExpand()
+            }}
             className="hidden sm:inline-flex"
           >
             <ChevronRight
@@ -237,7 +254,9 @@ console.log(data)`
                 <span className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
                   <FileJson className="size-3.5" />
                   Type:
-                  <span className="text-foreground capitalize">{contentType(file)}</span>
+                  <span className="text-foreground capitalize">
+                    {contentType(file)}
+                  </span>
                 </span>
                 <button
                   type="button"
@@ -251,19 +270,27 @@ console.log(data)`
                     <Lock className="size-3.5" />
                   )}
                   Status:
-                  <span className={file.isPublic ? "text-emerald-500" : "text-amber-500"}>
+                  <span
+                    className={
+                      file.isPublic ? "text-emerald-500" : "text-amber-500"
+                    }
+                  >
                     {file.isPublic ? "Public" : "Private"}
                   </span>
                 </button>
                 <span className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
                   <Calendar className="size-3.5" />
                   Created:
-                  <span className="text-foreground">{new Date(file.createdAt).toLocaleDateString()}</span>
+                  <span className="text-foreground">
+                    {new Date(file.createdAt).toLocaleDateString()}
+                  </span>
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
                   <Clock className="size-3.5" />
                   Modified:
-                  <span className="text-foreground">{new Date(file.updatedAt).toLocaleDateString()}</span>
+                  <span className="text-foreground">
+                    {new Date(file.updatedAt).toLocaleDateString()}
+                  </span>
                 </span>
               </div>
             </div>
@@ -342,7 +369,9 @@ console.log(data)`
                 {highlightedSnippets[file.id] ? (
                   <div
                     className="overflow-x-auto rounded-lg bg-muted p-4 font-mono text-xs leading-relaxed [&_.shiki]:!m-0 [&_.shiki]:!bg-transparent [&_.shiki]:!p-0"
-                    dangerouslySetInnerHTML={{ __html: highlightedSnippets[file.id] }}
+                    dangerouslySetInnerHTML={{
+                      __html: highlightedSnippets[file.id],
+                    }}
                   />
                 ) : (
                   <pre className="overflow-x-auto rounded-lg bg-muted p-4 font-mono text-xs leading-relaxed">

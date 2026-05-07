@@ -17,12 +17,19 @@ export default async function AdminJsonsPage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold tracking-tight">JSON Files</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{files.length} total files</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {files.length} total files
+      </p>
 
       <div className="mt-6 grid gap-3">
         {files.map((f) => {
           const size = new TextEncoder().encode(f.content).length
-          const sizeLabel = size < 1024 ? `${size}B` : size < 1_048_576 ? `${(size / 1024).toFixed(0)}KB` : `${(size / 1_048_576).toFixed(1)}MB`
+          const sizeLabel =
+            size < 1024
+              ? `${size}B`
+              : size < 1_048_576
+                ? `${(size / 1024).toFixed(0)}KB`
+                : `${(size / 1_048_576).toFixed(1)}MB`
           return (
             <div
               key={f.id}

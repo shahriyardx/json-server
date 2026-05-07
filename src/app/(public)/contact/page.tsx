@@ -57,10 +57,7 @@ export default function ContactPage() {
           Have a question, bug report, or feature request? Send a message.
         </p>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="mt-8 space-y-5"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
           <FieldGroup>
             <Field>
               <FieldLabel>Name</FieldLabel>

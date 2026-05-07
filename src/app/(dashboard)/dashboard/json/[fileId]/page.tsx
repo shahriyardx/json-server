@@ -21,10 +21,14 @@ export default function ExplorePage({
 
   useEffect(() => {
     setOrigin(window.location.origin)
-    const check = () => setDark(document.documentElement.classList.contains("dark"))
+    const check = () =>
+      setDark(document.documentElement.classList.contains("dark"))
     check()
     const observer = new MutationObserver(check)
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] })
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    })
     return () => observer.disconnect()
   }, [])
 
@@ -89,7 +93,9 @@ export default function ExplorePage({
       )}
 
       <div className="mt-8">
-        {username && <ApiSnippets url={`${origin}/${username}/${file.filename}`} />}
+        {username && (
+          <ApiSnippets url={`${origin}/${username}/${file.filename}`} />
+        )}
       </div>
     </div>
   )

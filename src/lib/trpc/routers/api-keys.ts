@@ -14,7 +14,8 @@ export const apiKeysRouter = router({
   createApiKey: protectedProcedure
     .input(z.object({ name: z.string().min(1).max(100) }))
     .mutation(async ({ ctx, input }) => {
-      const isAdmin = ctx.user?.role === "admin" || ctx.user?.role === "superadmin"
+      const isAdmin =
+        ctx.user?.role === "admin" || ctx.user?.role === "superadmin"
       if (!isAdmin) {
         const count = await ctx.prisma.apiKey.count({
           where: { userId: ctx.user.id },

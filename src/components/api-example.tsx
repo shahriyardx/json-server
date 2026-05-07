@@ -16,7 +16,12 @@ const langToShiki: Record<Tab, string> = {
   curl: "bash",
 }
 
-function jsExample(method: string, path: string, body?: string, auth?: boolean): string {
+function jsExample(
+  method: string,
+  path: string,
+  body?: string,
+  auth?: boolean,
+): string {
   const lines: string[] = []
 
   if (method === "GET" && !auth) {
@@ -26,8 +31,9 @@ function jsExample(method: string, path: string, body?: string, auth?: boolean):
     lines.push('  method: "' + method + '",')
     if (auth) lines.push('  headers: { Authorization: "Bearer ' + KEY + '" },')
     if (body) {
-      if (!auth) lines.push('  headers: { "Content-Type": "application/json" },')
-      lines.push('  body: JSON.stringify({...}),')
+      if (!auth)
+        lines.push('  headers: { "Content-Type": "application/json" },')
+      lines.push("  body: JSON.stringify({...}),")
     }
     lines.push("})")
   }
@@ -37,7 +43,12 @@ function jsExample(method: string, path: string, body?: string, auth?: boolean):
   return lines.join("\n")
 }
 
-function pyExample(method: string, path: string, body?: string, auth?: boolean): string {
+function pyExample(
+  method: string,
+  path: string,
+  body?: string,
+  auth?: boolean,
+): string {
   const url = HOST + path
   const lines: string[] = ["import requests"]
   lines.push("")
@@ -57,7 +68,13 @@ function pyExample(method: string, path: string, body?: string, auth?: boolean):
   } else {
     lines.push("headers = {}")
     if (auth) lines.push("headers['Authorization'] = 'Bearer " + KEY + "'")
-    lines.push('response = requests.request("' + method + '", "' + url + '", headers=headers)')
+    lines.push(
+      'response = requests.request("' +
+        method +
+        '", "' +
+        url +
+        '", headers=headers)',
+    )
   }
 
   lines.push("data = response.json()")
@@ -65,7 +82,12 @@ function pyExample(method: string, path: string, body?: string, auth?: boolean):
   return lines.join("\n")
 }
 
-function goExample(method: string, path: string, body?: string, auth?: boolean): string {
+function goExample(
+  method: string,
+  path: string,
+  body?: string,
+  auth?: boolean,
+): string {
   const url = HOST + path
   const lines: string[] = [
     "package main",
@@ -85,8 +107,15 @@ function goExample(method: string, path: string, body?: string, auth?: boolean):
     lines.push("  var payload interface{}")
     lines.push("  json.Unmarshal([]byte(`" + body + "`), &payload)")
     lines.push("  bodyBytes, _ := json.Marshal(payload)")
-    lines.push('  req, _ := http.NewRequest("' + method + '", "' + url + '", bytes.NewBuffer(bodyBytes))')
-    if (auth) lines.push('  req.Header.Set("Authorization", "Bearer ' + KEY + '")')
+    lines.push(
+      '  req, _ := http.NewRequest("' +
+        method +
+        '", "' +
+        url +
+        '", bytes.NewBuffer(bodyBytes))',
+    )
+    if (auth)
+      lines.push('  req.Header.Set("Authorization", "Bearer ' + KEY + '")')
     lines.push('  req.Header.Set("Content-Type", "application/json")')
   } else if (method === "GET" && !auth) {
     lines.push('  resp, err := http.Get("' + url + '")')
@@ -101,8 +130,11 @@ function goExample(method: string, path: string, body?: string, auth?: boolean):
     lines.push("}")
     return lines.join("\n")
   } else {
-    lines.push('  req, _ := http.NewRequest("' + method + '", "' + url + '", nil)')
-    if (auth) lines.push('  req.Header.Set("Authorization", "Bearer ' + KEY + '")')
+    lines.push(
+      '  req, _ := http.NewRequest("' + method + '", "' + url + '", nil)',
+    )
+    if (auth)
+      lines.push('  req.Header.Set("Authorization", "Bearer ' + KEY + '")')
   }
 
   lines.push("")
@@ -121,8 +153,13 @@ function goExample(method: string, path: string, body?: string, auth?: boolean):
   return lines.join("\n")
 }
 
-function curlExample(method: string, path: string, body?: string, auth?: boolean): string {
-  const parts: string[] = ['curl -X ' + method + ' "' + HOST + path + '"']
+function curlExample(
+  method: string,
+  path: string,
+  body?: string,
+  auth?: boolean,
+): string {
+  const parts: string[] = ["curl -X " + method + ' "' + HOST + path + '"']
   if (auth) parts.push('-H "Authorization: Bearer ' + KEY + '"')
   if (body) {
     parts.push('-H "Content-Type: application/json"')
@@ -157,7 +194,9 @@ export function ApiExample({
   auth?: boolean
 }) {
   const [tab, setTab] = useState<Tab>("javascript")
-  const [highlighted, setHighlighted] = useState<Partial<Record<Tab, string>>>({})
+  const [highlighted, setHighlighted] = useState<Partial<Record<Tab, string>>>(
+    {},
+  )
 
   useEffect(() => {
     const code = generators[tab](method, path, body, auth)

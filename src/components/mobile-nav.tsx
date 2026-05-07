@@ -42,10 +42,7 @@ export function MobileNav({ signedIn }: { signedIn: boolean }) {
             Contact
           </Link>
           {signedIn ? (
-            <Link
-              href="/dashboard"
-              onClick={() => setOpen(false)}
-            >
+            <Link href="/dashboard" onClick={() => setOpen(false)}>
               <Button variant="outline" size="sm" className="w-full">
                 Dashboard
               </Button>

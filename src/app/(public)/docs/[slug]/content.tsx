@@ -3,7 +3,11 @@ import { ApiExample } from "@/components/api-example"
 import { Comark } from "@comark/react"
 import { codeToHtml, bundledLanguages } from "shiki"
 
-type HtmlProps = { children?: ReactNode; className?: string; [key: string]: unknown }
+type HtmlProps = {
+  children?: ReactNode
+  className?: string
+  [key: string]: unknown
+}
 type Segment =
   | { type: "markdown"; content: string }
   | { type: "html"; html: string }
@@ -17,7 +21,10 @@ async function processCodeBlocks(content: string): Promise<Segment[]> {
 
   while ((match = codeBlockRe.exec(content)) !== null) {
     if (match.index > lastIndex) {
-      segments.push({ type: "markdown", content: content.slice(lastIndex, match.index) })
+      segments.push({
+        type: "markdown",
+        content: content.slice(lastIndex, match.index),
+      })
     }
     const lang = match[1]
     const code = match[2].replace(/\n$/, "")
@@ -38,7 +45,13 @@ async function processCodeBlocks(content: string): Promise<Segment[]> {
   return segments
 }
 
-function HttpExample({ method = "GET", path = "/" }: { method?: string; path?: string }) {
+function HttpExample({
+  method = "GET",
+  path = "/",
+}: {
+  method?: string
+  path?: string
+}) {
   return (
     <div className="mb-4 overflow-hidden rounded-lg border">
       <div className="flex items-center gap-3 bg-muted px-4 py-3 font-mono text-sm">
@@ -57,12 +70,18 @@ const components = {
   "api-example": ApiExample,
   http: HttpExample,
   h1: ({ children, ...props }: HtmlProps) => (
-    <h1 className="mb-4 text-3xl font-bold tracking-tight scroll-mt-24" {...props}>
+    <h1
+      className="mb-4 text-3xl font-bold tracking-tight scroll-mt-24"
+      {...props}
+    >
       {children}
     </h1>
   ),
   h2: ({ children, ...props }: HtmlProps) => (
-    <h2 className="mb-3 mt-10 text-xl font-semibold tracking-tight scroll-mt-24" {...props}>
+    <h2
+      className="mb-3 mt-10 text-xl font-semibold tracking-tight scroll-mt-24"
+      {...props}
+    >
       {children}
     </h2>
   ),
@@ -72,17 +91,26 @@ const components = {
     </h3>
   ),
   p: ({ children, ...props }: HtmlProps) => (
-    <p className="mb-4 text-sm leading-relaxed text-muted-foreground" {...props}>
+    <p
+      className="mb-4 text-sm leading-relaxed text-muted-foreground"
+      {...props}
+    >
       {children}
     </p>
   ),
   ul: ({ children, ...props }: HtmlProps) => (
-    <ul className="mb-4 list-inside list-disc space-y-1 text-sm text-muted-foreground" {...props}>
+    <ul
+      className="mb-4 list-inside list-disc space-y-1 text-sm text-muted-foreground"
+      {...props}
+    >
       {children}
     </ul>
   ),
   ol: ({ children, ...props }: HtmlProps) => (
-    <ol className="mb-4 list-inside list-decimal space-y-1 text-sm text-muted-foreground" {...props}>
+    <ol
+      className="mb-4 list-inside list-decimal space-y-1 text-sm text-muted-foreground"
+      {...props}
+    >
       {children}
     </ol>
   ),
@@ -105,7 +133,10 @@ const components = {
   code: ({ children, className, ...props }: HtmlProps) => {
     if (!className) {
       return (
-        <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs" {...props}>
+        <code
+          className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs"
+          {...props}
+        >
           {children}
         </code>
       )
@@ -119,7 +150,10 @@ const components = {
     )
   },
   pre: ({ children, ...props }: HtmlProps) => (
-    <pre className="mb-4 overflow-x-auto rounded-lg bg-muted p-4 font-mono text-xs leading-relaxed" {...props}>
+    <pre
+      className="mb-4 overflow-x-auto rounded-lg bg-muted p-4 font-mono text-xs leading-relaxed"
+      {...props}
+    >
       {children}
     </pre>
   ),
@@ -152,7 +186,10 @@ const components = {
   ),
   hr: (props: HtmlProps) => <hr className="my-8 border-muted" {...props} />,
   blockquote: ({ children, ...props }: HtmlProps) => (
-    <blockquote className="mb-4 border-l-2 border-muted-foreground/30 pl-4 text-sm italic text-muted-foreground" {...props}>
+    <blockquote
+      className="mb-4 border-l-2 border-muted-foreground/30 pl-4 text-sm italic text-muted-foreground"
+      {...props}
+    >
       {children}
     </blockquote>
   ),

@@ -7,10 +7,25 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter })
 
 const users = [
-  { name: "Alice Admin", username: "alice", email: "alice@test.com", role: "admin" },
+  {
+    name: "Alice Admin",
+    username: "alice",
+    email: "alice@test.com",
+    role: "admin",
+  },
   { name: "Bob Builder", username: "bob", email: "bob@test.com", role: "user" },
-  { name: "Charlie", username: "charlie", email: "charlie@test.com", role: "user" },
-  { name: "Diana Dev", username: "diana", email: "diana@test.com", role: "user" },
+  {
+    name: "Charlie",
+    username: "charlie",
+    email: "charlie@test.com",
+    role: "user",
+  },
+  {
+    name: "Diana Dev",
+    username: "diana",
+    email: "diana@test.com",
+    role: "user",
+  },
   { name: "Eve Editor", username: "eve", email: "eve@test.com", role: "admin" },
 ]
 

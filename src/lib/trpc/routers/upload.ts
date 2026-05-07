@@ -39,7 +39,8 @@ export const uploadRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const isAdmin = (ctx.user?.role === "admin" || ctx.user?.role === "superadmin")
+      const isAdmin =
+        ctx.user?.role === "admin" || ctx.user?.role === "superadmin"
 
       if (!isAdmin) {
         const count = await ctx.prisma.jsonFile.count({
@@ -51,7 +52,11 @@ export const uploadRouter = router({
       }
 
       const duplicate = await ctx.prisma.jsonFile.findFirst({
-        where: { userId: ctx.user.id, filename: input.filename, deletedAt: null },
+        where: {
+          userId: ctx.user.id,
+          filename: input.filename,
+          deletedAt: null,
+        },
       })
       if (duplicate) {
         throw new Error("A file with this filename already exists.")
@@ -67,7 +72,8 @@ export const uploadRouter = router({
           where: { userId: ctx.user.id, deletedAt: null },
           select: { content: true },
         })
-        const totalBytes = allFiles.reduce((sum, f) => sum + bytes(f.content), 0) + fileSize
+        const totalBytes =
+          allFiles.reduce((sum, f) => sum + bytes(f.content), 0) + fileSize
         if (totalBytes > MAX_TOTAL_SIZE) {
           throw new Error("Total storage limit of 50MB exceeded.")
         }
@@ -87,7 +93,14 @@ export const uploadRouter = router({
     const files = await ctx.prisma.jsonFile.findMany({
       where: { userId: ctx.user.id, deletedAt: null },
       orderBy: { createdAt: "desc" },
-      select: { id: true, filename: true, createdAt: true, updatedAt: true, content: true, isPublic: true },
+      select: {
+        id: true,
+        filename: true,
+        createdAt: true,
+        updatedAt: true,
+        content: true,
+        isPublic: true,
+      },
     })
     return files
   }),
@@ -136,14 +149,19 @@ export const uploadRouter = router({
 
       if (input.filename !== existing.filename) {
         const duplicate = await ctx.prisma.jsonFile.findFirst({
-          where: { userId: ctx.user.id, filename: input.filename, deletedAt: null },
+          where: {
+            userId: ctx.user.id,
+            filename: input.filename,
+            deletedAt: null,
+          },
         })
         if (duplicate) {
           throw new Error("A file with this filename already exists.")
         }
       }
 
-      const isAdmin = (ctx.user?.role === "admin" || ctx.user?.role === "superadmin")
+      const isAdmin =
+        ctx.user?.role === "admin" || ctx.user?.role === "superadmin"
 
       const newSize = bytes(input.jsonContent)
       if (!isAdmin && newSize > MAX_FILE_SIZE) {
@@ -153,10 +171,16 @@ export const uploadRouter = router({
       if (input.jsonContent !== existing.content) {
         if (!isAdmin) {
           const allOtherFiles = await ctx.prisma.jsonFile.findMany({
-            where: { userId: ctx.user.id, id: { not: input.id }, deletedAt: null },
+            where: {
+              userId: ctx.user.id,
+              id: { not: input.id },
+              deletedAt: null,
+            },
             select: { content: true },
           })
-          const totalBytes = allOtherFiles.reduce((sum, f) => sum + bytes(f.content), 0) + newSize
+          const totalBytes =
+            allOtherFiles.reduce((sum, f) => sum + bytes(f.content), 0) +
+            newSize
           if (totalBytes > MAX_TOTAL_SIZE) {
             throw new Error("Total storage limit of 50MB exceeded.")
           }
@@ -179,7 +203,13 @@ export const uploadRouter = router({
 
       // Fire webhook asynchronously if configured and content changed
       if (input.jsonContent !== existing.content) {
-        fireWebhook(ctx.prisma, jsonFile.id, jsonFile.filename, jsonFile.content, jsonFile.isPublic)
+        fireWebhook(
+          ctx.prisma,
+          jsonFile.id,
+          jsonFile.filename,
+          jsonFile.content,
+          jsonFile.isPublic,
+        )
       }
 
       return { id: jsonFile.id, filename: jsonFile.filename }
@@ -224,7 +254,14 @@ export const uploadRouter = router({
           ],
         },
         orderBy: { updatedAt: "desc" },
-        select: { id: true, filename: true, createdAt: true, updatedAt: true, isPublic: true, content: true },
+        select: {
+          id: true,
+          filename: true,
+          createdAt: true,
+          updatedAt: true,
+          isPublic: true,
+          content: true,
+        },
       })
       return files
     }),
@@ -232,7 +269,15 @@ export const uploadRouter = router({
     const files = await ctx.prisma.jsonFile.findMany({
       where: { userId: ctx.user.id, deletedAt: { not: null } },
       orderBy: { deletedAt: "desc" },
-      select: { id: true, filename: true, createdAt: true, updatedAt: true, deletedAt: true, content: true, isPublic: true },
+      select: {
+        id: true,
+        filename: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+        content: true,
+        isPublic: true,
+      },
     })
     return files
   }),
@@ -245,10 +290,16 @@ export const uploadRouter = router({
       if (!file) throw new Error("File not found in trash")
 
       const conflict = await ctx.prisma.jsonFile.findFirst({
-        where: { userId: ctx.user.id, filename: file.filename, deletedAt: null },
+        where: {
+          userId: ctx.user.id,
+          filename: file.filename,
+          deletedAt: null,
+        },
       })
       if (conflict) {
-        throw new Error(`A file named "${file.filename}" already exists. Rename or delete it first.`)
+        throw new Error(
+          `A file named "${file.filename}" already exists. Rename or delete it first.`,
+        )
       }
 
       await ctx.prisma.jsonFile.update({

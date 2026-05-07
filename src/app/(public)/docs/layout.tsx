@@ -3,7 +3,11 @@ import { Container } from "@/components/container"
 import { DocsSidebar } from "./sidebar"
 import { DocsMobileNav } from "./mobile-nav"
 
-export default function DocsLayout({ children }: { children: React.ReactNode }) {
+export default function DocsLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const docs = getAllDocs()
 
   return (

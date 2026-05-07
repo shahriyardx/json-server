@@ -110,8 +110,12 @@ export default function MyJsonsPage() {
   const [pageSize, setPageSize] = useState(10)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [origin, setOrigin] = useState("")
-  useEffect(() => { setOrigin(window.location.origin) }, [])
-  const [highlightedSnippets, setHighlightedSnippets] = useState<Record<string, string>>({})
+  useEffect(() => {
+    setOrigin(window.location.origin)
+  }, [])
+  const [highlightedSnippets, setHighlightedSnippets] = useState<
+    Record<string, string>
+  >({})
   const [exporting, setExporting] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string
@@ -429,11 +433,17 @@ console.log(data)`
               copiedId={copiedId}
               highlightedSnippets={highlightedSnippets}
               isToggling={toggleVisibility.isPending}
-              onToggleExpand={() => setExpandedId(expandedId === file.id ? null : file.id)}
+              onToggleExpand={() =>
+                setExpandedId(expandedId === file.id ? null : file.id)
+              }
               onCopyUrl={() => copyUrl(file.filename)}
               onDownload={() => downloadJson(file.filename, file.content)}
-              onToggleVisibility={() => toggleVisibility.mutate({ id: file.id })}
-              onDelete={() => setDeleteTarget({ id: file.id, filename: file.filename })}
+              onToggleVisibility={() =>
+                toggleVisibility.mutate({ id: file.id })
+              }
+              onDelete={() =>
+                setDeleteTarget({ id: file.id, filename: file.filename })
+              }
             />
           ))}
         </div>

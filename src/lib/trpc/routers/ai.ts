@@ -44,7 +44,8 @@ export const aiRouter = router({
   }),
 
   currentUsage: protectedProcedure.query(async ({ ctx }) => {
-    const isAdmin = ctx.user?.role === "admin" || ctx.user?.role === "superadmin"
+    const isAdmin =
+      ctx.user?.role === "admin" || ctx.user?.role === "superadmin"
     const now = new Date()
     const month = now.getMonth() + 1
     const year = now.getFullYear()
@@ -68,30 +69,36 @@ export const aiRouter = router({
         throw new Error("AI generation is not configured")
       }
 
-      const isAdmin = ctx.user?.role === "admin" || ctx.user?.role === "superadmin"
+      const isAdmin =
+        ctx.user?.role === "admin" || ctx.user?.role === "superadmin"
 
       const { ok, count } = await checkAndIncrementAiCount(ctx.user.id)
       if (!isAdmin && !ok) {
-        throw new Error(`Monthly AI generation limit reached (${count}/${MONTHLY_AI_LIMIT}). Resets next month.`)
+        throw new Error(
+          `Monthly AI generation limit reached (${count}/${MONTHLY_AI_LIMIT}). Resets next month.`,
+        )
       }
 
-      const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${env.DEEPSEEK_API_KEY}`,
+      const response = await fetch(
+        "https://api.deepseek.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${env.DEEPSEEK_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "deepseek-chat",
+            messages: [
+              { role: "system", content: SYSTEM_PROMPT },
+              { role: "user", content: input.prompt },
+            ],
+            temperature: 0.3,
+            max_tokens: 8192,
+          }),
+          signal: AbortSignal.timeout(120_000),
         },
-        body: JSON.stringify({
-          model: "deepseek-chat",
-          messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            { role: "user", content: input.prompt },
-          ],
-          temperature: 0.3,
-          max_tokens: 8192,
-        }),
-        signal: AbortSignal.timeout(120_000),
-      })
+      )
 
       if (!response.ok) {
         const text = await response.text().catch(() => "")
@@ -116,7 +123,9 @@ export const aiRouter = router({
 
       const size = new TextEncoder().encode(formatted).length
       if (size > 1_048_576) {
-        throw new Error(`Generated JSON is ${(size / 1_048_576).toFixed(1)}MB — exceeds 1MB limit. Try a smaller prompt.`)
+        throw new Error(
+          `Generated JSON is ${(size / 1_048_576).toFixed(1)}MB — exceeds 1MB limit. Try a smaller prompt.`,
+        )
       }
 
       return { json: formatted }

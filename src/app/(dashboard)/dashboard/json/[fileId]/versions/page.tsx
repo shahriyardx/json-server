@@ -61,9 +61,7 @@ export default function VersionsPage({
       </Link>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">
-          {file?.filename ?? "File"}.json
-        </h1>
+        <h1 className="text-2xl font-bold">{file?.filename ?? "File"}.json</h1>
         <p className="mt-1 text-sm text-muted-foreground">Version history</p>
       </div>
 
@@ -94,9 +92,7 @@ export default function VersionsPage({
           <div key={version.id} className="rounded-lg border-2 p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-medium">
-                  Version {versions.length - idx}
-                </p>
+                <p className="font-medium">Version {versions.length - idx}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {new Date(version.createdAt).toLocaleString()} ·{" "}
                   {sizeLabel(version.content)}
@@ -126,8 +122,8 @@ export default function VersionsPage({
                       <DialogTitle>Revert to this version</DialogTitle>
                       <DialogDescription>
                         This will restore the file to Version{" "}
-                        {versions.length - idx}. A new version of the
-                        current content will be saved before reverting.
+                        {versions.length - idx}. A new version of the current
+                        content will be saved before reverting.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="flex justify-end gap-2">

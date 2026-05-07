@@ -3,11 +3,7 @@
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { authClient } from "@/lib/auth-client"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +19,12 @@ import {
   SidebarMenuSkeleton,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { ChevronsUpDownIcon, LogOutIcon, ShieldCheckIcon, UserIcon } from "lucide-react"
+import {
+  ChevronsUpDownIcon,
+  LogOutIcon,
+  ShieldCheckIcon,
+  UserIcon,
+} from "lucide-react"
 
 export function NavUser() {
   const { push } = useRouter()
@@ -92,16 +93,23 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {(session.user.role === "admin" || session.user.role === "superadmin") && (
+            {(session.user.role === "admin" ||
+              session.user.role === "superadmin") && (
               <DropdownMenuItem asChild>
-                <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-2 cursor-pointer"
+                >
                   <ShieldCheckIcon />
                   Admin Panel
                 </Link>
               </DropdownMenuItem>
             )}
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/settings" className="flex items-center gap-2 cursor-pointer">
+              <Link
+                href="/dashboard/settings"
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <UserIcon />
                 Settings
               </Link>

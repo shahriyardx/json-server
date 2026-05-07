@@ -87,7 +87,8 @@ export default async function DashboardPage() {
   )
   const storageLimit = 52_428_800
 
-  const isAdmin = session?.user?.role === "admin" || session?.user?.role === "superadmin"
+  const isAdmin =
+    session?.user?.role === "admin" || session?.user?.role === "superadmin"
 
   const requestCount = requestStats?.count ?? 0
   const fileLimit = isAdmin ? Infinity : 100
@@ -158,7 +159,8 @@ export default async function DashboardPage() {
           <p className="mt-1 text-3xl font-bold">
             {fileCount}
             <span className="text-muted-foreground">
-              {" "}/ {isAdmin ? "∞" : fileLimit}
+              {" "}
+              / {isAdmin ? "∞" : fileLimit}
             </span>
           </p>
           {!isAdmin && (
@@ -182,7 +184,8 @@ export default async function DashboardPage() {
               ? `${(bytesUsed / 1024).toFixed(0)}KB`
               : `${(bytesUsed / 1_048_576).toFixed(1)}MB`}
             <span className="text-muted-foreground">
-              {" "}/ {isAdmin ? "∞" : "50MB"}
+              {" "}
+              / {isAdmin ? "∞" : "50MB"}
             </span>
           </p>
           {!isAdmin && (
@@ -201,7 +204,8 @@ export default async function DashboardPage() {
           <p className="mt-1 text-3xl font-bold">
             {requestCount.toLocaleString()}
             <span className="text-muted-foreground">
-              {" "}/ {isAdmin ? "∞" : requestLimit.toLocaleString()}
+              {" "}
+              / {isAdmin ? "∞" : requestLimit.toLocaleString()}
             </span>
           </p>
           {!isAdmin && (
@@ -223,7 +227,8 @@ export default async function DashboardPage() {
           <p className="mt-1 text-3xl font-bold">
             {aiCount}
             <span className="text-muted-foreground">
-              {" "}/ {isAdmin ? "∞" : aiLimit}
+              {" "}
+              / {isAdmin ? "∞" : aiLimit}
             </span>
           </p>
           {!isAdmin && (
@@ -240,15 +245,14 @@ export default async function DashboardPage() {
       </div>
 
       <div className="border p-5 min-w-0 overflow-hidden">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-medium">Requests (Last 7 Days)</h2>
-            <span className="text-2xl font-bold">
-              {totalWeeklyRequests.toLocaleString()}
-            </span>
-          </div>
-          <RequestChart data={chartData} />
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-sm font-medium">Requests (Last 7 Days)</h2>
+          <span className="text-2xl font-bold">
+            {totalWeeklyRequests.toLocaleString()}
+          </span>
+        </div>
+        <RequestChart data={chartData} />
       </div>
-
     </div>
   )
 }

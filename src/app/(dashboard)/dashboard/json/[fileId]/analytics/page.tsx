@@ -30,9 +30,8 @@ export default function AnalyticsPage({
   params: Promise<{ fileId: string }>
 }) {
   const { fileId } = use(params)
-  const { data: analytics, isPending } = trpc.analytics.getFileAnalytics.useQuery(
-    { fileId },
-  )
+  const { data: analytics, isPending } =
+    trpc.analytics.getFileAnalytics.useQuery({ fileId })
 
   if (isPending) {
     return (
@@ -71,7 +70,9 @@ export default function AnalyticsPage({
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Requests (30 days)</p>
-          <p className="mt-1 text-3xl font-bold">{formatCompact(analytics.total30d)}</p>
+          <p className="mt-1 text-3xl font-bold">
+            {formatCompact(analytics.total30d)}
+          </p>
         </div>
         <div className="rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Daily average</p>
@@ -111,9 +112,7 @@ export default function AnalyticsPage({
                 tick={{ fontSize: 11 }}
                 className="text-muted-foreground"
               />
-              <ChartTooltip
-                content={<ChartTooltipContent />}
-              />
+              <ChartTooltip content={<ChartTooltipContent />} />
               <Bar
                 dataKey="count"
                 fill="var(--color-count)"
