@@ -100,23 +100,25 @@ console.log(data)`
 
   return (
     <div className={cn("border-2", isExpanded && "bg-muted/30")}>
-      {/* Main row */}
-      <div className="flex items-center gap-3 px-4 py-3 transition-colors">
+      {/* Main row — whole row clickable to expand */}
+      <div
+        className="flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/20"
+        onClick={onToggleExpand}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggleExpand() } }}
+      >
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <button
-            type="button"
-            onClick={onToggleExpand}
-            className="truncate font-mono text-sm font-medium text-white text-left cursor-pointer hover:underline"
-          >
+          <span className="truncate font-mono text-sm font-medium text-white">
             {file.filename}.json
-          </button>
+          </span>
           <span className="hidden sm:inline text-xs text-muted-foreground ml-auto">
             {size.label}
           </span>
           <span className="hidden sm:inline">
             <button
               type="button"
-              onClick={onToggleVisibility}
+              onClick={(e) => { e.stopPropagation(); onToggleVisibility() }}
               disabled={isToggling}
               className={cn(
                 "inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors",
@@ -139,7 +141,7 @@ console.log(data)`
           <Button
             variant="ghost"
             size="icon-xs"
-            onClick={onCopyUrl}
+            onClick={(e) => { e.stopPropagation(); onCopyUrl() }}
             title="Copy URL"
             className="hidden sm:inline-flex"
           >
@@ -149,7 +151,8 @@ console.log(data)`
               <Copy className="size-3.5" />
             )}
           </Button>
-          <DropdownMenu>
+          <div onClick={(e) => e.stopPropagation()}>
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon-xs" className="sm:hidden">
                 <MoreHorizontal className="size-3.5" />
@@ -204,10 +207,11 @@ console.log(data)`
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
           <Button
             variant="ghost"
             size="icon-xs"
-            onClick={onToggleExpand}
+            onClick={(e) => { e.stopPropagation(); onToggleExpand() }}
             className="hidden sm:inline-flex"
           >
             <ChevronRight
