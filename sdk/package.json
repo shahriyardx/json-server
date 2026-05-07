@@ -1,6 +1,6 @@
 {
   "name": "json-sdk",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "description": "TypeScript client for json-server — self-hosted REST API platform",
   "type": "module",
   "main": "./dist/index.cjs",
