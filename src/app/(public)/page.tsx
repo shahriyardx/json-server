@@ -41,7 +41,6 @@ export default async function Home(props: {
   }
 
   const banError = bannedUser?.banReason
-    || (bannedUser ? "Your account has been banned." : null)
     || (typeof searchParams.error_description === "string" ? searchParams.error_description : null)
     || (typeof searchParams.error === "string" ? searchParams.error : null)
 

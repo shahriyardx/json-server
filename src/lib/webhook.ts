@@ -1,4 +1,5 @@
 import crypto from "node:crypto"
+import type { PrismaClient } from "@/generated/prisma/client"
 
 export function generateWebhookSecret(): string {
   return `wh_${crypto.randomBytes(24).toString("hex")}`
@@ -44,5 +45,43 @@ export async function deliverWebhook(
       responseCode: null,
       error: err instanceof Error ? err.message : "Unknown error",
     }
+  }
+}
+
+export async function fireWebhook(
+  prisma: PrismaClient,
+  fileId: string,
+  filename: string,
+  content: string,
+  isPublic: boolean,
+) {
+  try {
+    const webhook = await prisma.webhook.findUnique({
+      where: { jsonFileId: fileId },
+    })
+    if (!webhook || !webhook.enabled) return
+
+    const result = await deliverWebhook(webhook.url, webhook.secret, {
+      event: "file.updated",
+      file: {
+        id: fileId,
+        filename,
+        content,
+        isPublic,
+        updatedAt: new Date().toISOString(),
+      },
+      timestamp: new Date().toISOString(),
+    })
+
+    await prisma.webhook.update({
+      where: { id: webhook.id },
+      data: {
+        lastDeliveryAt: new Date(),
+        lastDeliveryStatus: result.status,
+        lastDeliveryResponseCode: result.responseCode,
+      },
+    })
+  } catch {
+    // Silently fail — webhook delivery errors must not break the mutation
   }
 }

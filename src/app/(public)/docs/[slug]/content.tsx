@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { ApiExample } from "@/components/api-example"
 import { Comark } from "@comark/react"
 import { codeToHtml, bundledLanguages } from "shiki"
 
@@ -51,6 +52,7 @@ function HttpExample({ method = "GET", path = "/" }: { method?: string; path?: s
 }
 
 const components = {
+  "api-example": ApiExample,
   http: HttpExample,
   h1: ({ children, ...props }: HtmlProps) => (
     <h1 className="mb-4 text-3xl font-bold tracking-tight scroll-mt-24" {...props}>

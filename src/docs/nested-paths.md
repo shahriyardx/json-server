@@ -1,46 +1,22 @@
 ---
-title: Nested Paths
+title: Nested Paths & ID Matching
 slug: nested-paths
-order: 4
+order: 3
 ---
 
-# Nested Paths
+# Nested Paths & ID Matching
 
-You can traverse into objects and arrays using URL path segments.
+Traverse into objects and arrays using URL path segments.
 
-## Syntax
+## Object Traversal
+
+Path segments resolve to object keys:
 
 ```
-GET /<username>/<filename>/<key>/<index>/<nested-key>/...
+/<username>/<filename>/key1/key2
 ```
-
-## Examples
-
-| URL | Returns |
-|-----|---------|
-| `/johndoe/products` | Full JSON array |
-| `/johndoe/products/0` | First product |
-| `/johndoe/products/0/name` | Name of first product |
-| `/johndoe/config/theme/colors` | Deeply nested value |
-| `/johndoe/store/inventory/items` | Nested array |
-| `/johndoe/store/inventory/items/2/price` | Deeply nested value |
-
-Returns `404 Not Found` if the path doesn't exist.
-
-### Full Example
 
 Given this JSON at `/johndoe/store`:
-
-::http{method="GET" path="/johndoe/store"}
-::
-
-Access the full JSON. Then traverse into it:  
-
-::http{method="GET" path="/johndoe/store/inventory/items"}
-::
-
-::http{method="GET" path="/johndoe/store/inventory/items/0/name"}
-::
 
 ```json
 {
@@ -54,9 +30,56 @@ Access the full JSON. Then traverse into it:
 }
 ```
 
-| Request | Response |
-|---------|----------|
-| `GET /johndoe/store/inventory/items` | The full items array |
-| `GET /johndoe/store/inventory/items/0` | The first item object |
-| `GET /johndoe/store/inventory/items/0/name` | `"Widget"` |
-| `GET /johndoe/store/name` | `"My Store"` |
+::api-example{method="GET" path="/johndoe/store"}
+::
+
+::api-example{method="GET" path="/johndoe/store/name"}
+::
+
+::api-example{method="GET" path="/johndoe/store/inventory/items"}
+::
+
+::api-example{method="GET" path="/johndoe/store/inventory/items/0"}
+::
+
+## Array Index vs ID Match
+
+When a path segment reaches an array:
+
+- **Numeric** — treated as array index (`0` = first element)
+- **Non-numeric** — matched against element `id` or `_id`
+
+::api-example{method="GET" path="/johndoe/products/abc-123"}
+::
+
+Finds element where `id` or `_id` equals `"abc-123"`. Returns `404` if not found.
+
+Primitive arrays (strings, numbers) only support numeric index.
+
+## ID Match in Mutations
+
+POST, PATCH, DELETE use last path segment as ID when targeting array:
+
+::api-example{method="PATCH" path="/johndoe/products/5" body='{"price":5.99}' auth="true"}
+::
+
+::api-example{method="DELETE" path="/johndoe/products/5" auth="true"}
+::
+
+Traverses to `products` array, finds element with `id`/`_id` = `5`, applies mutation.
+
+### Nested ID
+
+::api-example{method="PATCH" path="/johndoe/store/inventory/items/2" body='{"price":5.99}' auth="true"}
+::
+
+Traverses to `inventory.items` array, matches ID `2`, patches.
+
+## Batch Mutations
+
+PATCH and DELETE accept query params for batch operations on nested arrays:
+
+::api-example{method="DELETE" path="/johndoe/store/inventory/items?inStock=false" auth="true"}
+::
+
+See [Query Parameters](/docs/query-params).

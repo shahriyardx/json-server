@@ -1,12 +1,12 @@
 ---
 title: Query Parameters
 slug: query-params
-order: 5
+order: 4
 ---
 
 # Query Parameters
 
-Apply to array values at any depth. Combine freely.
+Query params work on **GET** (filter response), **PATCH** (select items to update), and **DELETE** (select items to remove).
 
 ## Search
 
@@ -14,64 +14,72 @@ Apply to array values at any depth. Combine freely.
 ?search=<term>
 ```
 
-Filters array items where any string field contains the term (case-insensitive).
+Case-insensitive match against all string fields.
 
-### Example
-
-::http{method="GET" path="/johndoe/products?search=gad"}
+::api-example{method="GET" path="/johndoe/products?search=gad"}
 ::
 
-Returns items whose any string field includes "gad".
-
-## Sort
+## Sort (GET only)
 
 ```
 ?sort=<field>&order=asc|desc
 ```
 
-Sorts array of objects by a field. Default order is `asc`.
+Default order `asc`.
 
-### Examples
-
-::http{method="GET" path="/johndoe/products?sort=price"}
+::api-example{method="GET" path="/johndoe/products?sort=price"}
 ::
 
-::http{method="GET" path="/johndoe/products?sort=price&order=desc"}
-::
-
-::http{method="GET" path="/johndoe/products?sort=name&order=asc"}
+::api-example{method="GET" path="/johndoe/products?sort=price&order=desc"}
 ::
 
 ## Filter
 
-Two formats:
+Two syntaxes:
 
-### Colon syntax
+### Colon
 
 ```
 ?filter=<key>:<value>
 ```
 
-::http{method="GET" path="/johndoe/products?filter=category:electronics"}
+::api-example{method="GET" path="/johndoe/products?filter=inStock:true"}
 ::
 
-### Direct param
+### Direct
 
 ```
 ?<key>=<value>
 ```
 
-::http{method="GET" path="/johndoe/products?inStock=true"}
+::api-example{method="GET" path="/johndoe/products?inStock=true"}
 ::
 
-## Combined Example
+## Pagination (GET only)
 
-::http{method="GET" path="/johndoe/products?search=pro&sort=price&order=desc"}
+```
+?_limit=5
+?_skip=10
+?_start=0&_end=5
+```
+
+## Mutations
+
+Query params select items for batch update or delete.
+
+::api-example{method="PATCH" path="/johndoe/products?inStock=false" body='{"inStock":true}' auth="true"}
 ::
 
-Returns all products matching "pro", sorted by price descending.
+::api-example{method="DELETE" path="/johndoe/products?inStock=false" auth="true"}
+::
 
-Nested paths + query params work together:
+## Combined
 
-::http{method="GET" path="/johndoe/store/inventory/items?search=widget&sort=price&order=asc"}
+::api-example{method="GET" path="/johndoe/products?search=pro&sort=price&order=desc&_limit=10"}
+::
+
+::api-example{method="PATCH" path="/johndoe/store/inventory/items?category=electronics" body='{"discount":0.1}' auth="true"}
+::
+
+::api-example{method="DELETE" path="/johndoe/store/inventory/items?inStock=false" auth="true"}
 ::

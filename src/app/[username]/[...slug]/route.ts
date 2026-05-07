@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { rateLimit } from "@/lib/rate-limit"
 import { hashApiKey } from "@/lib/api-key"
+import { fireWebhook } from "@/lib/webhook"
 
 const MONTHLY_LIMIT = 100_000
 
@@ -19,6 +20,14 @@ function json(
     status,
     headers: { ...corsHeaders, ...extraHeaders },
   })
+}
+
+function ok(data: unknown, status = 200) {
+  return json({ success: true, data }, status)
+}
+
+function fail(error: string, status: number) {
+  return json({ success: false, error }, status)
 }
 
 function cacheHeaders(etag: string, updatedAt: Date) {
@@ -128,8 +137,18 @@ function traverse(data: unknown, segments: string[]): unknown {
 
     if (Array.isArray(current)) {
       const index = parseInt(segment, 10)
-      if (Number.isNaN(index)) return undefined
-      current = current[index]
+      if (!Number.isNaN(index)) {
+        current = current[index]
+      } else {
+        current = current.find((item) => {
+          if (typeof item !== "object" || item === null) return false
+          const idVal =
+            (item as Record<string, unknown>)["_id"] ??
+            (item as Record<string, unknown>)["id"]
+          if (idVal === undefined) return false
+          return String(idVal) === segment
+        })
+      }
     } else if (typeof current === "object") {
       current = (current as Record<string, unknown>)[segment]
     } else {
@@ -212,6 +231,120 @@ function applyQueryParams(data: unknown, params: URLSearchParams): unknown {
   }
 
   return result
+}
+
+function autoGenerateId(
+  data: unknown[],
+): { value: string | number; key: string } | null {
+  let hasId = false
+  let allNumeric = true
+  let maxNumeric = 0
+  let detectedKey = "id"
+
+  for (const item of data) {
+    if (typeof item !== "object" || item === null) continue
+    const record = item as Record<string, unknown>
+    const idVal = record._id ?? record.id
+    if (idVal === undefined) continue
+
+    hasId = true
+    if (record._id !== undefined) detectedKey = "_id"
+    if (typeof idVal === "number") {
+      maxNumeric = Math.max(maxNumeric, idVal)
+    } else {
+      allNumeric = false
+    }
+  }
+
+  if (!hasId) return null
+  return {
+    value: allNumeric ? maxNumeric + 1 : crypto.randomUUID(),
+    key: detectedKey,
+  }
+}
+
+function findArrayIndex(data: unknown[], id: string): number {
+  for (let i = 0; i < data.length; i++) {
+    const item = data[i]
+    if (typeof item !== "object" || item === null) continue
+    const idVal =
+      (item as Record<string, unknown>)["_id"] ??
+      (item as Record<string, unknown>)["id"]
+    if (idVal === undefined) continue
+    if (String(idVal) === id) return i
+  }
+  return -1
+}
+
+const FILTER_RESERVED = new Set([
+  "search", "sort", "order", "filter", "api_key",
+  "_limit", "_start", "_end", "_skip",
+])
+
+function hasFilterParams(params: URLSearchParams): boolean {
+  if (params.has("search") || params.has("filter")) return true
+  for (const [key] of params.entries()) {
+    if (!FILTER_RESERVED.has(key)) return true
+  }
+  return false
+}
+
+function collectMatchingIndices(
+  data: unknown[],
+  params: URLSearchParams,
+): number[] {
+  const indices: number[] = []
+
+  for (let i = 0; i < data.length; i++) {
+    const item = data[i]
+    if (typeof item !== "object" || item === null) continue
+    const record = item as Record<string, unknown>
+
+    let match = true
+
+    const search = params.get("search")
+    if (search && match) {
+      const term = search.toLowerCase()
+      match = Object.values(record).some((v) =>
+        String(v).toLowerCase().includes(term),
+      )
+    }
+
+    const filterParam = params.get("filter")
+    if (filterParam && match) {
+      const colonIdx = filterParam.indexOf(":")
+      if (colonIdx > 0) {
+        const key = filterParam.slice(0, colonIdx)
+        const value = filterParam.slice(colonIdx + 1)
+        match = String(record[key]) === value
+      }
+    }
+
+    if (match) {
+      for (const [key, value] of params.entries()) {
+        if (FILTER_RESERVED.has(key)) continue
+        match = String(record[key]) === value
+        if (!match) break
+      }
+    }
+
+    if (match) indices.push(i)
+  }
+
+  return indices
+}
+
+async function updateFileContent(
+  fileId: string,
+  content: string,
+  filename: string,
+  isPublic: boolean,
+) {
+  await prisma.jsonFile.update({
+    where: { id: fileId },
+    data: { content },
+  })
+  fireWebhook(prisma, fileId, filename, content, isPublic).catch(() => {})
 }
 
 export async function GET(
@@ -297,11 +430,333 @@ export async function GET(
   return json(data, 200, cacheHeaders(etag, jsonFile.updatedAt))
 }
 
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ username: string; slug: string[] }> },
+) {
+  const { username, slug } = await params
+  const [filename, ...segments] = slug
+
+  const jsonFile = await getJsonFile(username, filename)
+  if (!jsonFile) return fail("Not found", 404)
+
+  const isAuthed = await authenticateRequest(req, jsonFile.userId)
+  if (!isAuthed) return fail("Unauthorized", 401)
+
+  const isAdmin =
+    jsonFile.owner.role === "admin" || jsonFile.owner.role === "superadmin"
+
+  if (!isAdmin) {
+    const { ok: rateOk } = rateLimiter.check(`${username}/${filename}`)
+    if (!rateOk) {
+      return json(
+        { success: false, error: "Too many requests" },
+        429,
+        { ...corsHeaders, "Retry-After": "60" },
+      )
+    }
+  }
+
+  const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
+  if (!isAdmin && !withinLimit) {
+    return fail("Monthly request limit exceeded", 429)
+  }
+
+  let rootData: unknown
+  try {
+    rootData = JSON.parse(jsonFile.content)
+  } catch {
+    return fail("Invalid JSON content", 500)
+  }
+
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return fail("Invalid JSON body", 400)
+  }
+
+  // If segments end with an ID match, replace element entirely
+  if (segments.length > 0) {
+    const idSegment = segments[segments.length - 1]
+    const pathToArray = segments.slice(0, -1)
+    let targetArray = rootData
+    if (pathToArray.length > 0) {
+      targetArray = traverse(rootData, pathToArray)
+    }
+    if (Array.isArray(targetArray)) {
+      const idx = findArrayIndex(targetArray, idSegment)
+      if (idx !== -1) {
+        const idKey =
+          (targetArray[idx] as Record<string, unknown>)._id !== undefined
+            ? "_id"
+            : "id"
+        const replacement = { ...(body as Record<string, unknown>) }
+        delete replacement._id
+        delete replacement.id
+        replacement[idKey] = (targetArray[idx] as Record<string, unknown>)[idKey]
+        targetArray[idx] = replacement
+        const newContent = JSON.stringify(rootData)
+        await updateFileContent(
+          jsonFile.id,
+          newContent,
+          jsonFile.filename,
+          jsonFile.isPublic,
+        )
+        return ok(replacement)
+      }
+      return fail("Item not found", 404)
+    }
+  }
+
+  // Fall through to append logic
+  let data = rootData
+  if (segments.length > 0) {
+    data = traverse(rootData, segments)
+    if (data === undefined) {
+      return fail("Not found", 404)
+    }
+  }
+
+  if (!Array.isArray(data)) {
+    return fail("Target is not an array", 400)
+  }
+
+  const bodyRecord = body as Record<string, unknown>
+  if (bodyRecord._id === undefined && bodyRecord.id === undefined) {
+    const generated = autoGenerateId(data)
+    if (generated) {
+      body = { ...bodyRecord, [generated.key]: generated.value }
+    }
+  }
+
+  // Check duplicate _id/id
+  const finalRecord = body as Record<string, unknown>
+  const bodyIdKey = finalRecord._id !== undefined ? "_id" : finalRecord.id !== undefined ? "id" : null
+  if (bodyIdKey) {
+    const exists = (data as unknown[]).some((item) => {
+      if (typeof item !== "object" || item === null) return false
+      return String((item as Record<string, unknown>)[bodyIdKey]) === String(finalRecord[bodyIdKey])
+    })
+    if (exists) {
+      return fail(`Duplicate ${bodyIdKey} value`, 409)
+    }
+  }
+
+  ;(data as unknown[]).push(body)
+
+  const newContent = JSON.stringify(rootData)
+  await updateFileContent(
+    jsonFile.id,
+    newContent,
+    jsonFile.filename,
+    jsonFile.isPublic,
+  )
+
+  return ok(body, 201)
+}
+
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ username: string; slug: string[] }> },
+) {
+  const { username, slug } = await params
+  const [filename, ...segments] = slug
+
+  const jsonFile = await getJsonFile(username, filename)
+  if (!jsonFile) return fail("Not found", 404)
+
+  const isAuthed = await authenticateRequest(req, jsonFile.userId)
+  if (!isAuthed) return fail("Unauthorized", 401)
+
+  const isAdmin =
+    jsonFile.owner.role === "admin" || jsonFile.owner.role === "superadmin"
+
+  if (!isAdmin) {
+    const { ok: rateOk } = rateLimiter.check(`${username}/${filename}`)
+    if (!rateOk) {
+      return json(
+        { success: false, error: "Too many requests" },
+        429,
+        { ...corsHeaders, "Retry-After": "60" },
+      )
+    }
+  }
+
+  const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
+  if (!isAdmin && !withinLimit) {
+    return fail("Monthly request limit exceeded", 429)
+  }
+
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return fail("Invalid JSON body", 400)
+  }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return fail("Body must be a JSON object", 400)
+  }
+
+  let rootData: unknown
+  try {
+    rootData = JSON.parse(jsonFile.content)
+  } catch {
+    return fail("Invalid JSON content", 500)
+  }
+
+  let data = rootData
+  if (segments.length > 0) {
+    data = traverse(rootData, segments)
+    if (data === undefined) {
+      return fail("Not found", 404)
+    }
+  }
+
+  if (typeof data === "object" && data !== null && !Array.isArray(data)) {
+    Object.assign(data, body)
+  } else if (Array.isArray(data)) {
+    const { searchParams } = new URL(req.url)
+    const indices = collectMatchingIndices(data, searchParams)
+    for (const idx of indices) {
+      Object.assign(
+        (data as unknown[])[idx] as Record<string, unknown>,
+        body,
+      )
+    }
+  } else {
+    return fail("Target must be an object or array", 400)
+  }
+
+  const newContent = JSON.stringify(rootData)
+  await updateFileContent(
+    jsonFile.id,
+    newContent,
+    jsonFile.filename,
+    jsonFile.isPublic,
+  )
+
+  return ok(data)
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ username: string; slug: string[] }> },
+) {
+  const { username, slug } = await params
+  const [filename, ...segments] = slug
+
+  const jsonFile = await getJsonFile(username, filename)
+  if (!jsonFile) return fail("Not found", 404)
+
+  const isAuthed = await authenticateRequest(req, jsonFile.userId)
+  if (!isAuthed) return fail("Unauthorized", 401)
+
+  const isAdmin =
+    jsonFile.owner.role === "admin" || jsonFile.owner.role === "superadmin"
+
+  if (!isAdmin) {
+    const { ok: rateOk } = rateLimiter.check(`${username}/${filename}`)
+    if (!rateOk) {
+      return json(
+        { success: false, error: "Too many requests" },
+        429,
+        { ...corsHeaders, "Retry-After": "60" },
+      )
+    }
+  }
+
+  const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
+  if (!isAdmin && !withinLimit) {
+    return fail("Monthly request limit exceeded", 429)
+  }
+
+  const { searchParams } = new URL(req.url)
+
+  let rootData: unknown
+  try {
+    rootData = JSON.parse(jsonFile.content)
+  } catch {
+    return fail("Invalid JSON content", 500)
+  }
+
+  if (hasFilterParams(searchParams)) {
+    let targetArray = rootData
+    if (segments.length > 0) {
+      targetArray = traverse(rootData, segments)
+      if (targetArray === undefined) {
+        return fail("Not found", 404)
+      }
+    }
+
+    if (!Array.isArray(targetArray)) {
+      return fail("Target is not an array", 400)
+    }
+
+    const indices = collectMatchingIndices(targetArray, searchParams)
+    if (indices.length === 0) {
+      return fail("No matching items", 404)
+    }
+
+    indices.sort((a, b) => b - a)
+    const removed: unknown[] = []
+    for (const idx of indices) {
+      removed.push((targetArray as unknown[]).splice(idx, 1)[0])
+    }
+
+    const newContent = JSON.stringify(rootData)
+    await updateFileContent(
+      jsonFile.id,
+      newContent,
+      jsonFile.filename,
+      jsonFile.isPublic,
+    )
+
+    return ok(removed)
+  }
+
+  if (segments.length === 0) {
+    return fail("Item ID is required", 400)
+  }
+
+  const idToDelete = segments[segments.length - 1]
+  const pathToArray = segments.slice(0, -1)
+
+  let targetArray = rootData
+  if (pathToArray.length > 0) {
+    targetArray = traverse(rootData, pathToArray)
+    if (targetArray === undefined) {
+      return fail("Not found", 404)
+    }
+  }
+
+  if (!Array.isArray(targetArray)) {
+    return fail("Target is not an array", 400)
+  }
+
+  const idx = findArrayIndex(targetArray, idToDelete)
+  if (idx === -1) {
+    return fail("Item not found", 404)
+  }
+
+  const [removed] = (targetArray as unknown[]).splice(idx, 1)
+
+  const newContent = JSON.stringify(rootData)
+  await updateFileContent(
+    jsonFile.id,
+    newContent,
+    jsonFile.filename,
+    jsonFile.isPublic,
+  )
+
+  return ok(removed)
+}
+
 export async function OPTIONS() {
   return new Response(null, {
     headers: {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
     },
   })
 }
