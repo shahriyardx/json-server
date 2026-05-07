@@ -15,6 +15,16 @@ export type ClientOptions = {
   apiKey?: string
 }
 
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message)
+    this.name = "ApiError"
+  }
+}
+
 function buildUrl(baseUrl: string, path: string, params?: QueryParams, apiKey?: string): string {
   const base = path.startsWith("http") ? path : `${baseUrl}/${path}`
   const url = new URL(base)
@@ -33,11 +43,10 @@ function buildUrl(baseUrl: string, path: string, params?: QueryParams, apiKey?: 
 
     if (params.filter) {
       for (const [key, val] of Object.entries(params.filter)) {
-        searchParams[`filter`] = `${key}:${val}`
+        searchParams.filter = `${key}:${val}`
       }
     }
 
-    // Pass through any direct key=value filters
     for (const [key, val] of Object.entries(params)) {
       if (!["search", "filter", "sort", "order", "limit", "start", "end", "skip", "api_key"].includes(key)) {
         searchParams[key] = String(val)
@@ -52,82 +61,62 @@ function buildUrl(baseUrl: string, path: string, params?: QueryParams, apiKey?: 
   return url.toString()
 }
 
-async function request<T>(
-  baseUrl: string,
-  path: string,
-  options: RequestInit & { params?: QueryParams; apiKey?: string },
-): Promise<T> {
-  const url = buildUrl(baseUrl, path, options.params, options.apiKey)
+export class JsonSDK {
+  private baseUrl: string
+  private apiKey?: string
 
-  const headers: Record<string, string> = {}
-  if (options.apiKey) headers["Authorization"] = `Bearer ${options.apiKey}`
-  if (options.body) headers["Content-Type"] = "application/json"
-
-  const res = await fetch(url, {
-    method: options.method ?? "GET",
-    headers,
-    body: options.body,
-  })
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new ApiError(res.status, (body as { error?: string }).error ?? res.statusText)
+  constructor(options: ClientOptions) {
+    this.baseUrl = options.baseUrl.replace(/\/+$/, "")
+    this.apiKey = options.apiKey
   }
 
-  if (res.status === 204) return undefined as T
-  return res.json() as Promise<T>
-}
+  private async request<T>(
+    path: string,
+    init: RequestInit & { params?: QueryParams } = {},
+  ): Promise<T> {
+    const url = buildUrl(this.baseUrl, path, init.params, this.apiKey)
 
-export class ApiError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message)
-    this.name = "ApiError"
-  }
-}
+    const headers: Record<string, string> = {}
+    if (this.apiKey) headers["Authorization"] = `Bearer ${this.apiKey}`
+    if (init.body) headers["Content-Type"] = "application/json"
 
-export type Client = {
-  get<T = unknown>(path: string, params?: QueryParams): Promise<T>
-  post<T = unknown, B = Record<string, unknown>>(path: string, body: B): Promise<T>
-  patch<T = unknown, B = Record<string, unknown>>(path: string, body: B, params?: QueryParams): Promise<T>
-  del<T = unknown>(path: string, params?: QueryParams): Promise<T>
-}
+    const res = await fetch(url, {
+      method: init.method ?? "GET",
+      headers,
+      body: init.body,
+    })
 
-export function createClient(options: ClientOptions): Client {
-  const { baseUrl, apiKey } = options
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      throw new ApiError(res.status, (body as { error?: string }).error ?? res.statusText)
+    }
 
-  const base = baseUrl.replace(/\/+$/, "")
-
-  function req<T>(path: string, init: RequestInit & { params?: QueryParams } = {}): Promise<T> {
-    return request<T>(base, path, { ...init, apiKey })
+    if (res.status === 204) return undefined as T
+    return res.json() as Promise<T>
   }
 
-  return {
-    get<T>(path: string, params?: QueryParams): Promise<T> {
-      return req<T>(path, { params })
-    },
+  get<T = unknown>(path: string, params?: QueryParams): Promise<T> {
+    return this.request<T>(path, { params })
+  }
 
-    post<T, B>(path: string, body: B): Promise<T> {
-      return req<T>(path, {
-        method: "POST",
-        body: JSON.stringify(body),
-        headers: { "Content-Type": "application/json" },
-      })
-    },
+  post<T = unknown, B = Record<string, unknown>>(path: string, body: B): Promise<T> {
+    return this.request<T>(path, {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: { "Content-Type": "application/json" },
+    })
+  }
 
-    patch<T, B>(path: string, body: B, params?: QueryParams): Promise<T> {
-      return req<T>(path, {
-        method: "PATCH",
-        body: JSON.stringify(body),
-        headers: { "Content-Type": "application/json" },
-        params,
-      })
-    },
+  patch<T = unknown, B = Record<string, unknown>>(path: string, body: B, params?: QueryParams): Promise<T> {
+    return this.request<T>(path, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+      headers: { "Content-Type": "application/json" },
+      params,
+    })
+  }
 
-    del<T>(path: string, params?: QueryParams): Promise<T> {
-      return req<T>(path, { method: "DELETE", params })
-    },
+  del<T = unknown>(path: string, params?: QueryParams): Promise<T> {
+    return this.request<T>(path, { method: "DELETE", params })
   }
 }

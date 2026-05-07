@@ -9,11 +9,11 @@ npm install json-sdk
 ## Usage
 
 ```ts
-import { createClient } from "json-server-sdk"
+import { JsonSDK } from "json-sdk"
 
-const api = createClient({
+const api = new JsonSDK({
   baseUrl: "https://json.shahriyar.dev",
-  apiKey: "your-api-key", // required for private files / writes
+  apiKey: "your-api-key",
 })
 
 // Fetch with query params
@@ -49,20 +49,22 @@ await api.del("products", { filter: { status: "archived" } })
 
 ## API
 
-### `createClient(options)`
+### `new JsonSDK(options)`
 
 | Option | Required | Description |
 |--------|----------|-------------|
 | `baseUrl` | yes | Your instance URL (e.g. `https://json.shahriyar.dev`) |
 | `apiKey` | no | API key for private files and write operations |
 
-### `client.get<T>(path, params?)`
+### Methods
+
+#### `get<T>(path, params?)`
 
 | Param | Type | Description |
 |-------|------|-------------|
 | `search` | `string` | Search across string values |
-| `filter` | `Record<string, string>` | Filter by key:value pairs |
-| `sort` | `string` | Sort by field name |
+| `filter` | `Record<string, string>` | Filter by key:value |
+| `sort` | `string` | Sort field |
 | `order` | `"asc" \| "desc"` | Sort direction |
 | `limit` | `number` | Limit results |
 | `start` | `number` | Slice start |

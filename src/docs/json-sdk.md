@@ -15,9 +15,9 @@ npm install json-sdk
 ## Quick Start
 
 ```ts
-import { createClient } from "json-sdk"
+import { JsonSDK } from "json-sdk"
 
-const api = createClient({
+const api = new JsonSDK({
   baseUrl: "https://json.shahriyar.dev",
   apiKey: "your-api-key",
 })
@@ -32,7 +32,7 @@ const products = await api.get("products", {
 
 ## Client
 
-### `createClient(options)`
+### `new JsonSDK(options)`
 
 | Option | Required | Description |
 |--------|----------|-------------|
