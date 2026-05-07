@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bunx prisma generate
+      - run: bun run build
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/json_server"
+          BETTER_AUTH_SECRET: "ci-secret-do-not-use-in-production"
+          BETTER_AUTH_URL: "http://localhost:3000"
+          GITHUB_CLIENT_ID: "ci-client-id"
+          GITHUB_CLIENT_SECRET: "ci-client-secret"
