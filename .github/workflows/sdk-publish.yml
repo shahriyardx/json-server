@@ -1,0 +1,34 @@
+name: sdk-publish
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    if: startsWith(github.event.release.tag_name, 'sdk-v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Read version
+        id: version
+        run: |
+          ver=$(grep '"version"' sdk/package.json | sed 's/.*"version": "\(.*\)",*/\1/')
+          echo "tag=$ver" >> $GITHUB_OUTPUT
+
+      - name: Build
+        run: |
+          cd sdk
+          bun install --frozen-lockfile
+          bun run build
+
+      - name: Publish to npm
+        run: |
+          cd sdk
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
