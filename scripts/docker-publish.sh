@@ -10,18 +10,14 @@ if [ -z "$version" ]; then
   exit 1
 fi
 
-echo "  → Building shahriyardx/json-server:$version ..."
-docker build -f selfhost/Dockerfile \
+echo "  → Building + pushing shahriyardx/json-server:$version (linux/amd64, linux/arm64)..."
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -f selfhost/Dockerfile \
   -t "shahriyardx/json-server:$version" \
-  -t shahriyardx/json-server:latest .
+  -t shahriyardx/json-server:latest \
+  --push \
+  .
 
 echo ""
-echo "  → Pushing shahriyardx/json-server:$version ..."
-docker push "shahriyardx/json-server:$version"
-
-echo ""
-echo "  → Pushing shahriyardx/json-server:latest ..."
-docker push shahriyardx/json-server:latest
-
-echo ""
-echo "  ✓ Published shahriyardx/json-server:$version and latest"
+echo "  ✓ Published multi-arch: shahriyardx/json-server:$version and latest"
