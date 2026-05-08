@@ -14,6 +14,8 @@ npm install json-sdk
 
 ## Quick Start
 
+Paths use `/username/filename` format since each user's files are namespaced under their GitHub username. Both `"/username/file"` and `"username/file"` are accepted — the SDK normalizes them.
+
 ```ts
 import { JsonSDK } from "json-sdk"
 
@@ -23,7 +25,7 @@ const api = new JsonSDK({
 })
 
 // Fetch products with query params
-const products = await api.get("products", {
+const products = await api.get("/alice/products", {
   filter: { categoryId: "1" },
   sort: "price",
   order: "desc",
@@ -38,9 +40,9 @@ const products = await api.get("products", {
 Fetch data. Optionally filter, sort, search, and paginate.
 
 ```ts
-const products = await api.get("products")
-const users = await api.get<User[]>("users", { search: "john" })
-const comments = await api.get("posts/1/comments")
+const products = await api.get("/alice/products")
+const users = await api.get<User[]>("/alice/users", { search: "john" })
+const comments = await api.get("/alice/posts/1/comments")
 ```
 
 | Param | Type | Description |
@@ -59,7 +61,7 @@ const comments = await api.get("posts/1/comments")
 Add an item to an array. Requires auth.
 
 ```ts
-const product = await api.post("products", {
+const product = await api.post("/alice/products", {
   name: "Phone",
   price: 599,
 })
@@ -71,10 +73,10 @@ Update items by ID segment or with filters. Requires auth.
 
 ```ts
 // Update by ID
-await api.patch("products/1", { price: 499 })
+await api.patch("/alice/products/1", { price: 499 })
 
 // Update matching items
-await api.patch("products", { inStock: false }, {
+await api.patch("/alice/products", { inStock: false }, {
   filter: { stock: "0" },
 })
 ```
@@ -85,10 +87,10 @@ Delete items by ID segment or with filters. Requires auth.
 
 ```ts
 // Delete by ID
-await api.del("products/1")
+await api.del("/alice/products/1")
 
 // Delete matching items
-await api.del("products", { filter: { status: "archived" } })
+await api.del("/alice/products", { filter: { status: "archived" } })
 ```
 
 ## TypeScript
@@ -98,8 +100,8 @@ All methods accept a type parameter for type-safe responses.
 ```ts
 type Product = { id: number; name: string; price: number }
 
-const products = await api.get<Product[]>("products")
-const product = await api.post<Product>("products", {
+const products = await api.get<Product[]>("/alice/products")
+const product = await api.post<Product>("/alice/products", {
   name: "Headphones",
   price: 199,
 })
@@ -113,7 +115,7 @@ import { JsonSDK, ApiError } from "json-sdk"
 const api = new JsonSDK({ baseUrl: "$BASE_URL" })
 
 try {
-  await api.get("products")
+  await api.get("/alice/products")
 } catch (err) {
   if (err instanceof ApiError) {
     console.log(`HTTP ${err.status}: ${err.message}`)
@@ -132,4 +134,4 @@ const api = new JsonSDK({
 })
 ```
 
-The key is sent via `Authorization: Bearer` header. Required for private files and all write operations (POST, PATCH, DELETE).
+The key is sent via `Authorization: Bearer` header. You can also pass it as `?api_key=` query param. Required for private files and all write operations (POST, PATCH, DELETE).
