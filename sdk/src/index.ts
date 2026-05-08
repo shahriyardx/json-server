@@ -26,7 +26,9 @@ export class ApiError extends Error {
 }
 
 function buildUrl(baseUrl: string, path: string, params?: QueryParams, apiKey?: string): string {
-  const base = path.startsWith("http") ? path : `${baseUrl}/${path}`
+  // Strip leading slash and normalize — both "/username/file" and "username/file" work
+  const cleanPath = path.replace(/^\/+/, "")
+  const base = cleanPath.startsWith("http") ? cleanPath : `${baseUrl}/${cleanPath}`
   const url = new URL(base)
   const searchParams: Record<string, string> = {}
 
