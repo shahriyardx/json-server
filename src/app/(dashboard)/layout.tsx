@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
+import { env } from "@/lib/env"
 
 export default async function DashboardLayout({
   children,
@@ -12,7 +13,7 @@ export default async function DashboardLayout({
   })
 
   if (!session) {
-    redirect("/")
+    redirect(env.SELF_HOSTED === "true" ? "/login" : "/")
   }
 
   return <>{children}</>

@@ -107,6 +107,10 @@ Create an OAuth app at GitHub Settings → Developer settings → OAuth Apps:
 - Homepage URL: `http://localhost:3000`
 - Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
 
+## Self-Hosting
+
+See [SELFHOST.md](SELFHOST.md) for Docker setup, environment variables, and GitHub OAuth configuration.
+
 ## Project Structure
 
 ```

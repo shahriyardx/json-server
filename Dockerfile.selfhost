@@ -8,11 +8,12 @@ RUN bun install --frozen-lockfile
 COPY prisma ./prisma
 RUN bun prisma generate
 COPY . .
+
+ENV SELF_HOSTED=true
 ENV SKIP_ENV_VALIDATION=true
 RUN bun run build
 
 FROM oven/bun:1 AS runner
-
 WORKDIR /app
 
 ENV NODE_ENV=production
