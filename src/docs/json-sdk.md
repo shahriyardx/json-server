@@ -18,7 +18,7 @@ npm install json-sdk
 import { JsonSDK } from "json-sdk"
 
 const api = new JsonSDK({
-  baseUrl: "https://json.shahriyar.dev",
+  baseUrl: "$BASE_URL",
   apiKey: "your-api-key", // required for private files and writes
 })
 
@@ -110,7 +110,7 @@ const product = await api.post<Product>("products", {
 ```ts
 import { JsonSDK, ApiError } from "json-sdk"
 
-const api = new JsonSDK({ baseUrl: "https://json.shahriyar.dev" })
+const api = new JsonSDK({ baseUrl: "$BASE_URL" })
 
 try {
   await api.get("products")
@@ -127,7 +127,7 @@ Pass an API key in the constructor:
 
 ```ts
 const api = new JsonSDK({
-  baseUrl: "https://json.shahriyar.dev",
+  baseUrl: "$BASE_URL",
   apiKey: "key_abc123",
 })
 ```

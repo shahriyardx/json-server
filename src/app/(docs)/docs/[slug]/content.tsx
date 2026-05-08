@@ -66,6 +66,8 @@ function HttpExample({
   )
 }
 
+const siteUrl = process.env.BETTER_AUTH_URL || "https://json.shahriyar.dev"
+
 const components = {
   "api-example": ApiExample,
   http: HttpExample,
@@ -196,7 +198,8 @@ const components = {
 }
 
 export async function DocContent({ content }: { content: string }) {
-  const segments = await processCodeBlocks(content)
+  const resolved = content.replace(/\$BASE_URL/g, siteUrl)
+  const segments = await processCodeBlocks(resolved)
 
   return (
     <article className="prose-custom">

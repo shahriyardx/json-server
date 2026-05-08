@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next"
 
+const siteUrl = process.env.BETTER_AUTH_URL || "https://json.shahriyar.dev"
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
@@ -9,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/dashboard", "/admin"],
       },
     ],
-    sitemap: "https://json.shahriyar.dev/sitemap.xml",
+    sitemap: `${siteUrl}/sitemap.xml`,
   }
 }

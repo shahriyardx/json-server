@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { highlightCode } from "@/actions/highlight"
 
-const HOST = "https://json.shahriyar.dev"
 const KEY = "js_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 const tabs = ["javascript", "python", "go", "curl"] as const
@@ -17,6 +16,7 @@ const langToShiki: Record<Tab, string> = {
 }
 
 function jsExample(
+  host: string,
   method: string,
   path: string,
   body?: string,
@@ -25,9 +25,9 @@ function jsExample(
   const lines: string[] = []
 
   if (method === "GET" && !auth) {
-    lines.push('const res = await fetch("' + HOST + path + '")')
+    lines.push('const res = await fetch("' + host + path + '")')
   } else {
-    lines.push('const res = await fetch("' + HOST + path + '", {')
+    lines.push('const res = await fetch("' + host + path + '", {')
     lines.push('  method: "' + method + '",')
     if (auth) lines.push('  headers: { Authorization: "Bearer ' + KEY + '" },')
     if (body) {
@@ -44,12 +44,13 @@ function jsExample(
 }
 
 function pyExample(
+  host: string,
   method: string,
   path: string,
   body?: string,
   auth?: boolean,
 ): string {
-  const url = HOST + path
+  const url = host + path
   const lines: string[] = ["import requests"]
   lines.push("")
 
@@ -83,12 +84,13 @@ function pyExample(
 }
 
 function goExample(
+  host: string,
   method: string,
   path: string,
   body?: string,
   auth?: boolean,
 ): string {
-  const url = HOST + path
+  const url = host + path
   const lines: string[] = [
     "package main",
     "",
@@ -154,12 +156,13 @@ function goExample(
 }
 
 function curlExample(
+  host: string,
   method: string,
   path: string,
   body?: string,
   auth?: boolean,
 ): string {
-  const parts: string[] = ["curl -X " + method + ' "' + HOST + path + '"']
+  const parts: string[] = ["curl -X " + method + ' "' + host + path + '"']
   if (auth) parts.push('-H "Authorization: Bearer ' + KEY + '"')
   if (body) {
     parts.push('-H "Content-Type: application/json"')
@@ -168,7 +171,15 @@ function curlExample(
   return parts.join(" \\\n  ")
 }
 
-const generators: Record<Tab, typeof jsExample> = {
+type Generator = (
+  host: string,
+  method: string,
+  path: string,
+  body?: string,
+  auth?: boolean,
+) => string
+
+const generators: Record<Tab, Generator> = {
   javascript: jsExample,
   python: pyExample,
   go: goExample,
@@ -193,19 +204,24 @@ export function ApiExample({
   body?: string
   auth?: boolean
 }) {
+  const [host, setHost] = useState("https://json.shahriyar.dev")
   const [tab, setTab] = useState<Tab>("javascript")
   const [highlighted, setHighlighted] = useState<Partial<Record<Tab, string>>>(
     {},
   )
 
   useEffect(() => {
-    const code = generators[tab](method, path, body, auth)
+    setHost(window.location.origin)
+  }, [])
+
+  useEffect(() => {
+    const code = generators[tab](host, method, path, body, auth)
     highlightCode(code, langToShiki[tab]).then((html) => {
       setHighlighted((prev) => ({ ...prev, [tab]: html }))
     })
-  }, [tab, method, path, body, auth])
+  }, [host, tab, method, path, body, auth])
 
-  const code = generators[tab](method, path, body, auth)
+  const code = generators[tab](host, method, path, body, auth)
   const html = highlighted[tab]
 
   return (

@@ -38,4 +38,4 @@ Combine them however you want.
 
 You can host this yourself with Docker.
 
-See [SELFHOST.md](SELFHOST.md) for setup instructions.
+See [selfhost/SELFHOST.md](selfhost/SELFHOST.md) for setup instructions.

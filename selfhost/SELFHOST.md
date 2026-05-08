@@ -14,7 +14,7 @@ export GITHUB_CLIENT_SECRET=your_github_oauth_client_secret
 export BETTER_AUTH_SECRET=$(openssl rand -hex 32)
 
 # Start PostgreSQL + app
-docker compose up -d
+docker compose -f selfhost/docker-compose.yml up -d
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
@@ -56,4 +56,4 @@ Set the client ID and secret as env vars when starting the container.
 
 ## Running Locally (without Docker)
 
-For development, use `docker compose -f docker-compose-db.yml up -d` to start only the database, then run `bun dev` as usual.
+For development, use `docker compose -f docker-compose-db.yml up -d` from the project root to start only the database, then run `bun dev` as usual.

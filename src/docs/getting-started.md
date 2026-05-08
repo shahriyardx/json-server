@@ -11,7 +11,7 @@ JSON Server turns JSON files into RESTful APIs. Every file becomes a live endpoi
 ## Base URL
 
 ```
-https://json.shahriyar.dev/<username>/<filename>
+$BASE_URL/<username>/<filename>
 ```
 
 Replace `<username>` with the GitHub username of whoever owns the file, and `<filename>` with the file name.

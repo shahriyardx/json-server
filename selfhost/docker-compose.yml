@@ -17,8 +17,8 @@ services:
 
   app:
     build:
-      context: .
-      dockerfile: Dockerfile.selfhost
+      context: ..
+      dockerfile: selfhost/Dockerfile
     ports:
       - "3000:3000"
     depends_on:

@@ -19,6 +19,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 })
 
+const siteUrl = process.env.BETTER_AUTH_URL || "https://json.shahriyar.dev"
+
 export const metadata: Metadata = {
   title: {
     default: "JSON Server — Your JSON, live.",
@@ -26,12 +28,12 @@ export const metadata: Metadata = {
   },
   description:
     "Upload JSON, get a URL. Share anywhere. JSON Server turns your JSON files into RESTful APIs instantly.",
-  metadataBase: new URL("https://json.shahriyar.dev"),
+  metadataBase: new URL(siteUrl),
   openGraph: {
     title: "JSON Server — Your JSON, live.",
     description:
       "Upload JSON, get a URL. Share anywhere. Turn JSON files into RESTful APIs instantly.",
-    url: "https://json.shahriyar.dev",
+    url: siteUrl,
     siteName: "JSON Server",
     locale: "en_US",
     type: "website",

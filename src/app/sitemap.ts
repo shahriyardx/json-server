@@ -1,24 +1,26 @@
 import type { MetadataRoute } from "next"
 import { getAllDocs } from "@/lib/docs"
 
+const siteUrl = process.env.BETTER_AUTH_URL || "https://json.shahriyar.dev"
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const docs = getAllDocs()
 
   const staticPages = [
     {
-      url: "https://json.shahriyar.dev",
+      url: siteUrl,
       lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 1,
     },
     {
-      url: "https://json.shahriyar.dev/docs",
+      url: `${siteUrl}/docs`,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.8,
     },
     {
-      url: "https://json.shahriyar.dev/privacy",
+      url: `${siteUrl}/privacy`,
       lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.3,
@@ -26,7 +28,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ]
 
   const docPages = docs.map((doc) => ({
-    url: `https://json.shahriyar.dev/docs/${doc.slug}`,
+    url: `${siteUrl}/docs/${doc.slug}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.7,
