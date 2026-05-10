@@ -330,8 +330,8 @@ async function mongoRequest(
   })
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    const errBody = body as { error?: string; code?: number; writeErrors?: { index: number; errmsg: string }[] }
+    const body = await res.json().catch(() => null)
+    const errBody = (body ?? {}) as { error?: string; code?: number; writeErrors?: { index: number; errmsg: string }[] }
 
     const message = errBody.error ?? res.statusText
 
