@@ -1,0 +1,45 @@
+{
+  "name": "mongojson",
+  "version": "0.1.0",
+  "description": "MongoDB-compatible SDK for json-server — use MongoDB-like operations on top of a REST API",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shahriyardx/json-server.git",
+    "directory": "sdk-mongodx"
+  },
+  "homepage": "https://github.com/shahriyardx/json-server#readme",
+  "bugs": {
+    "url": "https://github.com/shahriyardx/json-server/issues"
+  },
+  "author": "Shahriyar",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "json-server",
+    "mongodb",
+    "sdk",
+    "rest"
+  ],
+  "devDependencies": {
+    "tsup": "^8",
+    "typescript": "^5"
+  }
+}

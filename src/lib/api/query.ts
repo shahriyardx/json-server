@@ -119,9 +119,18 @@ export function applyQueryParams(
   return result
 }
 
+let objectIdCounter = Math.floor(Math.random() * 0xffffff)
+
+function generateObjectId(): string {
+  const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, "0")
+  const random = crypto.randomBytes(5).toString("hex")
+  const counter = (objectIdCounter++ % 0xffffff).toString(16).padStart(6, "0")
+  return timestamp + random + counter
+}
+
 export function autoGenerateId(
   data: unknown[],
-): { value: string | number; key: string } | null {
+): { value: string; key: string } {
   let hasId = false
   let allNumeric = true
   let maxNumeric = 0
@@ -142,9 +151,11 @@ export function autoGenerateId(
     }
   }
 
-  if (!hasId) return null
+  if (!hasId) {
+    return { value: generateObjectId(), key: "_id" }
+  }
   return {
-    value: allNumeric ? maxNumeric + 1 : crypto.randomUUID(),
+    value: allNumeric ? String(maxNumeric + 1) : generateObjectId(),
     key: detectedKey,
   }
 }

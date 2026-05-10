@@ -31,6 +31,8 @@ model User {
   apiKeys            ApiKey[]
   monthlyRequests      UserMonthlyRequest[]
   monthlyAiGenerations UserMonthlyAiGeneration[]
+  databases            Database[]
+  databaseUsers        DatabaseUser[]
 
   @@unique([email])
   @@map("user")
@@ -170,6 +172,55 @@ model Webhook {
 
   @@index([jsonFileId])
   @@map("webhook")
+}
+
+model Database {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collections Collection[]
+
+  @@unique([userId, name])
+  @@map("database")
+}
+
+model Collection {
+  id         String   @id @default(cuid())
+  databaseId String
+  name       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  database   Database @relation(fields: [databaseId], references: [id], onDelete: Cascade)
+  documents  Document[]
+
+  @@unique([databaseId, name])
+  @@map("collection")
+}
+
+model Document {
+  id           String   @id @default(cuid())
+  collectionId String
+  data         String   @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@map("document")
+}
+
+model DatabaseUser {
+  id        String   @id @default(cuid())
+  userId    String
+  username  String
+  password  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, username])
+  @@map("database_user")
 }
 
 model FileRequestLog {
