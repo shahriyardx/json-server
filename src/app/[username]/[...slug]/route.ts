@@ -43,11 +43,9 @@ export async function GET(
     return json({ error: "Forbidden. This file is private." }, 403)
   }
 
-  if (!isAdminRole(jsonFile.owner.role)) {
-    const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
-    if (!withinLimit)
-      return json({ error: "Monthly request limit exceeded" }, 429)
-  }
+  const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
+  if (!isAdminRole(jsonFile.owner.role) && !withinLimit)
+    return json({ error: "Monthly request limit exceeded" }, 429)
 
   let data: unknown
   try {
@@ -114,8 +112,10 @@ export async function POST(
         "Retry-After": "60",
       })
     }
-    const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
-    if (!withinLimit) return fail("Monthly request limit exceeded", 429)
+  }
+  const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
+  if (!isAdminRole(jsonFile.owner.role) && !withinLimit) {
+    return fail("Monthly request limit exceeded", 429)
   }
 
   let rootData: unknown
@@ -237,8 +237,10 @@ export async function PATCH(
         "Retry-After": "60",
       })
     }
-    const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
-    if (!withinLimit) return fail("Monthly request limit exceeded", 429)
+  }
+  const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
+  if (!isAdminRole(jsonFile.owner.role) && !withinLimit) {
+    return fail("Monthly request limit exceeded", 429)
   }
 
   let body: unknown
@@ -308,8 +310,10 @@ export async function DELETE(
         "Retry-After": "60",
       })
     }
-    const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
-    if (!withinLimit) return fail("Monthly request limit exceeded", 429)
+  }
+  const withinLimit = await checkAndIncrementRequest(jsonFile.userId)
+  if (!isAdminRole(jsonFile.owner.role) && !withinLimit) {
+    return fail("Monthly request limit exceeded", 429)
   }
 
   const { searchParams } = new URL(req.url)

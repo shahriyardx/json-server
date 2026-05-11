@@ -87,9 +87,10 @@ export async function POST(
     if (!rateOk) {
       return mongoJson({ error: "Too many requests" }, 429)
     }
-    const withinLimit = await checkAndIncrementRequest(platformUser.id)
-    if (!withinLimit)
-      return mongoJson({ error: "Monthly request limit exceeded" }, 429)
+  }
+  const withinLimit = await checkAndIncrementRequest(platformUser.id)
+  if (!isAdminRole(platformUser.role) && !withinLimit) {
+    return mongoJson({ error: "Monthly request limit exceeded" }, 429)
   }
 
   // Ping — lightweight connectivity check
@@ -104,10 +105,7 @@ export async function POST(
     "estimatedDocumentCount",
     "distinct",
   ])
-  if (
-    !isAdminRole(platformUser.role) &&
-    !readOps.has(body.operation)
-  ) {
+  if (!isAdminRole(platformUser.role) && !readOps.has(body.operation)) {
     const withinStorage = await checkStorageLimit(platformUser.id)
     if (!withinStorage) {
       return mongoJson({ error: "Total storage limit of 50MB exceeded." }, 429)
