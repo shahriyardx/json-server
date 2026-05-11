@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: sdk
+        working-directory: sdks/json-sdk
 
     steps:
       - uses: actions/checkout@v4
