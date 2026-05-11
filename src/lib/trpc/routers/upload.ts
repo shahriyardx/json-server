@@ -68,12 +68,20 @@ export const uploadRouter = router({
       }
 
       if (!isAdmin) {
-        const allFiles = await ctx.prisma.jsonFile.findMany({
-          where: { userId: ctx.user.id, deletedAt: null },
-          select: { content: true },
-        })
+        const [allFiles, allDocs] = await Promise.all([
+          ctx.prisma.jsonFile.findMany({
+            where: { userId: ctx.user.id, deletedAt: null },
+            select: { content: true },
+          }),
+          ctx.prisma.document.findMany({
+            where: { collection: { database: { userId: ctx.user.id } } },
+            select: { data: true },
+          }),
+        ])
         const totalBytes =
-          allFiles.reduce((sum, f) => sum + bytes(f.content), 0) + fileSize
+          allFiles.reduce((sum, f) => sum + bytes(f.content), 0) +
+          allDocs.reduce((sum, d) => sum + bytes(d.data), 0) +
+          fileSize
         if (totalBytes > MAX_TOTAL_SIZE) {
           throw new Error("Total storage limit of 50MB exceeded.")
         }
@@ -170,16 +178,23 @@ export const uploadRouter = router({
 
       if (input.jsonContent !== existing.content) {
         if (!isAdmin) {
-          const allOtherFiles = await ctx.prisma.jsonFile.findMany({
-            where: {
-              userId: ctx.user.id,
-              id: { not: input.id },
-              deletedAt: null,
-            },
-            select: { content: true },
-          })
+          const [allOtherFiles, allDocs] = await Promise.all([
+            ctx.prisma.jsonFile.findMany({
+              where: {
+                userId: ctx.user.id,
+                id: { not: input.id },
+                deletedAt: null,
+              },
+              select: { content: true },
+            }),
+            ctx.prisma.document.findMany({
+              where: { collection: { database: { userId: ctx.user.id } } },
+              select: { data: true },
+            }),
+          ])
           const totalBytes =
             allOtherFiles.reduce((sum, f) => sum + bytes(f.content), 0) +
+            allDocs.reduce((sum, d) => sum + bytes(d.data), 0) +
             newSize
           if (totalBytes > MAX_TOTAL_SIZE) {
             throw new Error("Total storage limit of 50MB exceeded.")

@@ -33,6 +33,7 @@ export default async function DashboardPage() {
     trashCount,
     versionCount,
     aiGenerationCount,
+    mongoDocs,
   ] = await Promise.all([
     prisma.jsonFile.count({ where: { userId } }),
     prisma.userMonthlyRequest.findUnique({
@@ -57,6 +58,10 @@ export default async function DashboardPage() {
     prisma.userMonthlyAiGeneration.findUnique({
       where: { userId_month_year: { userId, month, year } },
       select: { count: true },
+    }),
+    prisma.document.findMany({
+      where: { collection: { database: { userId } } },
+      select: { data: true },
     }),
   ])
 
@@ -85,6 +90,11 @@ export default async function DashboardPage() {
     (sum, f) => sum + new TextEncoder().encode(f.content).length,
     0,
   )
+  const mongoBytes = mongoDocs.reduce(
+    (sum, d) => sum + new TextEncoder().encode(d.data).length,
+    0,
+  )
+  const totalBytes = bytesUsed + mongoBytes
   const storageLimit = 52_428_800
 
   const isAdmin =
@@ -180,9 +190,9 @@ export default async function DashboardPage() {
         <div className="border p-5">
           <p className="text-sm text-muted-foreground">Storage used</p>
           <p className="mt-1 text-3xl font-bold">
-            {bytesUsed < 1_048_576
-              ? `${(bytesUsed / 1024).toFixed(0)}KB`
-              : `${(bytesUsed / 1_048_576).toFixed(1)}MB`}
+            {totalBytes < 1_048_576
+              ? `${(totalBytes / 1024).toFixed(0)}KB`
+              : `${(totalBytes / 1_048_576).toFixed(1)}MB`}
             <span className="text-muted-foreground">
               {" "}
               / {isAdmin ? "∞" : "50MB"}
@@ -193,7 +203,7 @@ export default async function DashboardPage() {
               <div
                 className="h-full bg-foreground transition-all"
                 style={{
-                  width: `${Math.min((bytesUsed / storageLimit) * 100, 100)}%`,
+                  width: `${Math.min((totalBytes / storageLimit) * 100, 100)}%`,
                 }}
               />
             </div>

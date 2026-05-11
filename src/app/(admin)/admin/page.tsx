@@ -6,18 +6,19 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminPage() {
-  const [userCount, jsonCount, monthStats, allFiles] = await Promise.all([
-    prisma.user.count(),
-    prisma.jsonFile.count(),
-    prisma.userMonthlyRequest.aggregate({ _sum: { count: true } }),
-    prisma.jsonFile.findMany({ select: { content: true } }),
-  ])
+  const [userCount, jsonCount, monthStats, allFiles, allDocs] =
+    await Promise.all([
+      prisma.user.count(),
+      prisma.jsonFile.count(),
+      prisma.userMonthlyRequest.aggregate({ _sum: { count: true } }),
+      prisma.jsonFile.findMany({ select: { content: true } }),
+      prisma.document.findMany({ select: { data: true } }),
+    ])
 
   const totalRequests = monthStats._sum.count ?? 0
-  const bytesUsed = allFiles.reduce(
-    (sum, f) => sum + new TextEncoder().encode(f.content).length,
-    0,
-  )
+  const bytesUsed =
+    allFiles.reduce((sum, f) => sum + new TextEncoder().encode(f.content).length, 0) +
+    allDocs.reduce((sum, d) => sum + new TextEncoder().encode(d.data).length, 0)
 
   return (
     <div className="p-6">

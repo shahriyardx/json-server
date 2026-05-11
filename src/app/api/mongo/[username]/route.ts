@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import {
   rateLimiter,
   checkAndIncrementRequest,
+  checkStorageLimit,
   isAdminRole,
 } from "@/lib/api/usage"
 import { verifyPassword, parseBasicAuth } from "@/lib/api/db-auth"
@@ -94,6 +95,23 @@ export async function POST(
   // Ping — lightweight connectivity check
   if (body.operation === "ping") {
     return mongoJson({ ok: 1, dbVersion: "8.0.0" })
+  }
+
+  // Storage limit check for write operations
+  const readOps = new Set([
+    "find",
+    "countDocuments",
+    "estimatedDocumentCount",
+    "distinct",
+  ])
+  if (
+    !isAdminRole(platformUser.role) &&
+    !readOps.has(body.operation)
+  ) {
+    const withinStorage = await checkStorageLimit(platformUser.id)
+    if (!withinStorage) {
+      return mongoJson({ error: "Total storage limit of 50MB exceeded." }, 429)
+    }
   }
 
   // Find or auto-create database
