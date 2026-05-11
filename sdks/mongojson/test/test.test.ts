@@ -1266,3 +1266,828 @@ describe("integration: edge cases", () => {
     await expect(col.findOne({})).rejects.toThrow(MongojsonServerError)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Integration: aggregation pipeline
+// ---------------------------------------------------------------------------
+
+describe("integration: aggregate", () => {
+  let c: Collection
+  beforeAll(() => {
+    if (isOffline()) return
+    c = getCtx().db.collection("aggregate")
+  })
+  beforeEach(async () => {
+    if (isOffline()) return
+    await c.deleteMany({})
+  })
+
+  itIf("empty pipeline returns all docs", async () => {
+    await seed(c, [{ v: 1 }, { v: 2 }, { v: 3 }])
+    const docs = await c.aggregate([])
+    expect(docs).toHaveLength(3)
+  })
+
+  itIf("$match filters docs", async () => {
+    await seed(c, [
+      { status: "active", v: 1 },
+      { status: "inactive", v: 2 },
+      { status: "active", v: 3 },
+    ])
+    const docs = await c.aggregate([{ $match: { status: "active" } }])
+    expect(docs).toHaveLength(2)
+    for (const d of docs) expect(d.status).toBe("active")
+  })
+
+  itIf("$match with operators", async () => {
+    await seed(c, [{ val: 5 }, { val: 10 }, { val: 15 }, { val: 20 }])
+    const docs = await c.aggregate([{ $match: { val: { $gt: 10 } } }])
+    expect(docs).toHaveLength(2)
+  })
+
+  itIf("$project includes fields", async () => {
+    await seed(c, [{ a: 1, b: 2, c: 3 }])
+    const docs = await c.aggregate([{ $project: { a: 1, c: 1 } }])
+    expect(docs).toHaveLength(1)
+    expect(docs[0].a).toBe(1)
+    expect(docs[0].c).toBe(3)
+    expect(docs[0].b).toBeUndefined()
+  })
+
+  itIf("$project excludes fields", async () => {
+    await seed(c, [{ a: 1, b: 2, c: 3 }])
+    const docs = await c.aggregate([{ $project: { b: 0 } }])
+    expect(docs[0].a).toBe(1)
+    expect(docs[0].c).toBe(3)
+    expect(docs[0].b).toBeUndefined()
+  })
+
+  itIf("$project computed field with $concat", async () => {
+    await seed(c, [{ first: "John", last: "Doe" }])
+    const docs = await c.aggregate([
+      { $project: { fullName: { $concat: ["$first", " ", "$last"] } } },
+    ])
+    expect(docs).toHaveLength(1)
+    expect(docs[0].fullName).toBe("John Doe")
+  })
+
+  itIf("$sort ascending", async () => {
+    await seed(c, [{ n: 3 }, { n: 1 }, { n: 2 }])
+    const docs = await c.aggregate([{ $sort: { n: 1 } }])
+    expect(docs.map((d) => d.n)).toEqual([1, 2, 3])
+  })
+
+  itIf("$sort descending", async () => {
+    await seed(c, [{ n: 3 }, { n: 1 }, { n: 2 }])
+    const docs = await c.aggregate([{ $sort: { n: -1 } }])
+    expect(docs.map((d) => d.n)).toEqual([3, 2, 1])
+  })
+
+  itIf("$skip skips N docs", async () => {
+    await seed(c, [{ v: 1 }, { v: 2 }, { v: 3 }])
+    const docs = await c.aggregate([{ $sort: { v: 1 } }, { $skip: 2 }])
+    expect(docs).toHaveLength(1)
+    expect(docs[0].v).toBe(3)
+  })
+
+  itIf("$limit limits N docs", async () => {
+    await seed(c, [{ v: 1 }, { v: 2 }, { v: 3 }])
+    const docs = await c.aggregate([{ $limit: 2 }])
+    expect(docs).toHaveLength(2)
+  })
+
+  itIf("$count returns single count doc", async () => {
+    await seed(c, [{ v: 1 }, { v: 2 }, { v: 3 }])
+    const docs = await c.aggregate([{ $count: "total" }])
+    expect(docs).toHaveLength(1)
+    expect(docs[0].total).toBe(3)
+  })
+
+  itIf("$count uses default field name", async () => {
+    await seed(c, [{ v: 1 }, { v: 2 }])
+    const docs = await c.aggregate([{ $count: "count" }])
+    expect(docs[0].count).toBe(2)
+  })
+
+  itIf("$group with $sum", async () => {
+    await seed(c, [
+      { cat: "a", val: 10 },
+      { cat: "a", val: 20 },
+      { cat: "b", val: 30 },
+    ])
+    const docs = await c.aggregate([
+      { $group: { _id: "$cat", total: { $sum: "$val" } } },
+    ])
+    expect(docs).toHaveLength(2)
+    const a = docs.find((d) => d._id === "a") as Document
+    const b = docs.find((d) => d._id === "b") as Document
+    expect(a.total).toBe(30)
+    expect(b.total).toBe(30)
+  })
+
+  itIf("$group with $sum (constant)", async () => {
+    await seed(c, [{ cat: "a" }, { cat: "a" }, { cat: "b" }])
+    const docs = await c.aggregate([
+      { $group: { _id: "$cat", count: { $sum: 1 } } },
+    ])
+    const a = docs.find((d) => d._id === "a") as Document
+    const b = docs.find((d) => d._id === "b") as Document
+    expect(a.count).toBe(2)
+    expect(b.count).toBe(1)
+  })
+
+  itIf("$group with $avg", async () => {
+    await seed(c, [
+      { g: "x", v: 10 },
+      { g: "x", v: 20 },
+      { g: "y", v: 30 },
+    ])
+    const docs = await c.aggregate([
+      { $group: { _id: "$g", avgVal: { $avg: "$v" } } },
+    ])
+    const x = docs.find((d) => d._id === "x") as Document
+    expect(x.avgVal).toBe(15)
+  })
+
+  itIf("$group with $push", async () => {
+    await seed(c, [
+      { g: "x", n: "a" },
+      { g: "x", n: "b" },
+      { g: "y", n: "c" },
+    ])
+    const docs = await c.aggregate([
+      { $group: { _id: "$g", items: { $push: "$n" } } },
+    ])
+    const x = docs.find((d) => d._id === "x") as Document
+    expect(x.items).toEqual(["a", "b"])
+  })
+
+  itIf("$group with $addToSet", async () => {
+    await seed(c, [
+      { g: "x", n: "a" },
+      { g: "x", n: "a" },
+      { g: "x", n: "b" },
+    ])
+    const docs = await c.aggregate([
+      { $group: { _id: "$g", uniq: { $addToSet: "$n" } } },
+    ])
+    const x = docs.find((d) => d._id === "x") as Document
+    expect(x.uniq).toHaveLength(2)
+    expect(x.uniq).toContain("a")
+    expect(x.uniq).toContain("b")
+  })
+
+  itIf("$group with $min/$max", async () => {
+    await seed(c, [
+      { g: "x", v: 5 },
+      { g: "x", v: 15 },
+      { g: "x", v: 10 },
+    ])
+    const docs = await c.aggregate([
+      { $group: { _id: "$g", minV: { $min: "$v" }, maxV: { $max: "$v" } } },
+    ])
+    const x = docs.find((d) => d._id === "x") as Document
+    expect(x.minV).toBe(5)
+    expect(x.maxV).toBe(15)
+  })
+
+  itIf("$group with $first/$last", async () => {
+    await seed(c, [
+      { g: "x", seq: 1 },
+      { g: "x", seq: 2 },
+      { g: "x", seq: 3 },
+    ])
+    const docs = await c.aggregate([
+      { $sort: { seq: 1 } },
+      { $group: { _id: "$g", first: { $first: "$seq" }, last: { $last: "$seq" } } },
+    ])
+    const x = docs.find((d) => d._id === "x") as Document
+    expect(x.first).toBe(1)
+    expect(x.last).toBe(3)
+  })
+
+  itIf("$group compound _id", async () => {
+    await seed(c, [
+      { cat: "a", status: "ok", v: 1 },
+      { cat: "a", status: "ok", v: 2 },
+      { cat: "a", status: "fail", v: 3 },
+      { cat: "b", status: "ok", v: 4 },
+    ])
+    const docs = await c.aggregate([
+      { $group: { _id: { category: "$cat", status: "$status" }, total: { $sum: "$v" } } },
+    ])
+    expect(docs).toHaveLength(3)
+  })
+
+  itIf("$unwind array field (string syntax)", async () => {
+    await seed(c, [{ _id: 1, items: ["a", "b", "c"] }])
+    const docs = await c.aggregate([{ $unwind: "$items" }])
+    expect(docs).toHaveLength(3)
+    expect(docs[0].items).toBe("a")
+    expect(docs[1].items).toBe("b")
+    expect(docs[2].items).toBe("c")
+  })
+
+  itIf("$unwind array field (object syntax)", async () => {
+    await seed(c, [{ _id: 1, tags: ["x", "y"] }])
+    const docs = await c.aggregate([{ $unwind: { path: "$tags" } }])
+    expect(docs).toHaveLength(2)
+    expect(docs[0].tags).toBe("x")
+    expect(docs[1].tags).toBe("y")
+  })
+
+  itIf("$unwind non-array keeps doc", async () => {
+    await seed(c, [{ _id: 1, val: "not-array" }])
+    const docs = await c.aggregate([{ $unwind: "$val" }])
+    expect(docs).toHaveLength(1)
+    expect(docs[0].val).toBe("not-array")
+  })
+
+  itIf("$addFields with $add arithmetic", async () => {
+    await seed(c, [{ a: 10, b: 20 }])
+    const docs = await c.aggregate([{ $addFields: { sum: { $add: ["$a", "$b"] } } }])
+    expect(docs[0].a).toBe(10)
+    expect(docs[0].b).toBe(20)
+    expect(docs[0].sum).toBe(30)
+  })
+
+  itIf("$addFields field reference", async () => {
+    await seed(c, [{ a: 10, b: 20 }])
+    const docs = await c.aggregate([{ $addFields: { c: "$a" } }])
+    expect(docs[0].a).toBe(10)
+    expect(docs[0].c).toBe(10)
+  })
+
+  itIf("$set aliases $addFields", async () => {
+    await seed(c, [{ name: "alice" }])
+    const docs = await c.aggregate([{ $set: { greeting: "$name" } }])
+    expect(docs[0].greeting).toBe("alice")
+  })
+
+  itIf("pipeline chains: $match → $sort → $skip → $limit", async () => {
+    await seed(c, [
+      { s: "a", v: 5 },
+      { s: "b", v: 2 },
+      { s: "b", v: 3 },
+      { s: "b", v: 1 },
+      { s: "a", v: 4 },
+    ])
+    const docs = await c.aggregate([
+      { $match: { s: "b" } },
+      { $sort: { v: 1 } },
+      { $skip: 1 },
+      { $limit: 1 },
+    ])
+    expect(docs).toHaveLength(1)
+    expect(docs[0].v).toBe(2)
+  })
+
+  itIf("pipeline chains: $group → $sort → $project", async () => {
+    await seed(c, [
+      { cat: "x", val: 5 },
+      { cat: "x", val: 15 },
+      { cat: "y", val: 10 },
+    ])
+    const docs = await c.aggregate([
+      { $group: { _id: "$cat", total: { $sum: "$val" } } },
+      { $sort: { total: -1 } },
+      { $project: { total: 1 } },
+    ])
+    expect(docs).toHaveLength(2)
+    expect(docs[0].total).toBe(20)
+    expect(docs[0]._id).toBe("x")
+    expect(docs[1].total).toBe(10)
+    expect(docs[1]._id).toBe("y")
+  })
+
+  itIf("pipeline: $match → $unwind → $group → $count", async () => {
+    await seed(c, [
+      { _id: 1, tags: ["a", "b"] },
+      { _id: 2, tags: ["a"] },
+      { _id: 3, tags: ["b", "c"] },
+    ])
+    const docs = await c.aggregate([
+      { $unwind: "$tags" },
+      { $group: { _id: "$tags", count: { $sum: 1 } } },
+      { $count: "tagCount" },
+    ])
+    expect(docs[0].tagCount).toBe(3) // 3 groups after $group
+  })
+
+  itIf("aggregate returns empty for no match", async () => {
+    await seed(c, [{ v: 1 }])
+    const docs = await c.aggregate([{ $match: { v: 999 } }])
+    expect(docs).toHaveLength(0)
+  })
+
+  itIf("aggregate with no pipeline returns all", async () => {
+    await seed(c, [{ v: 1 }, { v: 2 }])
+    const docs = await c.aggregate([])
+    expect(docs).toHaveLength(2)
+  })
+
+  itIf("$replaceRoot promotes sub-doc", async () => {
+    await seed(c, [{ _id: 1, nested: { a: 1, b: 2 } }])
+    const docs = await c.aggregate([
+      { $replaceRoot: { newRoot: "$nested" } },
+    ])
+    expect(docs).toHaveLength(1)
+    expect(docs[0].a).toBe(1)
+    expect(docs[0].b).toBe(2)
+    expect(docs[0]._id).toBeUndefined()
+  })
+
+  itIf("$replaceWith field ref", async () => {
+    await seed(c, [{ _id: 1, data: { x: 10 } }])
+    const docs = await c.aggregate([{ $replaceWith: "$data" }])
+    expect(docs[0].x).toBe(10)
+    expect(docs[0]._id).toBeUndefined()
+  })
+
+  itIf("$sortByCount groups and sorts descending", async () => {
+    await seed(c, [
+      { cat: "a" },
+      { cat: "b" },
+      { cat: "a" },
+      { cat: "c" },
+      { cat: "a" },
+    ])
+    const docs = await c.aggregate([{ $sortByCount: "$cat" }])
+    expect(docs).toHaveLength(3)
+    expect(docs[0]._id).toBe("a")
+    expect(docs[0].count).toBe(3)
+    expect(docs[1]._id).toBe("b")
+    expect(docs[1].count).toBe(1)
+    expect(docs[2]._id).toBe("c")
+    expect(docs[2].count).toBe(1)
+  })
+
+  itIf("$sample returns N random docs", async () => {
+    await seed(c, [
+      { v: 1 }, { v: 2 }, { v: 3 }, { v: 4 }, { v: 5 },
+    ])
+    const docs = await c.aggregate([{ $sample: { size: 3 } }])
+    expect(docs).toHaveLength(3)
+  })
+
+  itIf("$lookup joins across collections", async () => {
+    const ctx = getCtx()
+    const orders = ctx.db.collection("agg_orders")
+    const products = ctx.db.collection("agg_products")
+    await orders.deleteMany({})
+    await products.deleteMany({})
+    await orders.insertMany([
+      { _id: 1, product: "p1", qty: 2 },
+      { _id: 2, product: "p2", qty: 1 },
+    ])
+    await products.insertMany([
+      { _id: "p1", name: "Widget", price: 10 },
+      { _id: "p2", name: "Gadget", price: 20 },
+      { _id: "p3", name: "Extra", price: 5 },
+    ])
+    const docs = await orders.aggregate([
+      {
+        $lookup: {
+          from: "agg_products",
+          localField: "product",
+          foreignField: "_id",
+          as: "productInfo",
+        },
+      },
+    ])
+    expect(docs).toHaveLength(2)
+    const d0 = docs[0] as Document
+    const d1 = docs[1] as Document
+    expect(d0.productInfo).toHaveLength(1)
+    expect((d0.productInfo as Document[])[0].name).toBe("Widget")
+    expect(d1.productInfo).toHaveLength(1)
+    expect((d1.productInfo as Document[])[0].name).toBe("Gadget")
+  })
+
+  itIf("$lookup empty match returns empty array", async () => {
+    const ctx = getCtx()
+    const col = ctx.db.collection("agg_lookup_empty")
+    await col.deleteMany({})
+    await ctx.db.collection("agg_lookup_target").deleteMany({})
+    await col.insertOne({ _id: 1, refId: "nonexistent" })
+    await ctx.db.collection("agg_lookup_target").insertOne({ _id: "exists" })
+    const docs = await col.aggregate([
+      {
+        $lookup: {
+          from: "agg_lookup_target",
+          localField: "refId",
+          foreignField: "_id",
+          as: "matches",
+        },
+      },
+    ])
+    expect(docs[0].matches).toEqual([])
+  })
+
+  itIf("$lookup with pipeline+let syntax", async () => {
+    const ctx = getCtx()
+    const orders = ctx.db.collection("lkp_pipeline_orders")
+    const products = ctx.db.collection("lkp_pipeline_products")
+    await orders.deleteMany({})
+    await products.deleteMany({})
+    await orders.insertMany([
+      { _id: 1, productId: "p1", qty: 2 },
+      { _id: 2, productId: "p2", qty: 1 },
+    ])
+    await products.insertMany([
+      { _id: "p1", name: "Widget", price: 10 },
+      { _id: "p2", name: "Gadget", price: 20 },
+      { _id: "p3", name: "Extra", price: 5 },
+    ])
+    const docs = await orders.aggregate([
+      {
+        $lookup: {
+          from: "lkp_pipeline_products",
+          let: { pid: "$productId" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$pid"] } } },
+          ],
+          as: "productInfo",
+        },
+      },
+    ])
+    expect(docs).toHaveLength(2)
+    expect((docs[0] as Document).productInfo).toHaveLength(1)
+    expect(((docs[0] as Document).productInfo as Document[])[0].name).toBe("Widget")
+    expect((docs[1] as Document).productInfo).toHaveLength(1)
+    expect(((docs[1] as Document).productInfo as Document[])[0].name).toBe("Gadget")
+  })
+
+  itIf("$lookup pipeline with multiple stages", async () => {
+    const ctx = getCtx()
+    const authors = ctx.db.collection("lkp_authors")
+    const posts = ctx.db.collection("lkp_posts")
+    await authors.deleteMany({})
+    await posts.deleteMany({})
+    await authors.insertMany([
+      { _id: "a1", name: "Alice" },
+      { _id: "a2", name: "Bob" },
+    ])
+    await posts.insertMany([
+      { authorId: "a1", title: "Post 1", stars: 5 },
+      { authorId: "a1", title: "Post 2", stars: 3 },
+      { authorId: "a2", title: "Post 3", stars: 4 },
+      { authorId: "a2", title: "Post 4", stars: 2 },
+    ])
+    const docs = await authors.aggregate([
+      {
+        $lookup: {
+          from: "lkp_posts",
+          let: { aid: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$authorId", "$$aid"] } } },
+            { $sort: { stars: -1 } },
+            { $limit: 1 },
+            { $project: { title: 1, stars: 1, _id: 0 } },
+          ],
+          as: "topPost",
+        },
+      },
+    ])
+    expect(docs).toHaveLength(2)
+    const alice = docs.find((d) => d.name === "Alice") as Document
+    const bob = docs.find((d) => d.name === "Bob") as Document
+    expect(alice.topPost).toHaveLength(1)
+    expect((alice.topPost as Document[])[0].title).toBe("Post 1")
+    expect((alice.topPost as Document[])[0].stars).toBe(5)
+    expect(bob.topPost).toHaveLength(1)
+    expect((bob.topPost as Document[])[0].title).toBe("Post 3")
+    expect((bob.topPost as Document[])[0].stars).toBe(4)
+  })
+
+  itIf("$lookup pipeline empty result", async () => {
+    const ctx = getCtx()
+    const col = ctx.db.collection("lkp_pipe_empty_main")
+    const target = ctx.db.collection("lkp_pipe_empty_target")
+    await col.deleteMany({})
+    await target.deleteMany({})
+    await col.insertOne({ _id: 1, ref: "missing" })
+    await target.insertOne({ _id: "exists" })
+    const docs = await col.aggregate([
+      {
+        $lookup: {
+          from: "lkp_pipe_empty_target",
+          let: { r: "$ref" },
+          pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$r"] } } }],
+          as: "matches",
+        },
+      },
+    ])
+    expect(docs[0].matches).toEqual([])
+  })
+
+  // -----------------------------------------------------------------------
+  // Expression operator tests
+  // -----------------------------------------------------------------------
+
+  itIf("$toUpper expression", async () => {
+    await seed(c, [{ name: "hello" }])
+    const docs = await c.aggregate([
+      { $project: { upper: { $toUpper: "$name" } } },
+    ])
+    expect(docs[0].upper).toBe("HELLO")
+  })
+
+  itIf("$toLower expression", async () => {
+    await seed(c, [{ name: "WORLD" }])
+    const docs = await c.aggregate([
+      { $project: { lower: { $toLower: "$name" } } },
+    ])
+    expect(docs[0].lower).toBe("world")
+  })
+
+  itIf("$substr expression", async () => {
+    await seed(c, [{ text: "hello world" }])
+    const docs = await c.aggregate([
+      { $project: { sub: { $substr: ["$text", 0, 5] } } },
+    ])
+    expect(docs[0].sub).toBe("hello")
+  })
+
+  itIf("$add expression", async () => {
+    await seed(c, [{ a: 5, b: 10, c: 15 }])
+    const docs = await c.aggregate([
+      { $project: { total: { $add: ["$a", "$b", "$c"] } } },
+    ])
+    expect(docs[0].total).toBe(30)
+  })
+
+  itIf("$subtract expression", async () => {
+    await seed(c, [{ a: 20, b: 8 }])
+    const docs = await c.aggregate([
+      { $project: { diff: { $subtract: ["$a", "$b"] } } },
+    ])
+    expect(docs[0].diff).toBe(12)
+  })
+
+  itIf("$multiply expression", async () => {
+    await seed(c, [{ a: 4, b: 5 }])
+    const docs = await c.aggregate([
+      { $project: { prod: { $multiply: ["$a", "$b"] } } },
+    ])
+    expect(docs[0].prod).toBe(20)
+  })
+
+  itIf("$divide expression", async () => {
+    await seed(c, [{ a: 10, b: 3 }])
+    const docs = await c.aggregate([
+      { $project: { quot: { $divide: ["$a", "$b"] } } },
+    ])
+    expect(docs[0].quot).toBeCloseTo(3.333, 2)
+  })
+
+  itIf("$mod expression", async () => {
+    await seed(c, [{ a: 10, b: 3 }])
+    const docs = await c.aggregate([
+      { $project: { rem: { $mod: ["$a", "$b"] } } },
+    ])
+    expect(docs[0].rem).toBe(1)
+  })
+
+  itIf("$round expression", async () => {
+    await seed(c, [{ v: 3.7 }])
+    const docs = await c.aggregate([{ $project: { r: { $round: "$v" } } }])
+    expect(docs[0].r).toBe(4)
+  })
+
+  itIf("$ceil and $floor", async () => {
+    await seed(c, [{ v: 3.3 }])
+    const docs = await c.aggregate([
+      { $project: { c: { $ceil: "$v" }, f: { $floor: "$v" } } },
+    ])
+    expect(docs[0].c).toBe(4)
+    expect(docs[0].f).toBe(3)
+  })
+
+  itIf("$abs expression", async () => {
+    await seed(c, [{ v: -7 }])
+    const docs = await c.aggregate([{ $project: { a: { $abs: "$v" } } }])
+    expect(docs[0].a).toBe(7)
+  })
+
+  itIf("$cond (array syntax)", async () => {
+    await seed(c, [{ qty: 10 }])
+    const docs = await c.aggregate([
+      {
+        $project: {
+          size: {
+            $cond: [{ $gte: ["$qty", 5] }, "big", "small"],
+          },
+        },
+      },
+    ])
+    expect(docs[0].size).toBe("big")
+  })
+
+  itIf("$cond (object syntax)", async () => {
+    await seed(c, [{ score: 2 }])
+    const docs = await c.aggregate([
+      {
+        $project: {
+          pass: {
+            $cond: { if: { $gte: ["$score", 5] }, then: "pass", else: "fail" },
+          },
+        },
+      },
+    ])
+    expect(docs[0].pass).toBe("fail")
+  })
+
+  itIf("$ifNull returns default for null", async () => {
+    await seed(c, [{ a: null }])
+    const docs = await c.aggregate([
+      { $project: { val: { $ifNull: ["$a", "default"] } } },
+    ])
+    expect(docs[0].val).toBe("default")
+  })
+
+  itIf("$ifNull passes through value", async () => {
+    await seed(c, [{ a: 42 }])
+    const docs = await c.aggregate([
+      { $project: { val: { $ifNull: ["$a", "default"] } } },
+    ])
+    expect(docs[0].val).toBe(42)
+  })
+
+  itIf("$size expression", async () => {
+    await seed(c, [{ items: ["a", "b", "c"] }])
+    const docs = await c.aggregate([{ $project: { sz: { $size: "$items" } } }])
+    expect(docs[0].sz).toBe(3)
+  })
+
+  itIf("$gt/$lt in $match (via $expr)", async () => {
+    // $match doesn't evaluate expressions — test $gt inside $project
+    await seed(c, [{ a: 5, b: 10 }])
+    const docs = await c.aggregate([
+      { $project: { gt: { $gt: ["$a", "$b"] }, lt: { $lt: ["$a", "$b"] } } },
+    ])
+    expect(docs[0].gt).toBe(false)
+    expect(docs[0].lt).toBe(true)
+  })
+
+  itIf("$eq/$ne in $project", async () => {
+    await seed(c, [{ x: 1, y: 1, z: 2 }])
+    const docs = await c.aggregate([
+      { $project: { eq: { $eq: ["$x", "$y"] }, ne: { $ne: ["$x", "$z"] } } },
+    ])
+    expect(docs[0].eq).toBe(true)
+    expect(docs[0].ne).toBe(true)
+  })
+
+  itIf("$and/$or/$not logical", async () => {
+    await seed(c, [{ a: true, b: false }])
+    const docs = await c.aggregate([
+      {
+        $project: {
+          and: { $and: ["$a", "$b"] },
+          or: { $or: ["$a", "$b"] },
+          not: { $not: "$b" },
+        },
+      },
+    ])
+    expect(docs[0].and).toBe(false)
+    expect(docs[0].or).toBe(true)
+    expect(docs[0].not).toBe(true)
+  })
+
+  itIf("$dateToString format date", async () => {
+    await seed(c, [{ dt: "2024-03-15T10:30:00Z" }])
+    const docs = await c.aggregate([
+      {
+        $project: {
+          formatted: {
+            $dateToString: { date: "$dt", format: "%Y-%m-%d" },
+          },
+        },
+      },
+    ])
+    expect(docs[0].formatted).toBe("2024-03-15")
+  })
+
+  itIf("$year/$month/$dayOfMonth extractors", async () => {
+    await seed(c, [{ dt: "2024-03-15T10:30:00Z" }])
+    const docs = await c.aggregate([
+      {
+        $project: {
+          y: { $year: "$dt" },
+          m: { $month: "$dt" },
+          d: { $dayOfMonth: "$dt" },
+        },
+      },
+    ])
+    expect(docs[0].y).toBe(2024)
+    expect(docs[0].m).toBe(3)
+    expect(docs[0].d).toBe(15)
+  })
+
+  itIf("$toString/$toInt type conversion", async () => {
+    await seed(c, [{ n: 42, s: "99" }])
+    const docs = await c.aggregate([
+      {
+        $project: {
+          str: { $toString: "$n" },
+          num: { $toInt: "$s" },
+        },
+      },
+    ])
+    expect(docs[0].str).toBe("42")
+    expect(docs[0].num).toBe(99)
+  })
+
+  itIf("$switch expression", async () => {
+    await seed(c, [{ score: 85 }])
+    const docs = await c.aggregate([
+      {
+        $project: {
+          grade: {
+            $switch: {
+              branches: [
+                { case: { $gte: ["$score", 90] }, then: "A" },
+                { case: { $gte: ["$score", 80] }, then: "B" },
+                { case: { $gte: ["$score", 70] }, then: "C" },
+              ],
+              default: "F",
+            },
+          },
+        },
+      },
+    ])
+    expect(docs[0].grade).toBe("B")
+  })
+
+  itIf("$arrayElemAt and $slice", async () => {
+    await seed(c, [{ arr: [10, 20, 30, 40] }])
+    const docs = await c.aggregate([
+      {
+        $project: {
+          first: { $arrayElemAt: ["$arr", 0] },
+          last: { $arrayElemAt: ["$arr", -1] },
+          slice: { $slice: ["$arr", 1, 2] },
+        },
+      },
+    ])
+    expect(docs[0].first).toBe(10)
+    expect(docs[0].last).toBe(40)
+    expect(docs[0].slice).toEqual([20, 30])
+  })
+
+  itIf("$in checks value in array", async () => {
+    await seed(c, [{ tags: ["a", "b", "c"], search: "b" }])
+    const docs = await c.aggregate([
+      { $project: { found: { $in: ["$search", "$tags"] } } },
+    ])
+    expect(docs[0].found).toBe(true)
+  })
+
+  itIf("$trim whitespace", async () => {
+    await seed(c, [{ text: "  hello  " }])
+    const docs = await c.aggregate([
+      { $project: { t: { $trim: "$text" }, l: { $ltrim: "$text" }, r: { $rtrim: "$text" } } },
+    ])
+    expect(docs[0].t).toBe("hello")
+    expect(docs[0].l).toBe("hello  ")
+    expect(docs[0].r).toBe("  hello")
+  })
+
+  itIf("$pow and $sqrt", async () => {
+    await seed(c, [{ base: 3, exp: 4, val: 9 }])
+    const docs = await c.aggregate([
+      {
+        $project: {
+          pow: { $pow: ["$base", "$exp"] },
+          sqrt: { $sqrt: "$val" },
+        },
+      },
+    ])
+    expect(docs[0].pow).toBe(81)
+    expect(docs[0].sqrt).toBe(3)
+  })
+
+  itIf("nested expressions", async () => {
+    await seed(c, [{ price: 120, qty: 3, discount: 10 }])
+    const docs = await c.aggregate([
+      {
+        $project: {
+          total: {
+            $cond: {
+              if: { $gte: ["$qty", 5] },
+              then: { $multiply: ["$price", "$qty"] },
+              else: {
+                $subtract: [
+                  { $multiply: ["$price", "$qty"] },
+                  "$discount",
+                ],
+              },
+            },
+          },
+        },
+      },
+    ])
+    expect(docs[0].total).toBe(350) // 120*3 - 10
+  })
+})

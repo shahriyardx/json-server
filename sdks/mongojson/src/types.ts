@@ -103,7 +103,7 @@ export interface FindOneAndReplaceOptions {
 export interface BulkWriteOperation {
   insertOne?: { document: Document }
   updateOne?: { filter: Filter; update: Update; upsert?: boolean }
-  updateMany?: { filter: Filter; update: Update }
+  updateMany?: { filter: Filter; update: Update; upsert?: boolean }
   deleteOne?: { filter: Filter }
   deleteMany?: { filter: Filter }
   replaceOne?: { filter: Filter; replacement: Document; upsert?: boolean }
@@ -126,6 +126,7 @@ export type Operation =
   | "estimatedDocumentCount"
   | "distinct"
   | "ping"
+  | "aggregate"
 
 export interface MongoBody {
   database: string
@@ -141,7 +142,9 @@ export interface MongoBody {
     filter?: Record<string, unknown>
     document?: Record<string, unknown>
     update?: Record<string, unknown>
+    upsert?: boolean
   }[]
+  pipeline?: Record<string, unknown>[]
   options?: {
     sort?: Record<string, SortDirection>
     limit?: number
@@ -150,6 +153,12 @@ export interface MongoBody {
     upsert?: boolean
     returnDocument?: "before" | "after"
   }
+}
+
+export type AggregationStage = Record<string, unknown>
+
+export interface AggregateResult {
+  data: Document[]
 }
 
 export type MongojsonAuth = { username: string; password: string }

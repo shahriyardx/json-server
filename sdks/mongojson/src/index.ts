@@ -6,6 +6,7 @@ export { DB } from "./db"
 export { MongoClient } from "./client"
 export { ServerApiVersion } from "./types"
 export type {
+  AggregationStage,
   SortDirection,
   FindOptions,
   Filter,

@@ -15,6 +15,7 @@ export type Operation =
   | "estimatedDocumentCount"
   | "distinct"
   | "ping"
+  | "aggregate"
 
 export interface MongoBody {
   database: string
@@ -31,7 +32,9 @@ export interface MongoBody {
     document?: Record<string, unknown>
     documents?: Record<string, unknown>[]
     update?: Record<string, unknown>
+    upsert?: boolean
   }[]
+  pipeline?: Record<string, unknown>[]
   options?: {
     sort?: Record<string, 1 | -1>
     limit?: number
@@ -59,6 +62,7 @@ export const ALLOWED_OPS = new Set<Operation>([
   "estimatedDocumentCount",
   "distinct",
   "ping",
+  "aggregate",
 ])
 
 export type ParsedDoc = Record<string, unknown> & { __prismaId?: string }

@@ -130,7 +130,7 @@ function generateObjectId(): string {
 
 export function autoGenerateId(
   data: unknown[],
-): { value: string; key: string } {
+): { value: string | number; key: string } {
   let hasId = false
   let allNumeric = true
   let maxNumeric = 0
@@ -155,7 +155,7 @@ export function autoGenerateId(
     return { value: generateObjectId(), key: "_id" }
   }
   return {
-    value: allNumeric ? String(maxNumeric + 1) : generateObjectId(),
+    value: allNumeric ? maxNumeric + 1 : generateObjectId(),
     key: detectedKey,
   }
 }

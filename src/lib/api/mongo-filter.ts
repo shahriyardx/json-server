@@ -1,17 +1,21 @@
+import { evaluateExpression } from "./mongo-expr"
+
 export function applyMongoFilter(
   data: unknown[],
   filter: Record<string, unknown>,
+  vars?: Record<string, unknown>,
 ): unknown[] {
   if (!filter || Object.keys(filter).length === 0) return data
   return data.filter((item) => {
     if (typeof item !== "object" || item === null) return false
-    return matchFilter(item as Record<string, unknown>, filter)
+    return matchFilter(item as Record<string, unknown>, filter, vars)
   })
 }
 
 function matchFilter(
   item: Record<string, unknown>,
   filter: Record<string, unknown>,
+  vars?: Record<string, unknown>,
 ): boolean {
   for (const [key, condition] of Object.entries(filter)) {
     if (key.startsWith("$")) {
@@ -19,7 +23,7 @@ function matchFilter(
         if (
           !Array.isArray(condition) ||
           !(condition as unknown[]).every((f) =>
-            matchFilter(item, f as Record<string, unknown>),
+            matchFilter(item, f as Record<string, unknown>, vars),
           )
         )
           return false
@@ -27,7 +31,7 @@ function matchFilter(
         if (
           !Array.isArray(condition) ||
           !(condition as unknown[]).some((f) =>
-            matchFilter(item, f as Record<string, unknown>),
+            matchFilter(item, f as Record<string, unknown>, vars),
           )
         )
           return false
@@ -35,10 +39,13 @@ function matchFilter(
         if (
           !Array.isArray(condition) ||
           (condition as unknown[]).some((f) =>
-            matchFilter(item, f as Record<string, unknown>),
+            matchFilter(item, f as Record<string, unknown>, vars),
           )
         )
           return false
+      } else if (key === "$expr") {
+        const result = evaluateExpression(item, condition, vars)
+        if (result !== true) return false
       }
     } else {
       if (!matchField(item, key, condition)) return false
@@ -51,6 +58,7 @@ function matchField(
   item: Record<string, unknown>,
   field: string,
   condition: unknown,
+  vars?: Record<string, unknown>,
 ): boolean {
   // Nested field path like "address.city"
   if (field.includes(".")) {
@@ -60,7 +68,7 @@ function matchField(
       if (typeof current !== "object" || current === null) return false
       current = (current as Record<string, unknown>)[part]
     }
-    return matchPrimitive(current, condition)
+    return matchPrimitive(current, condition, vars)
   }
 
   // Non-operator condition — direct equality or sub-document match
@@ -74,7 +82,7 @@ function matchField(
 
   if (!isOperator) {
     // Embedded document match
-    return matchSubDocument(item[field], cond)
+    return matchSubDocument(item[field], cond, vars)
   }
 
   const value = item[field]
@@ -87,12 +95,12 @@ function matchField(
 
   for (const [op, opVal] of Object.entries(cond)) {
     if (op === "$regex" || op === "$options") continue
-    if (!compareOp(value, op, opVal)) return false
+    if (!compareOp(value, op, opVal, vars)) return false
   }
   return true
 }
 
-function matchPrimitive(value: unknown, condition: unknown): boolean {
+function matchPrimitive(value: unknown, condition: unknown, vars?: Record<string, unknown>): boolean {
   if (typeof condition !== "object" || condition === null || Array.isArray(condition)) {
     return value === condition
   }
@@ -101,7 +109,7 @@ function matchPrimitive(value: unknown, condition: unknown): boolean {
   const isOperator = keys.length > 0 && keys.every((k) => k.startsWith("$"))
 
   if (!isOperator) {
-    return matchSubDocument(value, cond)
+    return matchSubDocument(value, cond, vars)
   }
 
   if ("$regex" in cond) {
@@ -111,7 +119,7 @@ function matchPrimitive(value: unknown, condition: unknown): boolean {
 
   for (const [op, opVal] of Object.entries(cond)) {
     if (op === "$regex" || op === "$options") continue
-    if (!compareOp(value, op, opVal)) return false
+    if (!compareOp(value, op, opVal, vars)) return false
   }
   return true
 }
@@ -119,9 +127,10 @@ function matchPrimitive(value: unknown, condition: unknown): boolean {
 function matchSubDocument(
   value: unknown,
   subFilter: Record<string, unknown>,
+  vars?: Record<string, unknown>,
 ): boolean {
   if (typeof value !== "object" || value === null) return false
-  return matchFilter(value as Record<string, unknown>, subFilter)
+  return matchFilter(value as Record<string, unknown>, subFilter, vars)
 }
 
 function compareOpRegex(value: unknown, pattern: unknown, options?: string): boolean {
@@ -133,7 +142,7 @@ function compareOpRegex(value: unknown, pattern: unknown, options?: string): boo
   }
 }
 
-function compareOp(value: unknown, operator: string, expected: unknown): boolean {
+function compareOp(value: unknown, operator: string, expected: unknown, vars?: Record<string, unknown>): boolean {
   switch (operator) {
     case "$eq":
       return value === expected
@@ -186,18 +195,22 @@ function compareOp(value: unknown, operator: string, expected: unknown): boolean
         return false
       return (value as unknown[]).some((elem) => {
         if (typeof elem !== "object" || elem === null) return false
-        return matchFilter(elem as Record<string, unknown>, expected as Record<string, unknown>)
+        return matchFilter(elem as Record<string, unknown>, expected as Record<string, unknown>, vars)
       })
     }
     case "$not":
-      if (typeof expected !== "object" || expected === null) return !value
-      // Evaluate inner condition against a synthetic item and negate
+      // Non-object literal → negated equality check
+      if (typeof expected !== "object" || expected === null) {
+        return value !== expected
+      }
+      // Evaluate inner condition against synthetic doc and negate
       return !matchField(
         { "": value } as Record<string, unknown>,
         "",
         expected,
+        vars,
       )
     default:
-      return true
+      return false
   }
 }

@@ -8,6 +8,7 @@ import type {
   FindOneAndDeleteOptions,
   FindOneAndReplaceOptions,
   BulkWriteOperation,
+  AggregationStage,
   InsertResult,
   InsertManyResult,
   UpdateResult,
@@ -16,6 +17,7 @@ import type {
   FindResult,
   DistinctResult,
   BulkWriteResult,
+  AggregateResult,
 } from "./types"
 import type { MongoBody } from "./types"
 import type { DB } from "./db"
@@ -193,6 +195,13 @@ export class Collection {
     })
   }
 
+  aggregate(pipeline: AggregationStage[]): Promise<Document[]> {
+    return this.exec<AggregateResult>({
+      operation: "aggregate",
+      pipeline,
+    }).then((r) => r.data)
+  }
+
   bulkWrite(operations: BulkWriteOperation[]): Promise<BulkWriteResult> {
     const ops = operations.map((op) => {
       if (op.insertOne)
@@ -202,12 +211,14 @@ export class Collection {
           operation: "updateOne",
           filter: toOpFilter(op.updateOne.filter),
           update: op.updateOne.update,
+          upsert: op.updateOne.upsert,
         }
       if (op.updateMany)
         return {
           operation: "updateMany",
           filter: toOpFilter(op.updateMany.filter),
           update: op.updateMany.update,
+          upsert: op.updateMany.upsert,
         }
       if (op.deleteOne)
         return {
@@ -224,6 +235,7 @@ export class Collection {
           operation: "replaceOne",
           filter: toOpFilter(op.replaceOne.filter),
           document: op.replaceOne.replacement,
+          upsert: op.replaceOne.upsert,
         }
       throw new Error("Unknown bulkWrite operation")
     })

@@ -28,17 +28,13 @@ export async function ensureCollection(
   databaseId: string,
   name: string,
 ): Promise<string> {
-  const existing = await prisma.collection.findUnique({
+  const result = await prisma.collection.upsert({
     where: { databaseId_name: { databaseId, name } },
+    create: { databaseId, name },
+    update: {},
     select: { id: true },
   })
-  if (existing) return existing.id
-
-  const created = await prisma.collection.create({
-    data: { databaseId, name },
-    select: { id: true },
-  })
-  return created.id
+  return result.id
 }
 
 // Save updated doc back to DB (removes __prismaId before serializing)

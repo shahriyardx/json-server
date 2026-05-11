@@ -103,7 +103,9 @@ export function applyMongoUpdate(
   if ("$push" in update) {
     const pushFields = update.$push as Record<string, unknown>
     for (const [key, val] of Object.entries(pushFields)) {
-      if (!Array.isArray(target[key])) target[key] = []
+      if (!Array.isArray(target[key])) {
+        target[key] = []
+      }
       const arr = target[key] as unknown[]
 
       if (typeof val === "object" && val !== null && "$each" in (val as Record<string, unknown>)) {

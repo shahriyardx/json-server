@@ -24,6 +24,7 @@ import {
   handleFindOneAndReplace,
   handleDistinct,
   handleBulkWrite,
+  handleAggregate,
 } from "./handlers"
 
 export async function POST(
@@ -39,6 +40,10 @@ export async function POST(
     return mongoJson({ error: "Invalid JSON body" }, 400)
   }
 
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return mongoJson({ error: "Body must be a JSON object" }, 400)
+  }
+
   if (!body.operation) {
     return mongoJson({ error: "operation is required" }, 400)
   }
@@ -49,6 +54,21 @@ export async function POST(
 
   if (body.operation !== "ping" && (!body.database || !body.collection)) {
     return mongoJson({ error: "database and collection are required" }, 400)
+  }
+
+  if (body.operation !== "ping") {
+    if (!/^[a-zA-Z0-9_-]{1,64}$/.test(body.database)) {
+      return mongoJson(
+        { error: "Invalid database name. Use 1-64 chars: letters, numbers, underscore, hyphen." },
+        400,
+      )
+    }
+    if (!/^[a-zA-Z0-9_-]{1,255}$/.test(body.collection)) {
+      return mongoJson(
+        { error: "Invalid collection name. Use 1-255 chars: letters, numbers, underscore, hyphen." },
+        400,
+      )
+    }
   }
 
   // Resolve platform user
@@ -67,6 +87,10 @@ export async function POST(
   const parsed = parseBasicAuth(authHeader)
   if (!parsed) {
     return mongoJson({ error: "Invalid Basic auth header" }, 401)
+  }
+
+  if (!parsed.password) {
+    return mongoJson({ error: "Password is required" }, 401)
   }
 
   const dbUser = await prisma.databaseUser.findFirst({
@@ -156,6 +180,8 @@ export async function POST(
       return handleDistinct(collectionId, body)
     case "bulkWrite":
       return handleBulkWrite(collectionId, body)
+    case "aggregate":
+      return handleAggregate(collectionId, body)
   }
 }
 
