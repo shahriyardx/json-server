@@ -46,6 +46,11 @@ function matchFilter(
       } else if (key === "$expr") {
         const result = evaluateExpression(item, condition, vars)
         if (result !== true) return false
+      } else if (key === "$text") {
+        const searchSpec = condition as Record<string, unknown> | undefined
+        const searchStr = String(searchSpec?.$search ?? "").trim()
+        if (!searchStr) return false
+        if (!matchTextSearch(item, searchStr)) return false
       }
     } else {
       if (!matchField(item, key, condition)) return false
@@ -131,6 +136,64 @@ function matchSubDocument(
 ): boolean {
   if (typeof value !== "object" || value === null) return false
   return matchFilter(value as Record<string, unknown>, subFilter, vars)
+}
+
+function matchTextSearch(
+  item: Record<string, unknown>,
+  searchStr: string,
+): boolean {
+  // Parse tokens: quoted phrases, negated terms, positive terms
+  const phrases: string[] = []
+  const negated: string[] = []
+  const terms: string[] = []
+  const re = /"([^"]+)"|(\S+)/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(searchStr)) !== null) {
+    if (m[1]) {
+      phrases.push(m[1].toLowerCase())
+    } else {
+      const token = m[2]
+      if (token.startsWith("-")) {
+        negated.push(token.slice(1).toLowerCase())
+      } else {
+        terms.push(token.toLowerCase())
+      }
+    }
+  }
+
+  // Collect all string-representable values
+  const textValues: string[] = []
+  for (const val of Object.values(item)) {
+    if (typeof val === "string") textValues.push(val.toLowerCase())
+    else if (typeof val === "number" || typeof val === "boolean")
+      textValues.push(String(val).toLowerCase())
+    else if (val != null) textValues.push(String(val).toLowerCase())
+  }
+  if (textValues.length === 0) return false
+
+  // All quoted phrases must appear as substring
+  for (const phrase of phrases) {
+    if (!textValues.some((t) => t.includes(phrase))) return false
+  }
+
+  // Tokenize all text into word set for word-level checks
+  const words = new Set<string>()
+  for (const tv of textValues) {
+    for (const w of tv.split(/[^a-z0-9]+/)) {
+      if (w) words.add(w)
+    }
+  }
+
+  // Negated terms must not appear as words
+  for (const neg of negated) {
+    if (words.has(neg)) return false
+  }
+
+  // No positive terms → phrase-only query, already passed
+  if (terms.length === 0) return true
+
+  // At least one positive term must appear as word
+  return terms.some((t) => words.has(t))
 }
 
 function compareOpRegex(value: unknown, pattern: unknown, options?: string): boolean {
