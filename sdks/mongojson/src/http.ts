@@ -3,12 +3,18 @@ import { MongodxServerError, MongodxBulkWriteError } from "./errors"
 
 function statusToMongoMsg(status: number, fallback: string): string {
   switch (status) {
-    case 401: return "bad auth Authentication failed."
-    case 403: return "not authorized for query"
-    case 404: return "ns not found"
-    case 409: return "E11000 duplicate key error"
-    case 422: return `bad value ${fallback}`
-    default: return fallback
+    case 401:
+      return "bad auth Authentication failed."
+    case 403:
+      return "not authorized for query"
+    case 404:
+      return "ns not found"
+    case 409:
+      return "E11000 duplicate key error"
+    case 422:
+      return `bad value ${fallback}`
+    default:
+      return fallback
   }
 }
 
@@ -33,7 +39,11 @@ export async function mongoRequest(
 
   if (!res.ok) {
     const resBody = await res.json().catch(() => null)
-    const errBody = (resBody ?? {}) as { error?: string; code?: number; writeErrors?: { index: number; errmsg: string }[] }
+    const errBody = (resBody ?? {}) as {
+      error?: string
+      code?: number
+      writeErrors?: { index: number; errmsg: string }[]
+    }
 
     const message = errBody.error ?? res.statusText
 

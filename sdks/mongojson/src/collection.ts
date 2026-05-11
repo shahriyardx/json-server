@@ -1,4 +1,22 @@
-import type { Filter, Document, Update, FindOptions, UpdateOptions, FindOneAndUpdateOptions, FindOneAndDeleteOptions, FindOneAndReplaceOptions, BulkWriteOperation, InsertResult, InsertManyResult, UpdateResult, DeleteResult, CountResult, FindResult, DistinctResult, BulkWriteResult, SortDirection } from "./types"
+import type {
+  Filter,
+  Document,
+  Update,
+  FindOptions,
+  UpdateOptions,
+  FindOneAndUpdateOptions,
+  FindOneAndDeleteOptions,
+  FindOneAndReplaceOptions,
+  BulkWriteOperation,
+  InsertResult,
+  InsertManyResult,
+  UpdateResult,
+  DeleteResult,
+  CountResult,
+  FindResult,
+  DistinctResult,
+  BulkWriteResult,
+} from "./types"
 import type { MongoBody } from "./types"
 import type { DB } from "./db"
 import { FindCursor } from "./cursor"
@@ -16,12 +34,19 @@ export class Collection {
     this.name = name
   }
 
-  private async exec<T>(body: Omit<MongoBody, "database" | "collection">): Promise<T> {
+  private async exec<T>(
+    body: Omit<MongoBody, "database" | "collection">,
+  ): Promise<T> {
     return this.db.exec<T>({ ...body, collection: this.name })
   }
 
   find(filter?: Filter, options?: FindOptions): FindCursor {
-    return new FindCursor(this.db, this.name, (filter ?? {}) as Record<string, unknown>, options)
+    return new FindCursor(
+      this.db,
+      this.name,
+      (filter ?? {}) as Record<string, unknown>,
+      options,
+    )
   }
 
   findOne(filter: Filter, options?: FindOptions): Promise<Document | null> {
@@ -44,7 +69,11 @@ export class Collection {
     return this.exec<InsertManyResult>({ operation: "insertMany", documents })
   }
 
-  updateOne(filter: Filter, update: Update, options?: UpdateOptions): Promise<UpdateResult> {
+  updateOne(
+    filter: Filter,
+    update: Update,
+    options?: UpdateOptions,
+  ): Promise<UpdateResult> {
     return this.exec<UpdateResult>({
       operation: "updateOne",
       filter: toOpFilter(filter),
@@ -53,7 +82,11 @@ export class Collection {
     })
   }
 
-  updateMany(filter: Filter, update: Update, options?: UpdateOptions): Promise<UpdateResult> {
+  updateMany(
+    filter: Filter,
+    update: Update,
+    options?: UpdateOptions,
+  ): Promise<UpdateResult> {
     return this.exec<UpdateResult>({
       operation: "updateMany",
       filter: toOpFilter(filter),
@@ -63,11 +96,17 @@ export class Collection {
   }
 
   deleteOne(filter: Filter): Promise<DeleteResult> {
-    return this.exec<DeleteResult>({ operation: "deleteOne", filter: toOpFilter(filter) })
+    return this.exec<DeleteResult>({
+      operation: "deleteOne",
+      filter: toOpFilter(filter),
+    })
   }
 
   deleteMany(filter: Filter): Promise<DeleteResult> {
-    return this.exec<DeleteResult>({ operation: "deleteMany", filter: toOpFilter(filter) })
+    return this.exec<DeleteResult>({
+      operation: "deleteMany",
+      filter: toOpFilter(filter),
+    })
   }
 
   countDocuments(filter?: Filter): Promise<number> {
@@ -78,7 +117,9 @@ export class Collection {
   }
 
   estimatedDocumentCount(): Promise<number> {
-    return this.exec<CountResult>({ operation: "estimatedDocumentCount" }).then((r) => r.count)
+    return this.exec<CountResult>({ operation: "estimatedDocumentCount" }).then(
+      (r) => r.count,
+    )
   }
 
   distinct(key: string, filter?: Filter): Promise<unknown[]> {
@@ -89,7 +130,11 @@ export class Collection {
     }).then((r) => r.values)
   }
 
-  replaceOne(filter: Filter, replacement: Document, options?: UpdateOptions): Promise<UpdateResult> {
+  replaceOne(
+    filter: Filter,
+    replacement: Document,
+    options?: UpdateOptions,
+  ): Promise<UpdateResult> {
     return this.exec<UpdateResult>({
       operation: "replaceOne",
       filter: toOpFilter(filter),
@@ -98,7 +143,11 @@ export class Collection {
     })
   }
 
-  findOneAndUpdate(filter: Filter, update: Update, options?: FindOneAndUpdateOptions): Promise<Document | null> {
+  findOneAndUpdate(
+    filter: Filter,
+    update: Update,
+    options?: FindOneAndUpdateOptions,
+  ): Promise<Document | null> {
     return this.exec<Document | null>({
       operation: "findOneAndUpdate",
       filter: toOpFilter(filter),
@@ -112,7 +161,10 @@ export class Collection {
     })
   }
 
-  findOneAndDelete(filter: Filter, options?: FindOneAndDeleteOptions): Promise<Document | null> {
+  findOneAndDelete(
+    filter: Filter,
+    options?: FindOneAndDeleteOptions,
+  ): Promise<Document | null> {
     return this.exec<Document | null>({
       operation: "findOneAndDelete",
       filter: toOpFilter(filter),
@@ -123,7 +175,11 @@ export class Collection {
     })
   }
 
-  findOneAndReplace(filter: Filter, replacement: Document, options?: FindOneAndReplaceOptions): Promise<Document | null> {
+  findOneAndReplace(
+    filter: Filter,
+    replacement: Document,
+    options?: FindOneAndReplaceOptions,
+  ): Promise<Document | null> {
     return this.exec<Document | null>({
       operation: "findOneAndReplace",
       filter: toOpFilter(filter),
@@ -139,14 +195,41 @@ export class Collection {
 
   bulkWrite(operations: BulkWriteOperation[]): Promise<BulkWriteResult> {
     const ops = operations.map((op) => {
-      if (op.insertOne) return { operation: "insertOne", document: op.insertOne.document }
-      if (op.updateOne) return { operation: "updateOne", filter: toOpFilter(op.updateOne.filter), update: op.updateOne.update }
-      if (op.updateMany) return { operation: "updateMany", filter: toOpFilter(op.updateMany.filter), update: op.updateMany.update }
-      if (op.deleteOne) return { operation: "deleteOne", filter: toOpFilter(op.deleteOne.filter) }
-      if (op.deleteMany) return { operation: "deleteMany", filter: toOpFilter(op.deleteMany.filter) }
-      if (op.replaceOne) return { operation: "replaceOne", filter: toOpFilter(op.replaceOne.filter), document: op.replaceOne.replacement }
+      if (op.insertOne)
+        return { operation: "insertOne", document: op.insertOne.document }
+      if (op.updateOne)
+        return {
+          operation: "updateOne",
+          filter: toOpFilter(op.updateOne.filter),
+          update: op.updateOne.update,
+        }
+      if (op.updateMany)
+        return {
+          operation: "updateMany",
+          filter: toOpFilter(op.updateMany.filter),
+          update: op.updateMany.update,
+        }
+      if (op.deleteOne)
+        return {
+          operation: "deleteOne",
+          filter: toOpFilter(op.deleteOne.filter),
+        }
+      if (op.deleteMany)
+        return {
+          operation: "deleteMany",
+          filter: toOpFilter(op.deleteMany.filter),
+        }
+      if (op.replaceOne)
+        return {
+          operation: "replaceOne",
+          filter: toOpFilter(op.replaceOne.filter),
+          document: op.replaceOne.replacement,
+        }
       throw new Error("Unknown bulkWrite operation")
     })
-    return this.exec<BulkWriteResult>({ operation: "bulkWrite", operations: ops })
+    return this.exec<BulkWriteResult>({
+      operation: "bulkWrite",
+      operations: ops,
+    })
   }
 }

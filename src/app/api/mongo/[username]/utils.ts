@@ -9,7 +9,9 @@ export function mongoJson(data: unknown, status = 200) {
 }
 
 // Load all docs in a collection, parse data JSON, return with __prismaId
-export async function loadParsedDocs(collectionId: string): Promise<ParsedDoc[]> {
+export async function loadParsedDocs(
+  collectionId: string,
+): Promise<ParsedDoc[]> {
   const records = await prisma.document.findMany({
     where: { collectionId },
     orderBy: { createdAt: "asc" },
@@ -22,7 +24,10 @@ export async function loadParsedDocs(collectionId: string): Promise<ParsedDoc[]>
 }
 
 // Ensure collection exists, return its id
-export async function ensureCollection(databaseId: string, name: string): Promise<string> {
+export async function ensureCollection(
+  databaseId: string,
+  name: string,
+): Promise<string> {
   const existing = await prisma.collection.findUnique({
     where: { databaseId_name: { databaseId, name } },
     select: { id: true },
@@ -37,7 +42,10 @@ export async function ensureCollection(databaseId: string, name: string): Promis
 }
 
 // Save updated doc back to DB (removes __prismaId before serializing)
-export async function saveDoc(collectionId: string, doc: ParsedDoc): Promise<void> {
+export async function saveDoc(
+  collectionId: string,
+  doc: ParsedDoc,
+): Promise<void> {
   const { __prismaId: prismaId, ...data } = doc
   if (prismaId) {
     await prisma.document.update({

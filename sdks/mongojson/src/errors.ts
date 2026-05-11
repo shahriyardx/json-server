@@ -4,14 +4,23 @@ export class MongodxServerError extends Error {
   readonly errmsg: string
   readonly codeName: string
 
-  private static statusMeta(status: number): { code: number; codeName: string } {
+  private static statusMeta(status: number): {
+    code: number
+    codeName: string
+  } {
     switch (status) {
-      case 401: return { code: 8000, codeName: "MongodxError" }
-      case 403: return { code: 13, codeName: "Unauthorized" }
-      case 404: return { code: 26, codeName: "NamespaceNotFound" }
-      case 409: return { code: 11000, codeName: "DuplicateKey" }
-      case 422: return { code: 2, codeName: "BadValue" }
-      default: return { code: 0, codeName: "UnknownError" }
+      case 401:
+        return { code: 8000, codeName: "MongodxError" }
+      case 403:
+        return { code: 13, codeName: "Unauthorized" }
+      case 404:
+        return { code: 26, codeName: "NamespaceNotFound" }
+      case 409:
+        return { code: 11000, codeName: "DuplicateKey" }
+      case 422:
+        return { code: 2, codeName: "BadValue" }
+      default:
+        return { code: 0, codeName: "UnknownError" }
     }
   }
 

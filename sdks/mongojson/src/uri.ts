@@ -24,9 +24,7 @@ export function parseUri(uri: string): ParsedUri {
   const domain = hostParts.slice(1).join(".")
 
   const protocol =
-    domain === "localhost" || domain.startsWith("localhost:")
-      ? "http"
-      : "https"
+    domain === "localhost" || domain.startsWith("localhost:") ? "http" : "https"
   const baseUrl = `${protocol}://${domain}${url.port ? `:${url.port}` : ""}`
 
   // Auth: Basic (user:password)

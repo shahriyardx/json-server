@@ -3,11 +3,20 @@ import { applyMongoFilter } from "@/lib/api/mongo-filter"
 import { applyMongoUpdate } from "@/lib/api/mongo-update"
 import { autoGenerateId } from "@/lib/api/query"
 import type { MongoBody, ParsedDoc } from "./types"
-import { mongoJson, loadParsedDocs, saveDoc, deleteDoc, collectMongoIndices } from "./utils"
+import {
+  mongoJson,
+  loadParsedDocs,
+  saveDoc,
+  deleteDoc,
+  collectMongoIndices,
+} from "./utils"
 
 export async function handleFind(collectionId: string, body: MongoBody) {
-  let docs = await loadParsedDocs(collectionId)
-  let result = applyMongoFilter(docs, body.filter ?? {}) as Record<string, unknown>[]
+  const docs = await loadParsedDocs(collectionId)
+  let result = applyMongoFilter(docs, body.filter ?? {}) as Record<
+    string,
+    unknown
+  >[]
   const options = body.options ?? {}
 
   if (options.sort) {
@@ -31,7 +40,7 @@ export async function handleFind(collectionId: string, body: MongoBody) {
     const { __prismaId, ...rest } = item
     if (!options.projection) return rest
 
-    const proj = options.projection!
+    const proj = options.projection as Record<string, 0 | 1>
     const includes = Object.values(proj).some((v) => v === 1)
     if (includes) {
       const projected: Record<string, unknown> = {}
@@ -50,7 +59,10 @@ export async function handleFind(collectionId: string, body: MongoBody) {
   return mongoJson({ data: result, matchedCount: result.length })
 }
 
-export async function handleCountDocuments(collectionId: string, body: MongoBody) {
+export async function handleCountDocuments(
+  collectionId: string,
+  body: MongoBody,
+) {
   const docs = await loadParsedDocs(collectionId)
   const filtered = applyMongoFilter(docs, body.filter ?? {})
   return mongoJson({ count: filtered.length })
@@ -73,10 +85,11 @@ export async function handleInsertOne(collectionId: string, body: MongoBody) {
     if (generated) doc[generated.key] = generated.value
   }
 
-  const idKey = doc._id !== undefined ? "_id" : doc.id !== undefined ? "id" : null
+  const idKey =
+    doc._id !== undefined ? "_id" : doc.id !== undefined ? "id" : null
   if (idKey) {
-    const exists = docs.some((item) =>
-      String(item[idKey]) === String(doc[idKey])
+    const exists = docs.some(
+      (item) => String(item[idKey]) === String(doc[idKey]),
     )
     if (exists) return mongoJson({ error: `Duplicate ${idKey} value` }, 409)
   }
@@ -85,7 +98,10 @@ export async function handleInsertOne(collectionId: string, body: MongoBody) {
     data: { collectionId, data: JSON.stringify(doc) },
   })
   return mongoJson(
-    { acknowledged: true, insertedId: (doc._id ?? doc.id ?? null) as string | number | null },
+    {
+      acknowledged: true,
+      insertedId: (doc._id ?? doc.id ?? null) as string | number | null,
+    },
     201,
   )
 }
@@ -105,13 +121,13 @@ export async function handleInsertMany(collectionId: string, body: MongoBody) {
       if (generated) doc[generated.key] = generated.value
     }
 
-    const idKey = doc._id !== undefined ? "_id" : doc.id !== undefined ? "id" : null
+    const idKey =
+      doc._id !== undefined ? "_id" : doc.id !== undefined ? "id" : null
     if (idKey) {
-      const exists = existing.some((item) =>
-        String(item[idKey]) === String(doc[idKey])
+      const exists = existing.some(
+        (item) => String(item[idKey]) === String(doc[idKey]),
       )
-      if (exists)
-        return mongoJson({ error: `Duplicate ${idKey} value` }, 409)
+      if (exists) return mongoJson({ error: `Duplicate ${idKey} value` }, 409)
     }
 
     existing.push(doc as ParsedDoc)
@@ -133,12 +149,19 @@ export async function handleUpdateOne(collectionId: string, body: MongoBody) {
     return mongoJson({ error: "update is required for updateOne" }, 400)
 
   const docs = await loadParsedDocs(collectionId)
-  const matched = applyMongoFilter(docs, body.filter ?? {}) as Record<string, unknown>[]
+  const matched = applyMongoFilter(docs, body.filter ?? {}) as Record<
+    string,
+    unknown
+  >[]
   const upsert = body.options?.upsert === true
 
   if (matched.length === 0) {
     if (!upsert)
-      return mongoJson({ acknowledged: true, matchedCount: 0, modifiedCount: 0 })
+      return mongoJson({
+        acknowledged: true,
+        matchedCount: 0,
+        modifiedCount: 0,
+      })
 
     const newDoc: Record<string, unknown> = { _id: autoGenerateId(docs).value }
     for (const [k, v] of Object.entries(body.filter ?? {})) {
@@ -152,8 +175,11 @@ export async function handleUpdateOne(collectionId: string, body: MongoBody) {
       data: { collectionId, data: JSON.stringify(newDoc) },
     })
     return mongoJson({
-      acknowledged: true, matchedCount: 0, modifiedCount: 0,
-      upsertedCount: 1, upsertedId: newDoc._id,
+      acknowledged: true,
+      matchedCount: 0,
+      modifiedCount: 0,
+      upsertedCount: 1,
+      upsertedId: newDoc._id,
     })
   }
 
@@ -163,7 +189,9 @@ export async function handleUpdateOne(collectionId: string, body: MongoBody) {
   const modified = JSON.stringify(item) !== original
   await saveDoc(collectionId, item)
   return mongoJson({
-    acknowledged: true, matchedCount: 1, modifiedCount: modified ? 1 : 0,
+    acknowledged: true,
+    matchedCount: 1,
+    modifiedCount: modified ? 1 : 0,
   })
 }
 
@@ -172,7 +200,10 @@ export async function handleUpdateMany(collectionId: string, body: MongoBody) {
     return mongoJson({ error: "update is required for updateMany" }, 400)
 
   const docs = await loadParsedDocs(collectionId)
-  const matched = applyMongoFilter(docs, body.filter ?? {}) as Record<string, unknown>[]
+  const matched = applyMongoFilter(docs, body.filter ?? {}) as Record<
+    string,
+    unknown
+  >[]
   let modifiedCount = 0
 
   for (const item of matched) {
@@ -183,13 +214,18 @@ export async function handleUpdateMany(collectionId: string, body: MongoBody) {
   }
 
   return mongoJson({
-    acknowledged: true, matchedCount: matched.length, modifiedCount,
+    acknowledged: true,
+    matchedCount: matched.length,
+    modifiedCount,
   })
 }
 
 export async function handleDeleteOne(collectionId: string, body: MongoBody) {
   const docs = await loadParsedDocs(collectionId)
-  const matched = applyMongoFilter(docs, body.filter ?? {}) as Record<string, unknown>[]
+  const matched = applyMongoFilter(docs, body.filter ?? {}) as Record<
+    string,
+    unknown
+  >[]
   let deletedCount = 0
 
   if (matched.length > 0) {
@@ -203,7 +239,10 @@ export async function handleDeleteOne(collectionId: string, body: MongoBody) {
 
 export async function handleDeleteMany(collectionId: string, body: MongoBody) {
   const docs = await loadParsedDocs(collectionId)
-  const matched = applyMongoFilter(docs, body.filter ?? {}) as Record<string, unknown>[]
+  const matched = applyMongoFilter(docs, body.filter ?? {}) as Record<
+    string,
+    unknown
+  >[]
   let deletedCount = 0
 
   for (const item of matched) {
@@ -241,12 +280,18 @@ export async function handleReplaceOne(collectionId: string, body: MongoBody) {
   return mongoJson({ acknowledged: true, matchedCount: 1, modifiedCount: 1 })
 }
 
-export async function handleFindOneAndUpdate(collectionId: string, body: MongoBody) {
+export async function handleFindOneAndUpdate(
+  collectionId: string,
+  body: MongoBody,
+) {
   if (!body.update)
     return mongoJson({ error: "update is required for findOneAndUpdate" }, 400)
 
   const docs = await loadParsedDocs(collectionId)
-  const matched = applyMongoFilter(docs, body.filter ?? {}) as Record<string, unknown>[]
+  const matched = applyMongoFilter(docs, body.filter ?? {}) as Record<
+    string,
+    unknown
+  >[]
   const upsert = body.options?.upsert === true
   const returnDoc = body.options?.returnDocument ?? "before"
 
@@ -280,7 +325,10 @@ export async function handleFindOneAndUpdate(collectionId: string, body: MongoBo
   return mongoJson(beforeData)
 }
 
-export async function handleFindOneAndDelete(collectionId: string, body: MongoBody) {
+export async function handleFindOneAndDelete(
+  collectionId: string,
+  body: MongoBody,
+) {
   const docs = await loadParsedDocs(collectionId)
   const matched = applyMongoFilter(docs, body.filter ?? {})
   if (matched.length === 0) return mongoJson(null)
@@ -291,19 +339,31 @@ export async function handleFindOneAndDelete(collectionId: string, body: MongoBo
   return mongoJson(docData)
 }
 
-export async function handleFindOneAndReplace(collectionId: string, body: MongoBody) {
+export async function handleFindOneAndReplace(
+  collectionId: string,
+  body: MongoBody,
+) {
   if (!body.document)
-    return mongoJson({ error: "document is required for findOneAndReplace" }, 400)
+    return mongoJson(
+      { error: "document is required for findOneAndReplace" },
+      400,
+    )
 
   const docs = await loadParsedDocs(collectionId)
-  const matched = applyMongoFilter(docs, body.filter ?? {}) as Record<string, unknown>[]
+  const matched = applyMongoFilter(docs, body.filter ?? {}) as Record<
+    string,
+    unknown
+  >[]
   const upsert = body.options?.upsert === true
   const returnDoc = body.options?.returnDocument ?? "before"
 
   if (matched.length === 0) {
     if (!upsert) return mongoJson(null)
 
-    const newDoc = { _id: autoGenerateId(docs).value, ...(body.document as Record<string, unknown>) }
+    const newDoc = {
+      _id: autoGenerateId(docs).value,
+      ...(body.document as Record<string, unknown>),
+    }
     await prisma.document.create({
       data: { collectionId, data: JSON.stringify(newDoc) },
     })
@@ -333,9 +393,13 @@ export async function handleFindOneAndReplace(collectionId: string, body: MongoB
 }
 
 export async function handleDistinct(collectionId: string, body: MongoBody) {
-  if (!body.key) return mongoJson({ error: "key is required for distinct" }, 400)
+  if (!body.key)
+    return mongoJson({ error: "key is required for distinct" }, 400)
   const docs = await loadParsedDocs(collectionId)
-  const filtered = applyMongoFilter(docs, body.filter ?? {}) as Record<string, unknown>[]
+  const filtered = applyMongoFilter(docs, body.filter ?? {}) as Record<
+    string,
+    unknown
+  >[]
   const values = new Set<unknown>()
   for (const item of filtered) {
     const val = item[body.key]
@@ -346,17 +410,30 @@ export async function handleDistinct(collectionId: string, body: MongoBody) {
 
 export async function handleBulkWrite(collectionId: string, body: MongoBody) {
   if (!body.operations || !Array.isArray(body.operations))
-    return mongoJson({ error: "operations array is required for bulkWrite" }, 400)
+    return mongoJson(
+      { error: "operations array is required for bulkWrite" },
+      400,
+    )
 
   let docs = await loadParsedDocs(collectionId)
   const result: {
-    ok: number; nInserted: number; nMatched: number; nModified: number
-    nUpserted: number; nRemoved: number
+    ok: number
+    nInserted: number
+    nMatched: number
+    nModified: number
+    nUpserted: number
+    nRemoved: number
     upserted: { index: number; _id: string }[]
     writeErrors: { index: number; errmsg: string }[]
   } = {
-    ok: 1, nInserted: 0, nMatched: 0, nModified: 0, nUpserted: 0, nRemoved: 0,
-    upserted: [], writeErrors: [],
+    ok: 1,
+    nInserted: 0,
+    nMatched: 0,
+    nModified: 0,
+    nUpserted: 0,
+    nRemoved: 0,
+    upserted: [],
+    writeErrors: [],
   }
 
   for (let i = 0; i < body.operations.length; i++) {
@@ -371,8 +448,14 @@ export async function handleBulkWrite(collectionId: string, body: MongoBody) {
         docs.push(doc as Record<string, unknown>)
         result.nInserted++
         result.upserted.push({ index: i, _id: String(doc._id ?? doc.id ?? "") })
-      } else if ((op.operation === "updateOne" || op.operation === "updateMany") && op.update) {
-        const matched = applyMongoFilter(docs, op.filter ?? {}) as Record<string, unknown>[]
+      } else if (
+        (op.operation === "updateOne" || op.operation === "updateMany") &&
+        op.update
+      ) {
+        const matched = applyMongoFilter(docs, op.filter ?? {}) as Record<
+          string,
+          unknown
+        >[]
         if (matched.length > 0) {
           result.nMatched += matched.length
           for (const item of matched) {
@@ -381,11 +464,20 @@ export async function handleBulkWrite(collectionId: string, body: MongoBody) {
             if (JSON.stringify(item) !== orig) result.nModified++
           }
         }
-      } else if ((op.operation === "deleteOne" || op.operation === "deleteMany") && op.filter) {
-        const matched = applyMongoFilter(docs, op.filter) as Record<string, unknown>[]
+      } else if (
+        (op.operation === "deleteOne" || op.operation === "deleteMany") &&
+        op.filter
+      ) {
+        const matched = applyMongoFilter(docs, op.filter) as Record<
+          string,
+          unknown
+        >[]
         const matchSet = new Set(matched)
         docs = docs.filter((d) => {
-          if (matchSet.has(d)) { result.nRemoved++; return false }
+          if (matchSet.has(d)) {
+            result.nRemoved++
+            return false
+          }
           return true
         })
       } else if (op.operation === "replaceOne" && op.document && op.filter) {
@@ -433,7 +525,9 @@ export async function handleBulkWrite(collectionId: string, body: MongoBody) {
     where: { collectionId },
     select: { id: true },
   })
-  const toDelete = allRecords.filter((r) => !currentIds.has(r.id)).map((r) => r.id)
+  const toDelete = allRecords
+    .filter((r) => !currentIds.has(r.id))
+    .map((r) => r.id)
   if (toDelete.length > 0) {
     await prisma.document.deleteMany({ where: { id: { in: toDelete } } })
   }

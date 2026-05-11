@@ -7,7 +7,12 @@ export class FindCursor {
   private filter: Record<string, unknown>
   private opts: FindOptions = {}
 
-  constructor(db: DB, collection: string, filter: Record<string, unknown>, options?: FindOptions) {
+  constructor(
+    db: DB,
+    collection: string,
+    filter: Record<string, unknown>,
+    options?: FindOptions,
+  ) {
     this.db = db
     this.collection = collection
     this.filter = filter
@@ -35,11 +40,13 @@ export class FindCursor {
   }
 
   async toArray(): Promise<Document[]> {
-    return this.db.exec<FindResult>({
-      operation: "find",
-      collection: this.collection,
-      filter: this.filter,
-      options: this.opts,
-    }).then((r) => r.data)
+    return this.db
+      .exec<FindResult>({
+        operation: "find",
+        collection: this.collection,
+        filter: this.filter,
+        options: this.opts,
+      })
+      .then((r) => r.data)
   }
 }

@@ -110,21 +110,36 @@ export async function POST(
   const collectionId = await ensureCollection(db.id, body.collection)
 
   switch (body.operation) {
-    case "find": return handleFind(collectionId, body)
-    case "countDocuments": return handleCountDocuments(collectionId, body)
-    case "estimatedDocumentCount": return handleEstimatedDocumentCount(collectionId)
-    case "insertOne": return handleInsertOne(collectionId, body)
-    case "insertMany": return handleInsertMany(collectionId, body)
-    case "updateOne": return handleUpdateOne(collectionId, body)
-    case "updateMany": return handleUpdateMany(collectionId, body)
-    case "deleteOne": return handleDeleteOne(collectionId, body)
-    case "deleteMany": return handleDeleteMany(collectionId, body)
-    case "replaceOne": return handleReplaceOne(collectionId, body)
-    case "findOneAndUpdate": return handleFindOneAndUpdate(collectionId, body)
-    case "findOneAndDelete": return handleFindOneAndDelete(collectionId, body)
-    case "findOneAndReplace": return handleFindOneAndReplace(collectionId, body)
-    case "distinct": return handleDistinct(collectionId, body)
-    case "bulkWrite": return handleBulkWrite(collectionId, body)
+    case "find":
+      return handleFind(collectionId, body)
+    case "countDocuments":
+      return handleCountDocuments(collectionId, body)
+    case "estimatedDocumentCount":
+      return handleEstimatedDocumentCount(collectionId)
+    case "insertOne":
+      return handleInsertOne(collectionId, body)
+    case "insertMany":
+      return handleInsertMany(collectionId, body)
+    case "updateOne":
+      return handleUpdateOne(collectionId, body)
+    case "updateMany":
+      return handleUpdateMany(collectionId, body)
+    case "deleteOne":
+      return handleDeleteOne(collectionId, body)
+    case "deleteMany":
+      return handleDeleteMany(collectionId, body)
+    case "replaceOne":
+      return handleReplaceOne(collectionId, body)
+    case "findOneAndUpdate":
+      return handleFindOneAndUpdate(collectionId, body)
+    case "findOneAndDelete":
+      return handleFindOneAndDelete(collectionId, body)
+    case "findOneAndReplace":
+      return handleFindOneAndReplace(collectionId, body)
+    case "distinct":
+      return handleDistinct(collectionId, body)
+    case "bulkWrite":
+      return handleBulkWrite(collectionId, body)
   }
 }
 
