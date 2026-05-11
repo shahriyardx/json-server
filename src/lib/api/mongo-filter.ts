@@ -147,8 +147,8 @@ function matchTextSearch(
   const negated: string[] = []
   const terms: string[] = []
   const re = /"([^"]+)"|(\S+)/g
-  let m: RegExpExecArray | null
-  while ((m = re.exec(searchStr)) !== null) {
+  let m: RegExpExecArray | null = re.exec(searchStr)
+  while (m !== null) {
     if (m[1]) {
       phrases.push(m[1].toLowerCase())
     } else {
@@ -159,6 +159,7 @@ function matchTextSearch(
         terms.push(token.toLowerCase())
       }
     }
+    m = re.exec(searchStr)
   }
 
   // Collect all string-representable values
