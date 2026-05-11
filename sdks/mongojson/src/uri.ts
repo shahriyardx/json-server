@@ -1,9 +1,9 @@
-import type { MongoDXAuth } from "./types"
+import type { MongojsonAuth } from "./types"
 
 export interface ParsedUri {
   username: string
   baseUrl: string
-  auth: MongoDXAuth
+  auth: MongojsonAuth
   defaultDb: string | null
 }
 
@@ -33,7 +33,7 @@ export function parseUri(uri: string): ParsedUri {
       "URI must include database user:password, e.g. mongodb://dbuser:dbpass@host/db",
     )
   }
-  const auth: MongoDXAuth = { username: url.username, password: url.password }
+  const auth: MongojsonAuth = { username: url.username, password: url.password }
 
   const defaultDb = url.pathname.replace(/^\//, "") || null
 

@@ -152,4 +152,62 @@ export interface MongoBody {
   }
 }
 
-export type MongoDXAuth = { username: string; password: string }
+export type MongojsonAuth = { username: string; password: string }
+
+// ---------------------------------------------------------------------------
+// Drop-in replacement types — mirror official MongoDB driver's MongoClientOptions
+// These are accepted but not acted on, making this SDK a compile-time drop-in.
+// ---------------------------------------------------------------------------
+
+export const ServerApiVersion = Object.freeze({
+  v1: "1",
+} as const)
+
+export type ServerApiVersion = (typeof ServerApiVersion)[keyof typeof ServerApiVersion]
+
+export interface ServerApi {
+  version: ServerApiVersion | string
+  strict?: boolean
+  deprecationErrors?: boolean
+}
+
+export interface MongoClientOptions {
+  serverApi?: ServerApi | ServerApiVersion | string
+  appName?: string
+  authSource?: string
+  authMechanism?: string
+  connectTimeoutMS?: number
+  socketTimeoutMS?: number
+  serverSelectionTimeoutMS?: number
+  heartbeatFrequencyMS?: number
+  maxPoolSize?: number
+  minPoolSize?: number
+  maxIdleTimeMS?: number
+  waitQueueTimeoutMS?: number
+  retryWrites?: boolean
+  retryReads?: boolean
+  directConnection?: boolean
+  replicaSet?: string
+  readPreference?: string
+  readConcern?: { level?: string }
+  writeConcern?: { w?: string | number; wtimeoutMS?: number; journal?: boolean }
+  w?: string | number
+  wtimeoutMS?: number
+  journal?: boolean
+  tls?: boolean
+  tlsCAFile?: string
+  tlsCertificateKeyFile?: string
+  tlsCertificateKeyFilePassword?: string
+  tlsAllowInvalidCertificates?: boolean
+  tlsAllowInvalidHostnames?: boolean
+  monitorCommands?: boolean
+  loadBalanced?: boolean
+  srvMaxHosts?: number
+  srvServiceName?: string
+  proxyHost?: string
+  proxyPort?: number
+  compressors?: string | string[]
+  zlibCompressionLevel?: number
+  raw?: boolean
+  pkFactory?: { createPk: () => unknown }
+}

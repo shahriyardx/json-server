@@ -1,10 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import {
-  Copy,
-  Check,
-} from "lucide-react"
+import { Copy, Check } from "lucide-react"
 import { useEffect, useState } from "react"
 import { authClient } from "@/lib/auth-client"
 import { highlightCode } from "@/actions/highlight"
@@ -25,7 +22,7 @@ export default function MongoDBPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const codeSample = `import { MongoClient } from "mongodx"
+  const codeSample = `import { MongoClient } from "mongojson"
 
 const client = new MongoClient(
   "${connectionUri}"
@@ -53,7 +50,7 @@ console.log(all)`
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Cluster</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Your mongodx cluster
+          Your MongoDB cluster
         </p>
       </div>
 
@@ -61,7 +58,7 @@ console.log(all)`
       <div className="rounded-lg border bg-muted/30 p-4">
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-medium text-foreground">
-            MongoDX Connection URI
+            Connection URI
           </p>
           <Button
             variant="ghost"
@@ -82,7 +79,8 @@ console.log(all)`
         </code>
         <p className="mt-2 text-xs text-muted-foreground">
           Replace <span className="font-mono">&lt;username&gt;</span> and{" "}
-          <span className="font-mono">&lt;password&gt;</span> with auth user credentials.
+          <span className="font-mono">&lt;password&gt;</span> with auth user
+          credentials.
         </p>
       </div>
 
@@ -90,7 +88,7 @@ console.log(all)`
       <div className="mt-6 max-w-xl">
         <p className="mb-2 text-sm font-medium text-foreground">Quick start</p>
         <div
-          className="overflow-x-auto rounded-lg border bg-background p-4 text-xs leading-relaxed [&_.shiki]:!m-0 [&_.shiki]:!bg-transparent [&_.shiki]:!p-0"
+          className="overflow-x-auto rounded-lg border bg-background p-4 text-xs leading-relaxed [&_.shiki]:m-0! [&_.shiki]:bg-transparent! [&_.shiki]:p-0!"
           dangerouslySetInnerHTML={{ __html: highlighted }}
         />
       </div>

@@ -1,9 +1,10 @@
 export { ObjectId } from "./object-id"
-export { MongodxServerError, MongodxBulkWriteError } from "./errors"
+export { MongojsonServerError, MongojsonBulkWriteError } from "./errors"
 export { FindCursor } from "./cursor"
 export { Collection } from "./collection"
 export { DB } from "./db"
 export { MongoClient } from "./client"
+export { ServerApiVersion } from "./types"
 export type {
   SortDirection,
   FindOptions,
@@ -23,4 +24,6 @@ export type {
   FindOneAndDeleteOptions,
   FindOneAndReplaceOptions,
   BulkWriteOperation,
+  MongoClientOptions,
+  ServerApi,
 } from "./types"

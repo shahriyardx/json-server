@@ -1,5 +1,5 @@
-import type { MongoBody, MongoDXAuth } from "./types"
-import { MongodxServerError, MongodxBulkWriteError } from "./errors"
+import type { MongoBody, MongojsonAuth } from "./types"
+import { MongojsonServerError, MongojsonBulkWriteError } from "./errors"
 
 function statusToMongoMsg(status: number, fallback: string): string {
   switch (status) {
@@ -22,7 +22,7 @@ export async function mongoRequest(
   baseUrl: string,
   endpoint: string,
   body: MongoBody,
-  auth: MongoDXAuth,
+  auth: MongojsonAuth,
 ): Promise<unknown> {
   const url = `${baseUrl.replace(/\/+$/, "")}/${endpoint.replace(/^\/+/, "")}`
 
@@ -48,11 +48,11 @@ export async function mongoRequest(
     const message = errBody.error ?? res.statusText
 
     if (res.status === 409 && errBody.writeErrors) {
-      throw new MongodxBulkWriteError(res.status, message, errBody.writeErrors)
+      throw new MongojsonBulkWriteError(res.status, message, errBody.writeErrors)
     }
 
     const mongoMsg = statusToMongoMsg(res.status, message)
-    throw new MongodxServerError(res.status, mongoMsg, errBody.code)
+    throw new MongojsonServerError(res.status, mongoMsg, errBody.code)
   }
 
   return res.json()

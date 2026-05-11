@@ -90,7 +90,7 @@ export default function DatabasesBrowserPage() {
           <DatabaseIcon className="mb-3 size-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">No databases yet.</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Connect via mongodx SDK — databases auto-create on first access.
+            Connect via mongojson SDK — databases auto-create on first access.
           </p>
         </div>
       ) : filtered.length === 0 ? (

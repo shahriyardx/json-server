@@ -1,20 +1,22 @@
 import { parseUri } from "./uri"
 import { mongoRequest } from "./http"
 import { DB } from "./db"
-import type { MongoBody } from "./types"
+import type { MongoBody, MongoClientOptions } from "./types"
 
 export class MongoClient {
   private baseUrl: string
   private username: string
   private auth: { username: string; password: string }
   private defaultDb: string | null
+  readonly options: MongoClientOptions
 
-  constructor(uri: string) {
+  constructor(uri: string, options?: MongoClientOptions) {
     const parsed = parseUri(uri)
     this.baseUrl = parsed.baseUrl
     this.username = parsed.username
     this.auth = parsed.auth
     this.defaultDb = parsed.defaultDb
+    this.options = options ?? {}
   }
 
   /** Connect to server. Verifies credentials via ping. */

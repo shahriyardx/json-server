@@ -1,4 +1,4 @@
-export class MongodxServerError extends Error {
+export class MongojsonServerError extends Error {
   readonly code: number
   readonly status: number
   readonly errmsg: string
@@ -10,7 +10,7 @@ export class MongodxServerError extends Error {
   } {
     switch (status) {
       case 401:
-        return { code: 8000, codeName: "MongodxError" }
+        return { code: 8000, codeName: "MongojsonError" }
       case 403:
         return { code: 13, codeName: "Unauthorized" }
       case 404:
@@ -25,11 +25,11 @@ export class MongodxServerError extends Error {
   }
 
   constructor(status: number, message: string, code?: number) {
-    const meta = MongodxServerError.statusMeta(status)
+    const meta = MongojsonServerError.statusMeta(status)
     const finalCode = code ?? meta.code
-    const fullMsg = `MongodxServerError: ${message}`
+    const fullMsg = `MongojsonServerError: ${message}`
     super(fullMsg)
-    this.name = "MongodxServerError"
+    this.name = "MongojsonServerError"
     this.status = status
     this.code = finalCode
     this.codeName = meta.codeName
@@ -37,7 +37,7 @@ export class MongodxServerError extends Error {
   }
 }
 
-export class MongodxBulkWriteError extends Error {
+export class MongojsonBulkWriteError extends Error {
   readonly code: number
   readonly status: number
   readonly errmsg: string
@@ -48,9 +48,9 @@ export class MongodxBulkWriteError extends Error {
     message: string,
     writeErrors: { index: number; errmsg: string }[] = [],
   ) {
-    const fullMsg = `MongodxBulkWriteError: ${message}`
+    const fullMsg = `MongojsonBulkWriteError: ${message}`
     super(fullMsg)
-    this.name = "MongodxBulkWriteError"
+    this.name = "MongojsonBulkWriteError"
     this.status = status
     this.code = 11000
     this.errmsg = message

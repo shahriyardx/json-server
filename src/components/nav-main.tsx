@@ -26,7 +26,7 @@ const platformItems = [
   { title: "JSON Files", url: "/dashboard/json", icon: <FileJson /> },
   { title: "Upload", url: "/dashboard/json/upload", icon: <UploadCloud /> },
   { title: "API Keys", url: "/dashboard/api-keys", icon: <KeyRound /> },
-  { title: "MongoDX", url: "/dashboard/mongodb", icon: <Database /> },
+  { title: "MongoDB", url: "/dashboard/mongodb", icon: <Database /> },
   { title: "Trash", url: "/dashboard/trash", icon: <Trash2 /> },
   { title: "Docs", url: "/docs", icon: <BookOpen /> },
 ]
@@ -47,7 +47,7 @@ export function NavMain() {
     return (
       <>
         <SidebarGroup>
-          <SidebarGroupLabel>MongoDX</SidebarGroupLabel>
+          <SidebarGroupLabel>MongoDB</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
