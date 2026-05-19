@@ -6,19 +6,14 @@ export function traverse(data: unknown, segments: string[]): unknown {
     if (current === null || current === undefined) return undefined
 
     if (Array.isArray(current)) {
-      const index = parseInt(segment, 10)
-      if (!Number.isNaN(index)) {
-        current = current[index]
-      } else {
-        current = current.find((item) => {
-          if (typeof item !== "object" || item === null) return false
-          const idVal =
-            (item as Record<string, unknown>)["_id"] ??
-            (item as Record<string, unknown>)["id"]
-          if (idVal === undefined) return false
-          return String(idVal) === segment
-        })
-      }
+      current = current.find((item) => {
+        if (typeof item !== "object" || item === null) return false
+        const idVal =
+          (item as Record<string, unknown>)["_id"] ??
+          (item as Record<string, unknown>)["id"]
+        if (idVal === undefined) return false
+        return String(idVal) === segment
+      })
     } else if (typeof current === "object") {
       current = (current as Record<string, unknown>)[segment]
     } else {
