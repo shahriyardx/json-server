@@ -10,7 +10,7 @@ example.json
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
+.env
 # testing
 /coverage
 
